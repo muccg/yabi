@@ -15,6 +15,8 @@ class SSHSGEExecBackend(QBaseExecBackend):
                      "#!/bin/sh",
                      "<QACCT_COMMAND> -j {0}"])
 
+    backend_scheme = "ssh+sge"
+
     def __init__(self, *args, **kwargs):
         super(SSHSGEExecBackend, self).__init__(*args, **kwargs)
         self.parser = SGEParser()

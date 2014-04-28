@@ -47,6 +47,7 @@ logger = logging.getLogger(__name__)
 pool_manager = get_ssh_pool_manager()
 
 class SFTPBackend(FSBackend):
+    backend_scheme = ("sftp", "scp")
 
     def _sftp_copy(self, host=None, port=None, credential=None,
                    localfo=None, remotepath=None, copy=None,

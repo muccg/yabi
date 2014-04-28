@@ -54,12 +54,6 @@ class BackendForm(forms.ModelForm):
 
         return cleaned_data
 
-    def clean_scheme(self):
-        scheme = self.cleaned_data['scheme']
-        if scheme not in constants.VALID_SCHEMES:
-            raise forms.ValidationError("Scheme not valid. Options: %s" % ",".join(constants.VALID_SCHEMES))
-        return scheme
-
     def clean_hostname(self):
         hostname = self.cleaned_data['hostname']
         if hostname.endswith('/'):

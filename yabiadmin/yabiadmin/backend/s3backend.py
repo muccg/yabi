@@ -48,6 +48,8 @@ class S3Backend(FSBackend):
     service through the boto package.
     """
 
+    backend_scheme = "s3"
+
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)
         self._bucket = None

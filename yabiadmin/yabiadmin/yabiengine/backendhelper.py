@@ -25,13 +25,12 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 from django.utils import simplejson as json
 import os
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabi.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.constants import EXEC_SCHEMES, FS_SCHEMES
 import logging
 logger = logging.getLogger(__name__)
 
@@ -66,7 +65,8 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     schema, rest = uriparse(uri)
 
     # enforce Exec scehmas only
-    if schema not in EXEC_SCHEMES:
+    from ..backend import ExecBackend
+    if not ExecBackend.get_backend_cls_for_scheme(schema):
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s" % schema)
 
@@ -99,7 +99,8 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     schema, rest = uriparse(uri)
 
     # enforce FS scehmas only
-    if schema not in FS_SCHEMES:
+    from ..backend import FSBackend
+    if not FSBackend.get_backend_cls_for_scheme(schema):
         logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s" % schema)
 

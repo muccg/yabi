@@ -27,6 +27,8 @@ class SwiftBackend(FSBackend):
     fixme: why is set_cred() only done on mkdir and ls?
     """
 
+    backend_scheme = "swift"
+
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)
         self._conn = None

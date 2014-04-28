@@ -40,6 +40,8 @@ LS_PATH = '/bin/ls'
 LS_TIME_STYLE = r"+%b %d  %Y"
 
 class FileBackend(FSBackend):
+    backend_scheme = ("file", "localfs")
+
     def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)
         return self._copy_file(src, open(parts.path, "wb"))

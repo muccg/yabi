@@ -61,33 +61,6 @@ def stream_watcher(identifier, stream):
 
 
 class FSBackend(BaseBackend):
-
-    @staticmethod
-    def create_backend_for_scheme(fsscheme):
-        backend = None
-
-        if fsscheme == 'sftp' or fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif fsscheme == 'file' or fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif fsscheme == 'select' or fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        elif fsscheme == 's3':
-            from yabiadmin.backend.s3backend import S3Backend
-            backend = S3Backend()
-
-        elif fsscheme == 'swift':
-            from yabiadmin.backend.swiftbackend import SwiftBackend
-            backend = SwiftBackend()
-
-        return backend
-
     @staticmethod
     def factory(task):
         assert(task)

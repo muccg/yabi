@@ -30,8 +30,18 @@ import os
 import shutil
 logger = logging.getLogger(__name__)
 
+class register_backend_schemes(type):
+    def __new__(mcs, name, bases, dict):
+        cls = type.__new__(mcs, name, bases, dict)
+        schemes = dict.get("backend_scheme", ())
+        if not isinstance(schemes, (list, tuple)):
+            schemes = (schemes,)
+        for scheme in schemes:
+            BaseBackend._backends.append((scheme, cls))
+        return cls
 
 class BaseBackend(object):
+    __metaclass__ = register_backend_schemes
 
     task = None
     cred = None
@@ -60,3 +70,32 @@ class BaseBackend(object):
         if os.path.exists(local_remnants_dir):
             shutil.rmtree(local_remnants_dir)
         os.makedirs(local_remnants_dir)
+
+    _backends = []
+
+    @classmethod
+    def get_scheme_choices(cls):
+        return [(k, "%s - %s" % (k, backendcls.__name__))
+                for k, backendcls in cls._backends]
+
+    @classmethod
+    def get_backend_cls_for_scheme(cls, scheme, basecls=None):
+        """
+        Returns the backend class registered with `scheme'. If `basecls' is
+        given, the backend class must be a subclass of it. If no
+        matching class is found, None is returned.
+        """
+        basecls = basecls or cls
+        for backendscheme, backendcls in cls._backends:
+            if backendscheme == scheme and issubclass(backendcls, basecls):
+                return backendcls
+        return None
+
+    @classmethod
+    def create_backend_for_scheme(cls, scheme, basecls=None, *args, **kwargs):
+        """
+        Instantiates a backend for the given URL scheme which is an
+        instance of `basecls'.
+        """
+        BackendCls = cls.get_backend_cls_for_scheme(scheme, basecls)
+        return BackendCls(*args, **kwargs) if BackendCls else None

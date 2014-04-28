@@ -197,5 +197,3 @@ def register(site):
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)
     site.register(HostKey, HostKeyAdmin)
-
-

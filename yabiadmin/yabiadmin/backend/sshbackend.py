@@ -59,6 +59,8 @@ ps -o pid= -p {0}
 kill {1} -- -$( ps opgid= {0} | tr -d ' ')
 """
 
+    backend_scheme = "ssh"
+
     def __init__(self, *args, **kwargs):
         super(SSHBackend, self).__init__(*args, **kwargs)
         self.parser = SSHParser()

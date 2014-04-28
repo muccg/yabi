@@ -36,7 +36,6 @@ from django.core.cache import cache
 from urlparse import urlunparse
 from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, \
     encrypted_block_is_legacy, any_unencrypted, any_annotated_block, DecryptException
-from yabiadmin.constants import VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
 import logging
@@ -584,8 +583,13 @@ class Credential(Base):
             access.cache_protected_creds(self.password, self.cert, self.key)
         return access
 
-
 class Backend(Base):
+    def __init__(self, *args, **kwargs):
+        super(Backend, self).__init__(*args, **kwargs)
+        scheme = self._meta.get_field_by_name("scheme")[0]
+        from ..backend import BaseBackend
+        scheme._choices = BaseBackend.get_scheme_choices()
+
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
     scheme = models.CharField(max_length=64)
@@ -596,7 +600,6 @@ class Backend(Base):
     link_supported = models.BooleanField(default=True)
     submission = models.TextField(blank=True)
     temporary_directory = models.CharField(max_length=512, blank=True)
-    scheme.help_text = "Must be one of %s." % ", ".join(VALID_SCHEMES)
     hostname.help_text = "Hostname must not end with a /."
     path.help_text = """Path must start and end with a /.<br/><br/>Execution backends must only have / in the path field.<br/><br/>
     For filesystem backends, Yabi will take the value in path and combine it with any path snippet in Backend Credential to form a URI. <br/>
