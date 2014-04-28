@@ -68,7 +68,7 @@ class CredentialTests(unittest.TestCase):
         self.credential.get_credential_access().clear_cache()
         decrypted = self.credential.get_credential_access().get()
         self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})
-        # logging in must encrypt the credential, and also shove a copy of the 
+        # logging in must encrypt the credential, and also shove a copy of the
         # decrypted and then protected credential into the cache
         self.credential.get_credential_access().clear_cache()
         self.credential.on_login(self.django_user.username, 'pass')
@@ -80,7 +80,7 @@ class CredentialTests(unittest.TestCase):
         self.credential.get_credential_access().clear_cache()
         self.credential.on_login(self.django_user.username, 'pass')
         decrypted = self.credential.get_credential_access().get()
-        self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})        
+        self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})
 
     def test_cache_keyname_replaces_unicode_character(self):
         access = self.credential.get_credential_access()
@@ -293,7 +293,7 @@ class TestBackendFormValidation(unittest.TestCase):
         data['scheme'] = "not valid"
         form = BackendForm(data)
         self.assertFalse(form.is_valid(), "Form shouldn't be valid")
-        self.assertTrue(form.errors['scheme'][0].startswith(u"Scheme not valid. Options: "))
+        self.assertRegexpMatches(form.errors['scheme'][0], r"^Scheme not valid. Options: ")
 
     def test_path_should_start_with_slash(self):
         data = self.minimal_valid_data()
@@ -331,4 +331,3 @@ class TestBackendFormValidation(unittest.TestCase):
         form = BackendForm(data)
         self.assertFalse(form.is_valid(), "Form shouldn't be valid")
         self.assertEqual(form.errors['link_supported'][0], u"Linking not supported on s3.")
-

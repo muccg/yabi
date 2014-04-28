@@ -51,12 +51,19 @@ class BackendForm(forms.ModelForm):
         cleaned_data = super(BackendForm, self).clean()
         scheme = self.cleaned_data.get('scheme')
 
-        caps = get_backend_caps().get(scheme, {})
+        caps = get_backend_caps()
 
-        for attr, name in (("lcopy_supported", "Local Copy"), ("link_supported", "Linking")):
-            if self.cleaned_data.get(attr) and not caps.get(attr, False):
-                self._errors[attr] = self.error_class(["%s not supported on %s." % (name, scheme)])
-                del cleaned_data[attr]
+        if scheme in caps:
+            for attr, name in (("lcopy_supported", "Local Copy"), ("link_supported", "Linking")):
+                if self.cleaned_data.get(attr) and not caps[scheme].get(attr, False):
+                    self._errors[attr] = self.error_class(["%s not supported on %s." % (name, scheme)])
+                    del cleaned_data[attr]
+        elif not scheme:
+            self._errors["scheme"] = self.error_class(["This field is required."])
+        else:
+            msg = "Scheme not valid. Options: " + ", ".join(sorted(caps))
+            self._errors["scheme"] = self.error_class([msg])
+            del cleaned_data["scheme"]
 
         return cleaned_data
 
