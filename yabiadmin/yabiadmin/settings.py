@@ -344,10 +344,6 @@ JAVASCRIPT_LIBRARIES = {
         "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-3.5.1/build/"),
         "cache_for": THIRTY_DAYS,
     },
-    "yui2in3_2_9_0": {
-        "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
-        "cache_for": THIRTY_DAYS,
-    },
 }
 
 ### LOGGING SETUP ###
