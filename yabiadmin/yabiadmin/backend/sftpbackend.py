@@ -47,6 +47,13 @@ logger = logging.getLogger(__name__)
 pool_manager = get_ssh_pool_manager()
 
 class SFTPBackend(FSBackend):
+    backend_scheme = ("sftp", "scp")
+    backend_desc = "SFTP remote file system"
+    backend_auth = {
+        "username": "Login name for remote host",
+        "cert": "Optional SSH private key.",
+        "key": "Can be a normal login password, passphrase for SSH key, or empty."
+    }
 
     def _sftp_copy(self, host=None, port=None, credential=None,
                    localfo=None, remotepath=None, copy=None,

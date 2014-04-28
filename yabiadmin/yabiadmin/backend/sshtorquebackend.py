@@ -8,6 +8,8 @@ class SSHTorqueExecBackend(QBaseExecBackend):
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "<QSTAT_COMMAND> -f -1 {0}"])
 
+    backend_scheme = "ssh+torque"
+
     def __init__(self, *args, **kwargs):
         super(SSHTorqueExecBackend, self).__init__(*args, **kwargs)
         self.parser = TorqueParser()

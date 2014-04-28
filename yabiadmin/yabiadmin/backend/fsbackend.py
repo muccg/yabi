@@ -26,7 +26,7 @@
 ### END COPYRIGHT ###
 import os
 from django.utils import simplejson as json
-from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError, NotSupportedError
 from yabiadmin.backend.utils import create_fifo
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
@@ -61,32 +61,8 @@ def stream_watcher(identifier, stream):
 
 
 class FSBackend(BaseBackend):
-
-    @staticmethod
-    def create_backend_for_scheme(fsscheme):
-        backend = None
-
-        if fsscheme == 'sftp' or fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif fsscheme == 'file' or fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif fsscheme == 'select' or fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        elif fsscheme == 's3':
-            from yabiadmin.backend.s3backend import S3Backend
-            backend = S3Backend()
-
-        elif fsscheme == 'swift':
-            from yabiadmin.backend.swiftbackend import SwiftBackend
-            backend = SwiftBackend()
-
-        return backend
+    lcopy_supported = True
+    link_supported = True
 
     @staticmethod
     def factory(task):
@@ -448,13 +424,13 @@ class FSBackend(BaseBackend):
         raise NotImplementedError("")
 
     def local_copy(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def local_copy_recursive(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def symbolic_link(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     @staticmethod
     def format_iso8601_date(iso8601_date):

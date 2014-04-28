@@ -25,7 +25,7 @@
 #
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
-from yabiadmin.backend.exceptions import NotSupportedError, RetryException
+from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.utils import get_credential_data, partition
 from yabiadmin.yabiengine.urihelper import uriparse
 import logging
@@ -47,6 +47,15 @@ class S3Backend(FSBackend):
     A key-value storage backend which uses Amazon's S3 object storage
     service through the boto package.
     """
+
+    backend_scheme = "s3"
+    backend_desc = "Amazon S3 object storage"
+    backend_auth = {
+        "cert": "AWS Access Key ID",
+        "key": "AWS Secret Access Key",
+    }
+    lcopy_supported = False
+    link_supported = False
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)
@@ -147,12 +156,6 @@ class S3Backend(FSBackend):
         except Exception as exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())
-
-    def local_copy(self, source, destination):
-        raise NotSupportedError()
-
-    def symbolic_link(self, source, destination):
-        raise NotSupportedError()
 
     # Implementation
 

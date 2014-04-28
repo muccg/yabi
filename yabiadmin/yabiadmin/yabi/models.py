@@ -28,6 +28,7 @@
 # -*- coding: utf-8 -*-
 import traceback
 from django.db import models
+from django.db.models import Count
 from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import authenticate
 from django.utils import simplejson as json
@@ -36,7 +37,6 @@ from django.core.cache import cache
 from urlparse import urlunparse
 from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, \
     encrypted_block_is_legacy, any_unencrypted, any_annotated_block, DecryptException
-from yabiadmin.constants import VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
 import logging
@@ -514,7 +514,11 @@ class Credential(Base):
     user = models.ForeignKey(User)
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
     expires_on = models.DateTimeField(null=True)   # null mean never expire this
+
     username.help_text = "The username on the backend this credential is for."
+    password.help_text = "Password for backend auth. Doesn't apply to all backends."
+    cert.help_text = "Certificate for backend auth, if required."
+    key.help_text = "Key for backend auth, if required."
     user.help_text = "Yabi username."
 
     def __unicode__(self):
@@ -584,31 +588,40 @@ class Credential(Base):
             access.cache_protected_creds(self.password, self.cert, self.key)
         return access
 
+    def guess_backend_scheme(self):
+        """
+        Return a probable backend scheme based on the backends associated
+        with this credential.
+        """
+        backends = self.backends.annotate(scount=Count("scheme"))
+        backends = backends.order_by("-scount", "created_on")[:1]
+        return backends[0].scheme if backends else ""
 
 class Backend(Base):
+    def __init__(self, *args, **kwargs):
+        super(Backend, self).__init__(*args, **kwargs)
+        scheme = self._meta.get_field_by_name("scheme")[0]
+        from ..backend import BaseBackend
+        scheme._choices = BaseBackend.get_scheme_choices()
+
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
     scheme = models.CharField(max_length=64)
     hostname = models.CharField(max_length=512)
     port = models.IntegerField(null=True, blank=True)
     path = models.CharField(max_length=512)
-    max_connections = models.IntegerField(null=True, blank=True)
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
     submission = models.TextField(blank=True)
-    tasks_per_user = models.IntegerField(null=True, blank=True)
     temporary_directory = models.CharField(max_length=512, blank=True)
-    scheme.help_text = "Must be one of %s." % ", ".join(VALID_SCHEMES)
     hostname.help_text = "Hostname must not end with a /."
     path.help_text = """Path must start and end with a /.<br/><br/>Execution backends must only have / in the path field.<br/><br/>
     For filesystem backends, Yabi will take the value in path and combine it with any path snippet in Backend Credential to form a URI. <br/>
     i.e. http://myserver.mydomain/home/ would be entered here and then on the Backend Credential for UserX you would enter <br/>
     their home directory in the User Directory field i.e. UserX/. This would then combine to form a valid URI: http://myserver.mydomain/home/UserX/"""
-    max_connections.help_text = "Backend connection limit. Does not affect front end immediate mode requests. Blank means no limit on the number of connections. '0' means no connections allowed (frozen)."
     lcopy_supported.help_text = "Backend supports 'cp' localised copies."
     link_supported.help_text = "Backend supports 'ln' localised symlinking."
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
-    tasks_per_user.help_text = "The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means no limits."
     temporary_directory.help_text = 'Only to be set on execution backends. Temporary directory used for temporary execution scripts. Blank means "/tmp".'
 
     @property
@@ -625,13 +638,6 @@ class Backend(Base):
     @models.permalink
     def get_absolute_url(self):
         return ('backend_view', (), {'backend_id': str(self.id)})
-
-    def backend_summary_link(self):
-        return '<a href="%s">View</a>' % self.get_absolute_url()
-
-    backend_summary_link.short_description = 'Summary'
-    backend_summary_link.allow_tags = True
-
 
 class HostKey(Base):
     hostname = models.CharField(max_length=512)

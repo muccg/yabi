@@ -26,39 +26,39 @@
 ### END COPYRIGHT ###
 from django import forms
 from django.conf import settings
-from yabiadmin.yabi.models import *
-from yabiadmin import constants
-from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
 from django.contrib import admin
+from django.utils import simplejson as json
+from yabiadmin.yabi.models import *
+from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
 
-SCHEMES_WITHOUT_LCOPY = ('s3', 'swift')
-SCHEMES_WITHOUT_LINKING = ('s3', 'swift')
+def get_backend_caps():
+    from ..backend import BaseBackend
+    return BaseBackend.get_caps()
 
+class CapsField(forms.CharField):
+    def __init__(self):
+        super(CapsField, self).__init__(required=False,
+                                        widget=forms.HiddenInput,
+                                        initial=json.dumps(get_backend_caps()))
 
 class BackendForm(forms.ModelForm):
+    caps = CapsField()
+
     class Meta:
         model = Backend
 
     def clean(self):
         cleaned_data = super(BackendForm, self).clean()
         scheme = self.cleaned_data.get('scheme')
-        lcopy_supported = self.cleaned_data.get('lcopy_supported')
-        link_supported = self.cleaned_data.get('link_supported')
 
-        if lcopy_supported and scheme in SCHEMES_WITHOUT_LCOPY:
-            self._errors['lcopy_supported'] = self.error_class(["Local Copy not supported on %s." % scheme])
-            del cleaned_data['lcopy_supported']
-        if link_supported and scheme in SCHEMES_WITHOUT_LINKING:
-            self._errors['link_supported'] = self.error_class(["Linking not supported on %s." % scheme])
-            del cleaned_data['link_supported']
+        caps = get_backend_caps().get(scheme, {})
+
+        for attr, name in (("lcopy_supported", "Local Copy"), ("link_supported", "Linking")):
+            if self.cleaned_data.get(attr) and not caps.get(attr, False):
+                self._errors[attr] = self.error_class(["%s not supported on %s." % (name, scheme)])
+                del cleaned_data[attr]
 
         return cleaned_data
-
-    def clean_scheme(self):
-        scheme = self.cleaned_data['scheme']
-        if scheme not in constants.VALID_SCHEMES:
-            raise forms.ValidationError("Scheme not valid. Options: %s" % ",".join(constants.VALID_SCHEMES))
-        return scheme
 
     def clean_hostname(self):
         hostname = self.cleaned_data['hostname']
@@ -75,6 +75,9 @@ class BackendForm(forms.ModelForm):
         return path
 
 class CredentialForm(forms.ModelForm):
+    scheme = forms.ChoiceField(required=False)
+    caps = CapsField()
+
     class Meta:
         model = Credential
 

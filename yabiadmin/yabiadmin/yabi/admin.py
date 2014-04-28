@@ -131,6 +131,19 @@ class CredentialAdmin(AdminBase):
     actions = ['duplicate_credential','cache_credential','decache_credential']
     search_fields = ['description', 'username', 'user__user__username']
     readonly_fields = ['security_state']
+    fields = (("scheme", "description"),
+              ("username", "password"), "cert", "key",
+              "user", "expires_on", "security_state", "caps")
+
+    class Media:
+        js = ("javascript/yabiadminfixer.js",)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(CredentialAdmin, self).get_form(request, obj, **kwargs)
+        from ..backend import BaseBackend
+        form.base_fields['scheme'].choices = [("", "Any")] + BaseBackend.get_scheme_choices()
+        form.base_fields['scheme'].initial = obj.guess_backend_scheme() if obj else ""
+        return form
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -159,7 +172,31 @@ class CredentialAdmin(AdminBase):
 
 class BackendAdmin(AdminBase):
     form = BackendForm
-    list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
+    list_display = ['name', 'description', 'scheme', 'hostname',
+                    'port', 'path', 'uri', 'backend_summary_link']
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'description', 'scheme',
+                       'hostname', 'port', 'path', 'caps')
+        }),
+        ('Filesystem Backends', {
+            'classes': ('fsbackend-only',),
+            'fields': ('lcopy_supported', 'link_supported')
+        }),
+        ('Execution Backends', {
+            'classes': ('execbackend-only',),
+            'fields': ('submission', 'temporary_directory')
+        }),
+    )
+
+    class Media:
+        js = ("javascript/yabiadminfixer.js",)
+
+    def backend_summary_link(self, obj):
+        return '<a href="%s">View</a>' % obj.get_absolute_url()
+
+    backend_summary_link.short_description = 'Summary'
+    backend_summary_link.allow_tags = True
 
 class UserAdmin(AdminBase):
     list_display = ['user', 'user_option_access','credential_access', 'toolsets_str', 'tools_link', 'backends_link']
@@ -197,5 +234,3 @@ def register(site):
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)
     site.register(HostKey, HostKeyAdmin)
-
-

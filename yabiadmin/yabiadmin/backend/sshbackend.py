@@ -59,6 +59,14 @@ ps -o pid= -p {0}
 kill {1} -- -$( ps opgid= {0} | tr -d ' ')
 """
 
+    backend_scheme = "ssh"
+    backend_desc = "SSH remote execution"
+    backend_auth = {
+        "username": "Login name for remote host",
+        "cert": "Optional SSH private key.",
+        "key": "Can be a normal login password, passphrase for SSH key, or empty."
+    }
+
     def __init__(self, *args, **kwargs):
         super(SSHBackend, self).__init__(*args, **kwargs)
         self.parser = SSHParser()
