@@ -193,8 +193,16 @@ do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
     NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
-    IGNORES="-a !external_service -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
     TEST_CASES="tests yabiadmin/yabiadmin"
+    TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
+
+    # Some tests access external services defined in a config file.
+    if [ -f "${TEST_CONFIG_FILE}" ]; then
+        export TEST_CONFIG_FILE
+    else
+        IGNORES="${IGNORES} -a !external_service"
+    fi
 
     # Runs the end-to-end tests in the Yabitests project
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
