@@ -31,7 +31,9 @@ from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.utils import sshclient
 from yabiadmin.constants import ENVVAR_FILENAME
+import paramiko
 import os
+import select
 import errno
 import stat
 import traceback
@@ -45,6 +47,8 @@ from pooling import get_ssh_pool_manager
 logger = logging.getLogger(__name__)
 
 pool_manager = get_ssh_pool_manager()
+
+BLOCK_SIZE = 1024
 
 class SFTPBackend(FSBackend):
     backend_desc = "SFTP remote file system"
@@ -82,6 +86,7 @@ class SFTPBackend(FSBackend):
                 pool_manager.give_back(ssh, host, port, credential)
         return status
 
+
     def upload_file(self, uri, infile):
         scheme, parts = uriparse(uri)
         return self._sftp_copy(host=parts.hostname,
@@ -101,6 +106,17 @@ class SFTPBackend(FSBackend):
                                remotepath=parts.path,
                                copy='get',
                                hostkey=None)
+
+
+    def download_dir(self, uri, outfile):
+        logger.debug("SFTPBackend.download_dir: %s => tarball => %s",
+                     uri, outfile)
+        scheme, parts = uriparse(uri)
+        executer = create_executer(self.yabiusername, uri)
+        try:
+            return executer.download_dir_as_tarball(parts.path, outfile)
+        except Exception as exc:
+            raise RetryException(exc, traceback.format_exc())
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
@@ -341,10 +357,10 @@ class SFTPBackend(FSBackend):
 
 def create_executer(yabiusername, sftp_uri):
     cred = fs_credential(yabiusername, sftp_uri)
-    return SSHLocalCopyAndLinkExecuter(sftp_uri, cred.credential)
+    return SSHExecuter(sftp_uri, cred.credential)
 
 
-class SSHLocalCopyAndLinkExecuter(object):
+class SSHExecuter(object):
 
     COPY_COMMAND_TEMPLATE = """
 #!/bin/sh
@@ -384,3 +400,43 @@ ln -s "{0}" "{1}"
             raise RuntimeError("Couldn't symlink %s to %s. Exit code: %s. STDERR:\n%s" % (
                 src, dest, exit_code, stderr()))
         return True
+
+    def download_dir_as_tarball(self, remotepath, outfile):
+        parent_dir, target_dir = remotepath.rstrip('/').rsplit('/', 1)
+        command = 'tar -cz -C "%s" "%s"' % (parent_dir, target_dir)
+
+        logger.debug("execing command: %s" % command)
+        client = self.executer.sshclient
+
+        try:
+            stdin, stdout, stderr = client.exec_command(command)
+
+            while not stdout.channel.exit_status_ready():
+                rl, wl, xl = select.select([stdout.channel], [], [])
+                if len(rl) > 0:
+                    while stdout.channel.recv_ready():
+                        data = stdout.channel.recv(BLOCK_SIZE)
+                        outfile.write(data)
+
+                # Stdout might still have data, flush it all out
+                data = stdout.channel.recv(BLOCK_SIZE)
+                while data:
+                    outfile.write(data)
+                    data = stdout.channel.recv(BLOCK_SIZE)
+
+            exit_status = stdout.channel.exit_status
+            logger.debug("Exit status: %s", exit_status)
+            if exit_status != 0:
+                raise RetryException("Exit status %s received why trying to tarball %s" % (exit_status, remotepath))
+        except paramiko.SSHException as sshe:
+            raise RetryException(sshe, traceback.format_exc())
+        finally:
+            try:
+                if client is not None:
+                    client.close()
+            except:
+                pass
+
+        return exit_status == 0
+
+

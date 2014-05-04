@@ -219,8 +219,11 @@ def mkdir(request):
     backend.mkdir(request.user.username, request.GET['uri'])
     return HttpResponse("OK")
 
-def backend_get_file(yabiusername, uri):
-    f, status_queue = backend.get_file(yabiusername, uri)
+def backend_get_file(yabiusername, uri, is_dir=False):
+    if is_dir:
+        f, status_queue = backend.get_zipped_dir(yabiusername, uri)
+    else:
+        f, status_queue = backend.get_file(yabiusername, uri)
 
     CHUNKSIZE = 64 * 1024
 
@@ -257,7 +260,30 @@ def get(request):
         if mtype is not None:
             response['content-type'] = mtype
 
-        response['content-disposition'] = 'attachment; filename=%s' % filename
+        response['content-disposition'] = 'attachment; filename="%s"' % filename
+
+    return response
+
+@authentication_required
+def zget(request):
+    yabiusername = request.user.username
+
+    logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
+    uri = request.GET['uri']
+
+    try:
+        filename = uri.rstrip('/').rsplit('/', 1)[1]
+    except IndexError:
+        logger.critical('Unable to get filename from uri: %s' % uri)
+        filename = 'default.tar.gz'
+
+    try:
+        response = StreamingHttpResponse(backend_get_file(yabiusername, uri, is_dir=True))
+    except FileNotFoundError:
+        response = HttpResponseNotFound()
+    else:
+        response['content-type'] = "application/x-gtar"
+        response['content-disposition'] = 'attachment; filename="%s.tar.gz"' % filename
 
     return response
 

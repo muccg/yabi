@@ -203,6 +203,10 @@ class FSBackend(BaseBackend):
         logger.debug("upload_file %s -> %s", fifo_name, uri)
         return self._fifo_thread(self.upload_file, uri, fifo_name, "rb")
 
+    def remote_dir_to_fifo(self, uri, fifo_name):
+        logger.debug("download dir %s <- %s", fifo_name, uri)
+        return self._fifo_thread(self.download_dir, uri, fifo_name, "wb")
+
     def remote_to_fifo(self, uri, fifo_name):
         logger.debug("download_file %s <- %s", fifo_name, uri)
         return self._fifo_thread(self.download_file, uri, fifo_name, "wb")
@@ -213,8 +217,11 @@ class FSBackend(BaseBackend):
     def download_file(self, uri, fifo):
         raise NotImplementedError()
 
+    def download_dir(self, uri, fifo):
+        raise NotImplementedError()
+
     @staticmethod
-    def remote_file_download(yabiusername, uri):
+    def remote_file_download(yabiusername, uri, is_dir=False):
         """Use a local fifo to download a remote file"""
         logger.debug('{0} -> local fifo'.format(uri))
 
@@ -224,7 +231,10 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_download_' + yabiusername + '_' + parts.hostname)
-            thread, queue = backend.remote_to_fifo(uri, fifo)
+            if is_dir:
+                thread, queue = backend.remote_dir_to_fifo(uri, fifo)
+            else:
+                thread, queue = backend.remote_to_fifo(uri, fifo)
 
             infile = open(fifo, "rb")
             try:
@@ -436,3 +446,4 @@ class FSBackend(BaseBackend):
     def format_iso8601_date(iso8601_date):
         date = dateutil.parser.parse(iso8601_date)
         return date.strftime("%a, %d %b %Y %H:%M:%S")
+

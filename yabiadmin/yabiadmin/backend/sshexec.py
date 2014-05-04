@@ -51,6 +51,12 @@ class SSHExec(object):
     def tmp_dir(self, value):
         self._tmp_dir = value
 
+    @property
+    def sshclient(self):
+        exec_scheme, exec_parts = uriparse(self.uri)
+        ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
+        return ssh
+
     def exec_script(self, script):
         logger.debug("SSHExex.exec_script...")
         logger.debug('script content = {0}'.format(script))
