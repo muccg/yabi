@@ -79,10 +79,8 @@ class FileBackend(FSBackend):
         logger.debug('TarAndCopyThread {0} -> {1}'.format(src, dst))
         logger.debug('TarAndCopyThread start tar')
         try:
-            f = tarfile.open(fileobj=dst, mode='w|gz')
-            f.add(src, arcname=os.path.basename(src.rstrip('/')))
-            # We have to close the file to flush out the buffers
-            f.close()
+            with tarfile.open(fileobj=dst, mode='w|gz') as f:
+                f.add(src, arcname=os.path.basename(src.rstrip('/')))
         except Exception as exc:
             logger.exception("FileBackend _tar_and_copy_dir error")
         else:

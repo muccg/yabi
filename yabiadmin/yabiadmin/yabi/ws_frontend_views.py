@@ -236,6 +236,13 @@ def backend_get_file(yabiusername, uri, is_dir=False):
     if not success:
         raise Exception("Backend file download was not successful")
 
+def filename_from_uri(uri, default='default.txt'):
+    try:
+        return uri.rstrip('/').rsplit('/', 1)[1]
+    except IndexError:
+        logger.critical('Unable to get filename from uri: %s' % uri)
+        return default
+
 @authentication_required
 def get(request):
     """ Returns the requested uri.  """
@@ -244,11 +251,7 @@ def get(request):
     logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
     uri = request.GET['uri']
 
-    try:
-        filename = uri.rsplit('/', 1)[1]
-    except IndexError:
-        logger.critical('Unable to get filename from uri: %s' % uri)
-        filename = 'default.txt'
+    filename = filename_from_uri(uri)
 
     try:
         response = StreamingHttpResponse(backend_get_file(yabiusername, uri))
@@ -271,11 +274,7 @@ def zget(request):
     logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
     uri = request.GET['uri']
 
-    try:
-        filename = uri.rstrip('/').rsplit('/', 1)[1]
-    except IndexError:
-        logger.critical('Unable to get filename from uri: %s' % uri)
-        filename = 'default.tar.gz'
+    filename = filename_from_uri(uri, default='default.tar.gz')
 
     try:
         response = StreamingHttpResponse(backend_get_file(yabiusername, uri, is_dir=True))

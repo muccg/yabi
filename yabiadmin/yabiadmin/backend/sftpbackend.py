@@ -406,36 +406,30 @@ ln -s "{0}" "{1}"
         command = 'tar -cz -C "%s" "%s"' % (parent_dir, target_dir)
 
         logger.debug("execing command: %s" % command)
-        client = self.executer.sshclient
 
-        try:
-            stdin, stdout, stderr = client.exec_command(command)
-
-            while not stdout.channel.exit_status_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [])
-                if len(rl) > 0:
-                    while stdout.channel.recv_ready():
-                        data = stdout.channel.recv(BLOCK_SIZE)
-                        outfile.write(data)
-
-                # Stdout might still have data, flush it all out
-                data = stdout.channel.recv(BLOCK_SIZE)
-                while data:
-                    outfile.write(data)
-                    data = stdout.channel.recv(BLOCK_SIZE)
-
-            exit_status = stdout.channel.exit_status
-            logger.debug("Exit status: %s", exit_status)
-            if exit_status != 0:
-                raise RetryException("Exit status %s received why trying to tarball %s" % (exit_status, remotepath))
-        except paramiko.SSHException as sshe:
-            raise RetryException(sshe, traceback.format_exc())
-        finally:
+        with self.executer.sshclient() as client:
             try:
-                if client is not None:
-                    client.close()
-            except:
-                pass
+                stdin, stdout, stderr = client.exec_command(command)
+
+                while not stdout.channel.exit_status_ready():
+                    rl, wl, xl = select.select([stdout.channel], [], [])
+                    if len(rl) > 0:
+                        while stdout.channel.recv_ready():
+                            data = stdout.channel.recv(BLOCK_SIZE)
+                            outfile.write(data)
+
+                    # Stdout might still have data, flush it all out
+                    data = stdout.channel.recv(BLOCK_SIZE)
+                    while data:
+                        outfile.write(data)
+                        data = stdout.channel.recv(BLOCK_SIZE)
+
+                exit_status = stdout.channel.exit_status
+                logger.debug("Exit status: %s", exit_status)
+                if exit_status != 0:
+                    raise RetryException("Exit status %s received why trying to tarball %s" % (exit_status, remotepath))
+            except paramiko.SSHException as sshe:
+                raise RetryException(sshe, traceback.format_exc())
 
         return exit_status == 0
 

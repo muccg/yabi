@@ -28,6 +28,7 @@ import os
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.utils import sshclient
+from contextlib import contextmanager
 import uuid
 import traceback
 import paramiko
@@ -51,11 +52,17 @@ class SSHExec(object):
     def tmp_dir(self, value):
         self._tmp_dir = value
 
-    @property
+    @contextmanager
     def sshclient(self):
         exec_scheme, exec_parts = uriparse(self.uri)
         ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
-        return ssh
+        try:
+            yield ssh
+        finally:
+            try:
+                ssh.close()
+            except:
+                pass
 
     def exec_script(self, script):
         logger.debug("SSHExex.exec_script...")
