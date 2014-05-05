@@ -265,7 +265,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
                 var schema = this.pathComponents[0].substring(0,
                     this.pathComponents[0].indexOf('://'));
-                if (schema == 'scp' || schema == 'sftp')
+                if (schema == 'scp' || schema == 'sftp' || schema == 'localfs')
                 {
                   downloadEl = document.createElement('div');
                   downloadEl.className = 'download';

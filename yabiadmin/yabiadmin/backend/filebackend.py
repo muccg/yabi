@@ -31,6 +31,7 @@ from yabiadmin.yabiengine.urihelper import uriparse
 import os
 import shutil
 import logging
+import tarfile
 import traceback
 import threading
 logger = logging.getLogger(__name__)
@@ -53,6 +54,12 @@ class FileBackend(FSBackend):
             raise FileNotFoundError(uri)
         return self._copy_file(open(parts.path, "rb"), dst)
 
+    def download_dir(self, uri, dst):
+        scheme, parts = uriparse(uri)
+        if not os.path.exists(parts.path):
+            raise FileNotFoundError(uri)
+        return self._tar_and_copy_dir(parts.path, dst)
+
     def _copy_file(self, src, dst):
         success = False
         logger.debug('CopyThread {0} -> {1}'.format(src, dst))
@@ -64,6 +71,22 @@ class FileBackend(FSBackend):
             logger.exception("FileBackend _copy_file error")
         else:
             logger.debug('CopyThread end copy')
+            success = True
+        return success
+
+    def _tar_and_copy_dir(self, src, dst):
+        success = False
+        logger.debug('TarAndCopyThread {0} -> {1}'.format(src, dst))
+        logger.debug('TarAndCopyThread start tar')
+        try:
+            f = tarfile.open(fileobj=dst, mode='w|gz')
+            f.add(src, arcname=os.path.basename(src.rstrip('/')))
+            # We have to close the file to flush out the buffers
+            f.close()
+        except Exception as exc:
+            logger.exception("FileBackend _tar_and_copy_dir error")
+        else:
+            logger.debug('TarAndCopyThread end tar')
             success = True
         return success
 
