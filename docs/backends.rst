@@ -129,7 +129,7 @@ The domain of the hostname should be set to ``amazonaws.com`` and the hostname t
 For example ``mybucket.amazonaws.com`` as the hostname will access the bucket ``mybucket`` on amazon.
 
 In setting up the credential for access to S3, your remote username is ignored, so you can place any text in here you like. You will need to 
-fill in two fields: cert, and key. Into the yabi cert field put the Amazon ACCESS ID and into the yabi key field put the Amazon SECRET KEY.
+fill in two fields: password and key. Into the yabi key field put the Amazon ACCESS ID and into the yabi password field put the Amazon SECRET KEY.
 
 OpenStack Swift Backend
 -----------------------

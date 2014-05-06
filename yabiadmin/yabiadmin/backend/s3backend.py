@@ -50,8 +50,8 @@ class S3Backend(FSBackend):
 
     backend_desc = "Amazon S3 object storage"
     backend_auth = {
-        "cert": "AWS Access Key ID",
-        "key": "AWS Secret Access Key",
+        "key": "AWS Access Key ID",
+        "password": "AWS Secret Access Key",
     }
     lcopy_supported = False
     link_supported = False
@@ -168,7 +168,8 @@ class S3Backend(FSBackend):
         return bucket_name, path
 
     def _get_connect_params(self, bucket_name):
-        _, key_id, key, _ = get_credential_data(self.cred.credential)
+        _, _, key_id, key = get_credential_data(self.cred.credential)
+
         params = { "aws_access_key_id": key_id, "aws_secret_access_key": key }
 
         # Use different boto options for e2e tests against fakes3

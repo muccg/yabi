@@ -132,7 +132,7 @@ class CredentialAdmin(AdminBase):
     search_fields = ['description', 'username', 'user__user__username']
     readonly_fields = ['security_state']
     fields = (("scheme", "description"),
-              ("username", "password"), "cert", "key",
+              ("username", "password"), "key",
               "user", "expires_on", "security_state", "caps")
 
     class Media:
