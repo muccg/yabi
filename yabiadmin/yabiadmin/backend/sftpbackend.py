@@ -54,8 +54,8 @@ class SFTPBackend(FSBackend):
     backend_desc = "SFTP remote file system"
     backend_auth = {
         "username": "Login name for remote host",
+        "password": "Can be a normal login password, passphrase for SSH key, or empty.",
         "cert": "Optional SSH private key.",
-        "key": "Can be a normal login password, passphrase for SSH key, or empty."
     }
 
     def _sftp_copy(self, host=None, port=None, credential=None,
@@ -432,5 +432,3 @@ ln -s "{0}" "{1}"
                 raise RetryException(sshe, traceback.format_exc())
 
         return exit_status == 0
-
-
