@@ -197,7 +197,7 @@ class Tool(Base):
             'job_type': self.job_type,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
-            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "hidden", "file_assignment", "output_file",
+            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring", "switch_use__description",
                                                                                 "possible_values", "default_value", "helptext", "batch_bundle_files", "use_output_filename__switch"))
         }
@@ -260,6 +260,7 @@ class ToolParameter(Base):
     switch_use = models.ForeignKey(ParameterSwitchUse)
     rank = models.IntegerField(null=True, blank=True)
     mandatory = models.BooleanField(blank=True, default=False)
+    common = models.BooleanField(blank=True, default=False, verbose_name="Commonly used")
     hidden = models.BooleanField(blank=True, default=False)
     output_file = models.BooleanField(blank=True, default=False)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
@@ -278,6 +279,7 @@ class ToolParameter(Base):
     switch_use.help_text = "The way the switch should be combined with the value."
     rank.help_text = "The order in which the switches should appear. Leave blank if order is unimportant."
     mandatory.help_text = "Select if the switch is required as input."
+    common.help_text = "Commonly used parameters will not hidden by default in the frontend."
     hidden.help_text = "Select if the switch should be hidden from users in the frontend."
     output_file.help_text = "Select if the switch is specifying an output file."
     accepted_filetypes.help_text = "The extensions of accepted filetypes for this switch."

@@ -425,7 +425,7 @@ YabiJob.prototype.toggleOptions = function() {
     }
   } else {
     this.nonMandatoryOptionsShown = true;
-    this.optionsToggleEl.innerHTML = 'hide non-mandatory options';
+    this.optionsToggleEl.innerHTML = 'hide non-mandatory and uncommon options';
     for (var bindex in this.params) {
       this.params[bindex].toggleDisplay(true);
     }
@@ -754,7 +754,7 @@ YabiJob.prototype.solidify = function(obj) {
   //generate parameter objects
   var params = this.payload.tool.parameter_list; //array
 
-  var allMandatory = true;
+  var allShown = true;
   if (Y.Lang.isArray(params)) {
     for (paramIndex in params) {
       var preloadValue = this.preloadValueFor(params[paramIndex]['switch']);
@@ -770,8 +770,8 @@ YabiJob.prototype.solidify = function(obj) {
           this.optionsEl.appendChild(paramObj.containerEl);
         }
 
-        if (paramObj.payload.mandatory !== true) {
-          allMandatory = false;
+        if (!(paramObj.payload.mandatory || paramObj.payload.common)) {
+          allShown = false;
         }
       }
     }
@@ -788,14 +788,14 @@ YabiJob.prototype.solidify = function(obj) {
         this.optionsEl.appendChild(paramObj.containerEl);
       }
 
-      if (paramObj.payload.mandatory !== true) {
-        allMandatory = false;
+      if (!(paramObj.payload.mandatory || paramObj.payload.common)) {
+        allShown = false;
       }
     }
   }
 
-  //if all params are mandatory, hide the optionsToggle div
-  if (allMandatory) {
+  //if all params are shown, hide the optionsToggle div
+  if (allShown) {
     this.optionsToggleEl.style.display = 'none';
   }
 
