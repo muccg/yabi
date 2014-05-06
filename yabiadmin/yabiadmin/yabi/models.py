@@ -197,7 +197,7 @@ class Tool(Base):
             'job_type': self.job_type,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
-            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
+            'parameter_list': list(self.toolparameter_set.order_by('fe_rank', 'id').values("id", "rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring", "switch_use__description",
                                                                                 "possible_values", "default_value", "helptext", "batch_bundle_files", "use_output_filename__switch"))
         }
@@ -259,6 +259,7 @@ class ToolParameter(Base):
     switch = models.CharField(max_length=64)
     switch_use = models.ForeignKey(ParameterSwitchUse)
     rank = models.IntegerField(null=True, blank=True)
+    fe_rank = models.IntegerField(null=True, blank=True, verbose_name="Frontend rank")
     mandatory = models.BooleanField(blank=True, default=False)
     common = models.BooleanField(blank=True, default=False, verbose_name="Commonly used")
     hidden = models.BooleanField(blank=True, default=False)
@@ -277,7 +278,8 @@ class ToolParameter(Base):
     use_output_filename = models.ForeignKey('ToolParameter', null=True, blank=True)
     switch.help_text = "The actual command line switch that should be passed to the tool i.e. -i or --input-file"
     switch_use.help_text = "The way the switch should be combined with the value."
-    rank.help_text = "The order in which the switches should appear. Leave blank if order is unimportant."
+    rank.help_text = "The order in which the switches should appear on the command line. Leave blank if order is unimportant."
+    fe_rank.help_text = "The order in which the switches should appear in the frontend. Leave blank if order is unimportant."
     mandatory.help_text = "Select if the switch is required as input."
     common.help_text = "Commonly used parameters will not hidden by default in the frontend."
     hidden.help_text = "Select if the switch should be hidden from users in the frontend."
