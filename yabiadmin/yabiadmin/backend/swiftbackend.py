@@ -12,7 +12,7 @@ import swiftclient.exceptions
 from django.conf import settings
 from .fsbackend import FSBackend
 from .exceptions import RetryException
-from .utils import get_credential_data, partition
+from .utils import partition
 from ..yabiengine.urihelper import uriparse
 
 logger = logging.getLogger(__name__)
@@ -141,13 +141,13 @@ class SwiftBackend(FSBackend):
         return self._conn
 
     def _get_auth_params(self, url):
-        user, cert, key, passwd = get_credential_data(self.cred.credential)
+        c = self.cred.credential.get_decrypted()
         return {
             "authurl": url.keystone,
             "tenant_name": url.tenant,
             "auth_version": url.auth_version,
-            "user": user,
-            "key": passwd,
+            "user": c.username,
+            "key": c.password,
         }
 
     def list_bucket(self, swift, shallow=True):

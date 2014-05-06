@@ -26,7 +26,7 @@
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.backend.utils import get_credential_data, partition
+from yabiadmin.backend.utils import partition
 from yabiadmin.yabiengine.urihelper import uriparse
 import logging
 import traceback
@@ -168,9 +168,8 @@ class S3Backend(FSBackend):
         return bucket_name, path
 
     def _get_connect_params(self, bucket_name):
-        _, _, key_id, key = get_credential_data(self.cred.credential)
-
-        params = { "aws_access_key_id": key_id, "aws_secret_access_key": key }
+        c = self.cred.credential.get_decrypted()
+        params = { "aws_access_key_id": c.key, "aws_secret_access_key": c.password }
 
         # Use different boto options for e2e tests against fakes3
         from django.conf import settings

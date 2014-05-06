@@ -38,6 +38,7 @@ from urlparse import urlunparse
 from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, \
     encrypted_block_is_legacy, any_unencrypted, any_annotated_block, DecryptException
 from yabiadmin.utils import cache_keyname
+from collections import namedtuple
 
 import logging
 from functools import reduce
@@ -591,6 +592,11 @@ class Credential(Base):
         if self.security_state == Credential.PROTECTED:
             access.cache_protected_creds(self.password, self.cert, self.key)
         return access
+
+    CredentialData = namedtuple("CredentialData", "username, password, key")
+    def get_decrypted(self):
+        decrypted = self.get_credential_access().get()
+        return self.CredentialData(self.username, decrypted['password'], decrypted['key'])
 
     def guess_backend_scheme(self):
         """
