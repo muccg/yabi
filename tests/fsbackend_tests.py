@@ -88,7 +88,6 @@ class FSBackendTests(object):
         fscreds = {
             "username": None,
             "password": None,
-            "cert": None,
             "key": None,
         }
         return hostname, backend_path, fscreds
@@ -446,9 +445,8 @@ class S3BackendTests(FSBackendTests, RequestTest):
         backend_path = "/"
         fscreds = {
             "username": "backendtests",
-            "password": "",
-            "cert": conf.aws_access_key_id,
-            "key": conf.aws_secret_access_key,
+            "password": conf.aws_secret_access_key,
+            "key": conf.aws_access_key_id,
         }
         return hostname, backend_path, fscreds
 
@@ -513,7 +511,6 @@ class SwiftBackendTests(FSBackendTests, RequestTest):
         fscreds = {
             "username": conf.swift_username,
             "password": conf.swift_password,
-            "cert": "",
             "key": "",
         }
         return hostname, backend_path, fscreds
@@ -553,7 +550,6 @@ class FileBackendTests(FSBackendTests, RequestTest):
         fscreds = {
             "username": os.environ.get("LOGNAME", "ccg-user"),
             "password": "",
-            "cert": "",
             "key": "",
         }
         return hostname, cls.backend_path, fscreds
@@ -590,7 +586,6 @@ class SFTPBackendTests(FSBackendTests, RequestTest):
         fscreds = {
             "username": logname,
             "password": password,
-            "cert": "",
             "key": key,
         }
         return hostname, cls.backend_path, fscreds

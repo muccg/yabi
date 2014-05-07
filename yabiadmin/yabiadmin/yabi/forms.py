@@ -93,7 +93,7 @@ class CredentialForm(forms.ModelForm):
         security_state = cleaned_data.get('security_state')
 
         # fields to which security_state applies, or from which it can be inferred
-        crypto_fields = ('password', 'cert', 'key')
+        crypto_fields = ('password', 'key')
         crypto_values = [cleaned_data.get(t) for t in crypto_fields]
 
         # are any of the crypto_fields set to a non-empty, non-annotated-block value?
