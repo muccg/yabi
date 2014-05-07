@@ -49,6 +49,18 @@ django.jQuery(document).ready(function($) {
             return container;
         };
 
+        var get_auth_from_class = function(auth_class) {
+            // search through caps for an auth object with the given class
+            var auth = null;
+            $.each(caps, function(scheme, cap) {
+              if (cap.auth && cap.auth["class"] === auth_class) {
+                auth = cap.auth;
+                return false;
+              }
+            });
+            return auth;
+        };
+
         // store the associated input element, div container, help element
         var fields = {};
         $.each(["username", "password", "cert", "key"], function(i, f) {
@@ -64,9 +76,9 @@ django.jQuery(document).ready(function($) {
         // selected scheme. If there are no auth field descriptions at
         // all for the scheme, then show all fields and their initial
         // help text.
-        admin.find("select#id_scheme").change(function(ev) {
-            var val = $(this).val();
-            var auth = (caps && caps[val] ? caps[val].auth : null) || null;
+        admin.find("select#id_auth_class").change(function(ev) {
+            var auth = get_auth_from_class($(this).val());
+
             $.each(fields, function(field, o) {
                 o.help.text(auth === null ? o.initial_help : auth[field] || "");
                 o.container.toggle(auth === null || auth[field] ? true : false);

@@ -598,14 +598,19 @@ class Credential(Base):
         decrypted = self.get_credential_access().get()
         return self.CredentialData(self.username, decrypted['password'], decrypted['key'])
 
-    def guess_backend_scheme(self):
+    def guess_backend_auth_class(self):
         """
-        Return a probable backend scheme based on the backends associated
-        with this credential.
+        Return a probable backend auth type based on the backends
+        associated with this credential.
         """
         backends = self.backends.annotate(scount=Count("scheme"))
         backends = backends.order_by("-scount", "created_on")[:1]
-        return backends[0].scheme if backends else ""
+        scheme = backends[0].scheme if backends else ""
+
+        # lookup scheme, return auth class
+        from ..backend import BaseBackend
+        cls = BaseBackend.get_backend_cls_for_scheme(scheme)
+        return getattr(cls, "backend_auth", {}).get("class", "") if cls else ""
 
 class Backend(Base):
     def __init__(self, *args, **kwargs):

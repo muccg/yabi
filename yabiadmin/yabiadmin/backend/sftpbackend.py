@@ -52,11 +52,7 @@ BLOCK_SIZE = 1024
 
 class SFTPBackend(FSBackend):
     backend_desc = "SFTP remote file system"
-    backend_auth = {
-        "username": "Login name for remote host",
-        "password": "Can be a normal login password, passphrase for SSH key, or empty.",
-        "cert": "Optional SSH private key.",
-    }
+    backend_auth = FSBackend.SSH_AUTH
 
     def _sftp_copy(self, host=None, port=None, credential=None,
                    localfo=None, remotepath=None, copy=None,

@@ -29,6 +29,7 @@ class SwiftBackend(FSBackend):
 
     backend_desc = "OpenStack Swift object storage"
     backend_auth = {
+        "class": "OpenStack",
         "username": "Keystone user name",
         "password": "Keystone password",
     }

@@ -59,6 +59,14 @@ class BaseBackend(object):
             shutil.rmtree(local_remnants_dir)
         os.makedirs(local_remnants_dir)
 
+    # The following backend_auth description is used by multiple backends
+    SSH_AUTH = {
+        "class": "SSH",
+        "username": "Login name for remote host",
+        "key": "Optional SSH private key.",
+        "password": "Can be a normal login password, passphrase for SSH key, or empty."
+    }
+
     _backends = []
 
     @classmethod
@@ -71,6 +79,12 @@ class BaseBackend(object):
     def get_scheme_choices(cls):
         return [(k, "%s - %s" % (k, getattr(backendcls, "backend_desc", backendcls.__name__)))
                 for k, backendcls in cls._backends]
+
+    @classmethod
+    def get_auth_class_choices(cls):
+        auths = [getattr(backendcls, "backend_auth", {}).get("class", None)
+                 for k, backendcls in cls._backends]
+        return [(c, c) for c in sorted(set(auths)) if c]
 
     @classmethod
     def get_backend_cls_for_scheme(cls, scheme, basecls=None):

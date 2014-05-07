@@ -131,7 +131,7 @@ class CredentialAdmin(AdminBase):
     actions = ['duplicate_credential','cache_credential','decache_credential']
     search_fields = ['description', 'username', 'user__user__username']
     readonly_fields = ['security_state']
-    fields = (("scheme", "description"),
+    fields = (("auth_class", "description"),
               ("username", "password"), "key",
               "user", "expires_on", "security_state", "caps")
 
@@ -141,8 +141,8 @@ class CredentialAdmin(AdminBase):
     def get_form(self, request, obj=None, **kwargs):
         form = super(CredentialAdmin, self).get_form(request, obj, **kwargs)
         from ..backend import BaseBackend
-        form.base_fields['scheme'].choices = [("", "Any")] + BaseBackend.get_scheme_choices()
-        form.base_fields['scheme'].initial = obj.guess_backend_scheme() if obj else ""
+        form.base_fields['auth_class'].choices = [("", "Any")] + BaseBackend.get_auth_class_choices()
+        form.base_fields['auth_class'].initial = obj.guess_backend_auth_class() if obj else ""
         return form
 
     def duplicate_credential(self, request, queryset):

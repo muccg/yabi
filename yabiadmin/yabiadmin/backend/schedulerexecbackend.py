@@ -14,6 +14,7 @@ class SchedulerExecBackend(ExecBackend):
     A _abstract_ backend which allows job submissions
     """
     SCHEDULER_NAME = ""
+    backend_auth = ExecBackend.SSH_AUTH
 
     def __init__(self, *args, **kwargs):
         super(SchedulerExecBackend, self).__init__(*args, **kwargs)
@@ -170,4 +171,3 @@ class SchedulerExecBackend(ExecBackend):
     def _job_aborted_response(self, result):
         self.task_logger.error("Aborted job %s for yabi task %s.",
                      self.task.remote_id, self._yabi_task_name())
-

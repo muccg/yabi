@@ -50,6 +50,7 @@ class S3Backend(FSBackend):
 
     backend_desc = "Amazon S3 object storage"
     backend_auth = {
+        "class": "AWS",
         "key": "AWS Access Key ID",
         "password": "AWS Secret Access Key",
     }
