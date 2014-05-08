@@ -69,26 +69,32 @@ class SSHExec(object):
         logger.debug('script content = {0}'.format(script))
         exec_scheme, exec_parts = uriparse(self.uri)
         ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
+        sftp = None
         try:
-            script_name = self.upload_script(ssh, script)
+            sftp = ssh.open_sftp()
+
+            script_name = self.upload_script(sftp, script)
             stdin, stdout, stderr = ssh.exec_command(script_name, bufsize=-1, timeout=None, get_pty=False)
             stdin.close()
             exit_code = stdout.channel.recv_exit_status()
             logger.debug("sshclient exec'd script OK")
+
+            self.remove_script(sftp, script_name)
 
             return exit_code, stdout.readlines(), stderr.readlines()
         except paramiko.SSHException as sshe:
             raise RetryException(sshe, traceback.format_exc())
         finally:
             try:
+                if sftp is not None:
+                    sftp.close()
                 if ssh is not None:
                     ssh.close()
             except:
                 pass
 
-    def upload_script(self, ssh, script_body):
+    def upload_script(self, sftp, script_body):
         try:
-            sftp = ssh.open_sftp()
             remote_path = self.generate_remote_script_name()
             create_remote_file(sftp, remote_path, script_body)
             make_user_executable(sftp, remote_path)
@@ -96,11 +102,13 @@ class SSHExec(object):
         except:
             logger.exception("Error while trying to upload script")
             raise
-        finally:
-            try:
-                sftp.close()
-            except:
-                pass
+
+    def remove_script(self, sftp, script_name):
+        try:
+            sftp.remove(script_name)
+        except:
+            # Don't fail, just log the error
+            logger.exception("Error while trying to delete script '%s'", script_name)
 
     def generate_remote_script_name(self):
         name = os.path.join(self.tmp_dir, "yabi-" + str(uuid.uuid4()) + ".sh")
@@ -115,3 +123,5 @@ def create_remote_file(sftp, remote_path, body):
 def make_user_executable(sftp, path):
     st = sftp.stat(path)
     sftp.chmod(path, st.st_mode | stat.S_IEXEC)
+
+
