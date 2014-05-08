@@ -34,7 +34,6 @@ import time
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.yabiengine.enginemodels import EngineTask
 from yabiadmin.backend.utils import blocking_execute
 
 logger = logging.getLogger(__name__)
@@ -45,6 +44,8 @@ EXEC_SCRIPT_PREFIX = 'yabi_lexec_'
 DEFAULT_TEMP_DIRECTORY = '/tmp'
 
 class LocalExecBackend(ExecBackend):
+    backend_desc = "Local execution"
+    backend_auth = {}
 
     def __init__(self, *args, **kwargs):
         ExecBackend.__init__(self, *args, **kwargs)
@@ -139,6 +140,7 @@ class LocalExecBackend(ExecBackend):
         kill_process(pid, with_SIGKILL=True)
 
     def is_aborting(self):
+        from ..yabiengine.enginemodels import EngineTask
         task = EngineTask.objects.get(pk=self.task.pk)
         return task.is_workflow_aborting
 

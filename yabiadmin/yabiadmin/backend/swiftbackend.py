@@ -11,8 +11,8 @@ import swiftclient.client
 import swiftclient.exceptions
 from django.conf import settings
 from .fsbackend import FSBackend
-from .exceptions import NotSupportedError, RetryException
-from .utils import get_credential_data, partition
+from .exceptions import RetryException
+from .utils import partition
 from ..yabiengine.urihelper import uriparse
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,15 @@ class SwiftBackend(FSBackend):
 
     fixme: why is set_cred() only done on mkdir and ls?
     """
+
+    backend_desc = "OpenStack Swift object storage"
+    backend_auth = {
+        "class": "OpenStack",
+        "username": "Keystone user name",
+        "password": "Keystone password",
+    }
+    lcopy_supported = False
+    link_supported = False
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)
@@ -133,13 +142,13 @@ class SwiftBackend(FSBackend):
         return self._conn
 
     def _get_auth_params(self, url):
-        user, cert, key, passwd = get_credential_data(self.cred.credential)
+        c = self.cred.credential.get_decrypted()
         return {
             "authurl": url.keystone,
             "tenant_name": url.tenant,
             "auth_version": url.auth_version,
-            "user": user,
-            "key": passwd,
+            "user": c.username,
+            "key": c.password,
         }
 
     def list_bucket(self, swift, shallow=True):
@@ -377,9 +386,3 @@ class SwiftBackend(FSBackend):
             upload_manifest(swift.bucket, swift.prefix)
 
         return True
-
-    def local_copy(self, source, destination):
-        raise NotSupportedError()
-
-    def symbolic_link(self, source, destination):
-        raise NotSupportedError()

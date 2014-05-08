@@ -31,6 +31,7 @@ from yabiadmin.yabiengine.urihelper import uriparse
 import os
 import shutil
 import logging
+import tarfile
 import traceback
 import threading
 logger = logging.getLogger(__name__)
@@ -40,6 +41,9 @@ LS_PATH = '/bin/ls'
 LS_TIME_STYLE = r"+%b %d  %Y"
 
 class FileBackend(FSBackend):
+    backend_desc = "File system"
+    backend_auth = { }
+
     def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)
         return self._copy_file(src, open(parts.path, "wb"))
@@ -49,6 +53,12 @@ class FileBackend(FSBackend):
         if not os.path.exists(parts.path):
             raise FileNotFoundError(uri)
         return self._copy_file(open(parts.path, "rb"), dst)
+
+    def download_dir(self, uri, dst):
+        scheme, parts = uriparse(uri)
+        if not os.path.exists(parts.path):
+            raise FileNotFoundError(uri)
+        return self._tar_and_copy_dir(parts.path, dst)
 
     def _copy_file(self, src, dst):
         success = False
@@ -61,6 +71,20 @@ class FileBackend(FSBackend):
             logger.exception("FileBackend _copy_file error")
         else:
             logger.debug('CopyThread end copy')
+            success = True
+        return success
+
+    def _tar_and_copy_dir(self, src, dst):
+        success = False
+        logger.debug('TarAndCopyThread {0} -> {1}'.format(src, dst))
+        logger.debug('TarAndCopyThread start tar')
+        try:
+            with tarfile.open(fileobj=dst, mode='w|gz') as f:
+                f.add(src, arcname=os.path.basename(src.rstrip('/')))
+        except Exception as exc:
+            logger.exception("FileBackend _tar_and_copy_dir error")
+        else:
+            logger.debug('TarAndCopyThread end tar')
             success = True
         return success
 

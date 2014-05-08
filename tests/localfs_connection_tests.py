@@ -35,9 +35,12 @@ class LocalfsFileTests(RequestTest):
         admin.destroy_localfs_backend()
         RequestTest.tearDown(self)
 
-    def build_file_archive(self, base='/tmp/yabi-localfs-test'):
+    def build_file_archive(self, base='/tmp/yabi-localfs-test', include_parent_dir=False):
         """Builds a test directory nested full of files and directories to test archive stuff"""
         # make some /tmp file structures
+        TOP_DIR = "."
+        if include_parent_dir:
+            TOP_DIR = "yabi-localfs-test"
         try:
             shutil.rmtree(base)
         except OSError as ose:
@@ -52,16 +55,17 @@ class LocalfsFileTests(RequestTest):
                     "dir2/dir2-2"
                 ]
 
-        dirstruct = ["./"]
+        dirstruct = [TOP_DIR + "/"]
 
         for d in dirs:
-            os.mkdir(os.path.join(base,d))
-            dirstruct.append(os.path.join(".",d)+"/")
+            current_dir = os.path.join(base, d)
+            os.mkdir(current_dir)
+            dirstruct.append(os.path.join(TOP_DIR,d) + "/")
 
             # bundle some random files into these dirs
             for filename in [ "file1.txt", "file2.dat", "file3.bing" ]:
-                dirstruct.append(os.path.join(".",d,filename))
-                with open(os.path.join(base,dirstruct[-1]), 'wb') as fh:
+                dirstruct.append(os.path.join(TOP_DIR, d, filename))
+                with open(os.path.join(current_dir, filename), 'wb') as fh:
                     for num in range(20):
                         fh.write( make_random_string() )
 
@@ -104,15 +108,13 @@ class LocalfsFileTests(RequestTest):
         # clean up
         shutil.rmtree(basedir)
 
-    @unittest.skip
     def test_localfs_zget(self):
         # make some /tmp file structures
-        dirs = self.build_file_archive('/tmp/yabi-localfs-test/')
+        dirs = self.build_file_archive('/tmp/yabi-localfs-test/', include_parent_dir=True)
 
         payload = {
             'yabiusername':conf.yabiusername,
-            'uri':  get_localfs_server()
-            #'uri':TEST_LOCALFS_SERVER,
+            'uri':TEST_LOCALFS_SERVER,
         }
 
         r = self.session.get(self.fscmd("zget"), params=payload, stream=True)
@@ -122,10 +124,9 @@ class LocalfsFileTests(RequestTest):
         detar = subprocess.Popen(["tar","-tz"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
         # get the payload and pipe it into tar
-        rawdata = r.raw
-        stdout, stderr = detar.communicate(rawdata)
+        stdout, stderr = detar.communicate(r.raw.read())
 
-        detar_result = [(X[:-1] if X[-1]=='\n' else X) for X in stdout.split('\n')]
+        detar_result = [X.rstrip() for X in stdout.split('\n') if X.rstrip() != '']
 
         self.assertEqual(detar.returncode, 0, "detar of returned result failed exit code: %d"%(detar.returncode))
 

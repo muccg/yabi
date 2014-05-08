@@ -50,6 +50,11 @@ def get_file(yabiusername, uri):
     return FSBackend.remote_file_download(yabiusername, uri)
 
 
+def get_zipped_dir(yabiusername, uri):
+    from yabiadmin.backend.fsbackend import FSBackend
+    return FSBackend.remote_file_download(yabiusername, uri, is_dir=True)
+
+
 def copy_file(yabiusername, src_uri, dst_uri):
     """Remote copy a file between two backends"""
     from yabiadmin.backend.fsbackend import FSBackend

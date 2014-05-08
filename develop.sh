@@ -193,8 +193,16 @@ do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
     NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
-    IGNORES="-a !external_service -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
     TEST_CASES="tests yabiadmin/yabiadmin"
+    TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
+
+    # Some tests access external services defined in a config file.
+    if [ -f "${TEST_CONFIG_FILE}" ]; then
+        export TEST_CONFIG_FILE
+    else
+        IGNORES="${IGNORES} -a !external_service"
+    fi
 
     # Runs the end-to-end tests in the Yabitests project
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
@@ -224,7 +232,7 @@ dropdb() {
         mysql -v -uroot -e "create database test_yabi default charset=UTF8 default collate utf8_bin;" || true
         ;;
     test_postgresql)
-        psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
+        psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
         ;;
     dev_mysql)
 	echo "Drop the dev database manually:"
@@ -233,7 +241,7 @@ dropdb() {
         ;;
     dev_postgresql)
 	echo "Drop the dev database manually:"
-        echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabiapp createdb;\" template1 && psql -aeE -U yabiapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabiapp -c \"create database dev_yabi;\" template1"
+        echo "psql -aeE -U postgres -c \"alter user yabiapp createdb;\" template1 && psql -aeE -U yabiapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabiapp -c \"create database dev_yabi;\" template1"
         exit 1
         ;;
     *)
@@ -325,6 +333,10 @@ installyabi() {
     which virtualenv-2.7 > /dev/null
 
     echo "Install yabiadmin"
+    if test -e /usr/pgsql-9.3/bin; then
+        export PATH=/usr/pgsql-9.3/bin:$PATH
+        echo $PATH
+    fi
     virtualenv-2.7 ${VIRTUALENV}
     ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
     ${VIRTUALENV}/bin/pip --version

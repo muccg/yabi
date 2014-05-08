@@ -26,7 +26,7 @@
 ### END COPYRIGHT ###
 import os
 from django.utils import simplejson as json
-from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError, NotSupportedError
 from yabiadmin.backend.utils import create_fifo
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
@@ -61,32 +61,8 @@ def stream_watcher(identifier, stream):
 
 
 class FSBackend(BaseBackend):
-
-    @staticmethod
-    def create_backend_for_scheme(fsscheme):
-        backend = None
-
-        if fsscheme == 'sftp' or fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif fsscheme == 'file' or fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif fsscheme == 'select' or fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        elif fsscheme == 's3':
-            from yabiadmin.backend.s3backend import S3Backend
-            backend = S3Backend()
-
-        elif fsscheme == 'swift':
-            from yabiadmin.backend.swiftbackend import SwiftBackend
-            backend = SwiftBackend()
-
-        return backend
+    lcopy_supported = True
+    link_supported = True
 
     @staticmethod
     def factory(task):
@@ -227,6 +203,10 @@ class FSBackend(BaseBackend):
         logger.debug("upload_file %s -> %s", fifo_name, uri)
         return self._fifo_thread(self.upload_file, uri, fifo_name, "rb")
 
+    def remote_dir_to_fifo(self, uri, fifo_name):
+        logger.debug("download dir %s <- %s", fifo_name, uri)
+        return self._fifo_thread(self.download_dir, uri, fifo_name, "wb")
+
     def remote_to_fifo(self, uri, fifo_name):
         logger.debug("download_file %s <- %s", fifo_name, uri)
         return self._fifo_thread(self.download_file, uri, fifo_name, "wb")
@@ -237,8 +217,11 @@ class FSBackend(BaseBackend):
     def download_file(self, uri, fifo):
         raise NotImplementedError()
 
+    def download_dir(self, uri, fifo):
+        raise NotImplementedError()
+
     @staticmethod
-    def remote_file_download(yabiusername, uri):
+    def remote_file_download(yabiusername, uri, is_dir=False):
         """Use a local fifo to download a remote file"""
         logger.debug('{0} -> local fifo'.format(uri))
 
@@ -248,7 +231,10 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_download_' + yabiusername + '_' + parts.hostname)
-            thread, queue = backend.remote_to_fifo(uri, fifo)
+            if is_dir:
+                thread, queue = backend.remote_dir_to_fifo(uri, fifo)
+            else:
+                thread, queue = backend.remote_to_fifo(uri, fifo)
 
             infile = open(fifo, "rb")
             try:
@@ -448,15 +434,16 @@ class FSBackend(BaseBackend):
         raise NotImplementedError("")
 
     def local_copy(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def local_copy_recursive(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def symbolic_link(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     @staticmethod
     def format_iso8601_date(iso8601_date):
         date = dateutil.parser.parse(iso8601_date)
         return date.strftime("%a, %d %b %Y %H:%M:%S")
+

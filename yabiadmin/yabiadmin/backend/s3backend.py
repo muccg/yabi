@@ -25,8 +25,8 @@
 #
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
-from yabiadmin.backend.exceptions import NotSupportedError, RetryException
-from yabiadmin.backend.utils import get_credential_data, partition
+from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.utils import partition
 from yabiadmin.yabiengine.urihelper import uriparse
 import logging
 import traceback
@@ -47,6 +47,15 @@ class S3Backend(FSBackend):
     A key-value storage backend which uses Amazon's S3 object storage
     service through the boto package.
     """
+
+    backend_desc = "Amazon S3 object storage"
+    backend_auth = {
+        "class": "AWS",
+        "key": "AWS Access Key ID",
+        "password": "AWS Secret Access Key",
+    }
+    lcopy_supported = False
+    link_supported = False
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)
@@ -148,12 +157,6 @@ class S3Backend(FSBackend):
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())
 
-    def local_copy(self, source, destination):
-        raise NotSupportedError()
-
-    def symbolic_link(self, source, destination):
-        raise NotSupportedError()
-
     # Implementation
 
     def parse_s3_uri(self, uri):
@@ -166,8 +169,8 @@ class S3Backend(FSBackend):
         return bucket_name, path
 
     def _get_connect_params(self, bucket_name):
-        _, key_id, key, _ = get_credential_data(self.cred.credential)
-        params = { "aws_access_key_id": key_id, "aws_secret_access_key": key }
+        c = self.cred.credential.get_decrypted()
+        params = { "aws_access_key_id": c.key, "aws_secret_access_key": c.password }
 
         # Use different boto options for e2e tests against fakes3
         from django.conf import settings

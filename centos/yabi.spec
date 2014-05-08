@@ -4,8 +4,8 @@
 %define pyver 27
 %define pybasever 2.7
 
-%define version 7.2.2
-%define unmangled_version 7.2.2
+%define version 7.2.3
+%define unmangled_version 7.2.3
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
@@ -204,7 +204,10 @@ if [ "$1" = "0" ]; then
 fi
 
 %postun admin
-/usr/sbin/userdel celery
+if [ "$1" = "0" ]; then
+    # clean up celery user, unless the uninstall is due to an upgrade
+    /usr/sbin/userdel celery
+fi
 
 %files admin
 %defattr(-,apache,apache,-)
