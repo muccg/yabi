@@ -231,7 +231,7 @@ def sshclient(hostname, port, credential):
                           compress=False,
                           sock=None)
 
-        if key:
+        if c.key:
             private_key = create_paramiko_pkey(c.key, c.password)
             connect(pkey=private_key)
         else:
