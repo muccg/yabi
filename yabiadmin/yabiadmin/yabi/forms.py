@@ -30,6 +30,7 @@ from django.contrib import admin
 from django.utils import simplejson as json
 from yabiadmin.yabi.models import *
 from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
+from django.core.exceptions import ValidationError
 
 def get_backend_caps():
     from ..backend import BaseBackend
@@ -188,6 +189,16 @@ class ToolParameterForm(forms.ModelForm):
                 self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object)
             else:
                 self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object).exclude(pk=tool_param.pk)
+
+    def clean_possible_values(self):
+        possible_values = self.cleaned_data['possible_values']
+        if possible_values.strip() == '':
+            return ''
+        try:
+            json.loads(possible_values)
+        except ValueError as e:
+            raise ValidationError('Not valid JSON')
+        return possible_values
 
 
 class ToolOutputExtensionForm(forms.ModelForm):
