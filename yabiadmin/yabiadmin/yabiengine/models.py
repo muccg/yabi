@@ -99,12 +99,6 @@ class Workflow(models.Model, Editable, Status):
     def summary_url(self):
         return ('workflow_summary', (), {'workflow_id': self.id})
 
-    def summary_link(self):
-        return '<a href="%s">Summary</a>' % self.summary_url()
-
-    summary_link.short_description = 'Summary'
-    summary_link.allow_tags = True
-
     def delete_cascade(self):
         tags = [t.tag for t in self.workflowtag_set.all()]
         self.delete()
