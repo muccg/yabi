@@ -14,7 +14,6 @@
 # Variables used for yabiadmin django app
 %define installdir %{webapps}/%{webappname}
 %define buildinstalldir %{buildroot}/%{installdir}
-%define settingsdir %{buildinstalldir}/defaultsettings
 %define staticdir %{buildinstalldir}/static
 %define logdir %{buildroot}/var/log/%{webappname}
 %define scratchdir %{buildroot}/var/lib/%{webappname}/scratch
@@ -71,7 +70,7 @@ fi
 
 %install
 
-for directory in "%{settingsdir} %{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir}"; do
+for directory in "%{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir}"; do
     mkdir -p $directory;
 done;
 
@@ -120,12 +119,10 @@ rm %{buildinstalldir}/bin/python*
 
 # Create symlinks under install directory to real persistent data directories
 APP_SETTINGS_FILE=`find %{buildinstalldir} -path "*/%{webappname}/settings.py" | sed s:^%{buildinstalldir}/::`
-VENV_LIB_DIR=$(dirname `dirname ${APP_SETTINGS_FILE}`)
+APP_PACKAGE_DIR=`dirname ${APP_SETTINGS_FILE}`
+VENV_LIB_DIR=`dirname ${APP_PACKAGE_DIR}`
 
-# Create settings symlink so we can run collectstatic with the default settings
-touch %{settingsdir}/__init__.py
-ln -fsT ../${APP_SETTINGS_FILE} %{settingsdir}/%{webappname}.py
-ln -fsT %{installdir}/defaultsettings %{buildinstalldir}/${VENV_LIB_DIR}/defaultsettings
+# Create static files symlink within module directory
 ln -fsT %{installdir}/static %{buildinstalldir}/${VENV_LIB_DIR}/static
 
 # Create symlinks under install directory to real persistent data directories
@@ -151,6 +148,11 @@ install -m 0755 -D init_scripts/centos/celery-flower.init %{buildroot}/etc/init.
 # make dirs for celery
 mkdir -p %{buildroot}/var/log/celery
 mkdir -p %{buildroot}/var/run/celery
+
+# Install prodsettings conf file to /etc, and replace with symlink
+install --mode=0600 -D ../centos/yabiadmin.conf.example %{buildroot}/etc/yabiadmin/yabiadmin.conf
+install --mode=0600 -D yabiadmin/prodsettings.py %{buildroot}/etc/yabiadmin/settings.py
+ln -sfT /etc/yabiadmin/settings.py %{buildinstalldir}/${APP_PACKAGE_DIR}/prodsettings.py
 
 ##############################
 # yabi-shell
@@ -221,6 +223,9 @@ fi
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/default/celeryd
 %attr(-,root,,root) /etc/init.d/celery-flower
+%attr(710,root,apache) /etc/yabiadmin
+%config(noreplace) /etc/yabiadmin/settings.py
+%config(noreplace) /etc/yabiadmin/yabiadmin.conf
 
 %files shell
 %defattr(-,root,root,-)

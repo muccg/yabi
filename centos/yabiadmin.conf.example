@@ -1,0 +1,45 @@
+# Config for Yabi web application.
+# You can also edit /etc/yabiadmin/settings.py.
+
+# database options
+DBTYPE=pgsql
+DBNAME=yabiadmin
+DBUSER=yabiapp
+DBPASS=yabiapp
+# DBSERVER=
+# DBPORT=
+
+# Optional location URL for memcached.
+# https://docs.djangoproject.com/en/1.6/ref/settings.html#location
+# MEMCACHE=
+
+# Make this unique, and don't share it with anybody. Can be generated
+# by http://www.miniwebtool.com/django-secret-key-generator/
+SECRET_KEY=set_this
+
+# Set this if running behind a reverse proxy.
+# See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
+ALLOWED_HOSTS=*
+
+SERVER_EMAIL=apache@localhost
+EMAIL_HOST=127.0.0.1
+EMAIL_PORT=25
+# EMAIL_HOST_USER=
+# EMAIL_HOST_PASSWORD=
+
+# where error messages are sent
+ALERT_EMAIL=root@localhost
+
+# the "From" address on e-mail sent by mastr-ms
+RETURN_EMAIL=noreply@ccg_yabiadmin_prod
+
+# Subject-line prefix for e-mail messages from Yabi
+# https://docs.djangoproject.com/en/1.6/ref/settings/#email-subject-prefix
+EMAIL_SUBJECT_PREFIX="PROD: "
+
+# Celery limits
+CELERYD_MAX_TASKS_PER_CHILD=5000
+
+# Specific path to queuing system binaries, if not in the system PATH
+# TORQUE_PATH=/opt/torque/2.3.13/bin
+# SGE_PATH=/opt/sge6/bin/linux-x64
