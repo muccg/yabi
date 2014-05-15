@@ -394,7 +394,7 @@ ln -s "{0}" "{1}"
         exit_code, stdout, stderr = self.executer.exec_script(cmd)
         if exit_code > 0 or stderr:
             raise RuntimeError("Couldn't symlink %s to %s. Exit code: %s. STDERR:\n%s" % (
-                src, dest, exit_code, stderr()))
+                src, dest, exit_code, stderr))
         return True
 
     def download_dir_as_tarball(self, remotepath, outfile):
