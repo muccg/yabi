@@ -70,9 +70,9 @@ mysql_requires = [
 ]
 
 dependency_links = [
+    'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.2.0.tar.gz',
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-webservices-0.1.2.tar.gz',
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-introspect-0.1.2.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-django-utils-0.2.0.tar.gz',
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.3.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
