@@ -2,7 +2,7 @@ import os
 
 os.environ.update({
     "DBTYPE": "pgsql",
-    "DBNAME": "yabiadmin",
+    "DBNAME": "test_yabi",
     "DBUSER": "yabiapp",
     "DBPASS": "yabiapp",
     # some tests expect these exact paths
