@@ -1,15 +1,15 @@
-from yabiadmin.settings import *
+import os
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': 'yabiapp',
-        'NAME': 'test_yabi',
-        'PASSWORD': 'yabiapp',
-        'HOST': 'localhost',
-        'PORT': '',
-        'OPTIONS': {}
-    }
-}
+os.environ.update({
+    "DBTYPE": "pgsql",
+    "DBNAME": "yabiadmin",
+    "DBUSER": "yabiapp",
+    "DBPASS": "yabiapp",
+    # some tests expect these exact paths
+    "TORQUE_PATH": "/opt/torque/2.3.13/bin",
+    "SGE_PATH": "/opt/sge6/bin/linux-x64",
+})
+
+from yabiadmin.settings import *
 
 SWIFT_BACKEND_SEGMENT_SIZE = 1234567  # approx 1MB segments just for testing
