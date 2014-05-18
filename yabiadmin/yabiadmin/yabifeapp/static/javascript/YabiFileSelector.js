@@ -684,6 +684,15 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
       };
 
 
+      YabiFileSelector.prototype.indexOfFile = function(file) {
+        for (var index in this.selectedFiles) {
+          if (this.selectedFiles[index].isEqual(file)) {
+            return index;
+          }
+        }
+        return -1;
+      };
+
       /**
        * selectFile
        *
@@ -691,11 +700,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        */
       YabiFileSelector.prototype.selectFile = function(file) {
         //duplicate detection
-        for (var index in this.selectedFiles) {
-          if (this.selectedFiles[index].isEqual(file)) {
-            return;
-          }
-        }
+        if (this.indexOfFile(file) >= 0) return;
 
         this.selectedFiles.push(file);
 
