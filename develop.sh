@@ -212,7 +212,9 @@ jslint() {
 do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
-    NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
+    XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
+    COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
+    NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
     IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -I test(mysql|postgresql)settings.py"
     TEST_CASES="tests yabiadmin/yabiadmin"
     TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
@@ -228,19 +230,20 @@ do_nosetests() {
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
     ${NOSETESTS} ${IGNORES} ${TEST_CASES}
 
-    # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
-    # ${NOSETESTS} tests.simple_tool_tests
-    # ${NOSETESTS} tests.s3_connection_tests
-    # ${NOSETESTS} tests.ssh_tests
-    # ${NOSETESTS} tests.sshpbspro_tests
-    # ${NOSETESTS} tests.sshtorque_tests
-    # ${NOSETESTS} tests.backend_execution_restriction_tests
-    # ${NOSETESTS} tests.localfs_connection_tests
-    # ${NOSETESTS} tests.rewalk_tests
     # ${NOSETESTS} tests.file_transfer_tests
-    # ${NOSETESTS} tests.ssh_tests
-    # ${NOSETESTS} tests.idempotency_tests
     # ${NOSETESTS} tests.fsbackend_tests
+    # ${NOSETESTS} tests.idempotency_tests
+    # ${NOSETESTS} tests.localfs_connection_tests
+    # ${NOSETESTS} tests.ls_tests
+    # ${NOSETESTS} tests.no_setup_tests
+    # ${NOSETESTS} tests.qbaseexec_command_tests
+    # ${NOSETESTS} tests.rewalk_tests
+    # ${NOSETESTS} tests.s3_connection_tests
+    # ${NOSETESTS} tests.simple_tool_tests
+    # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
+    # ${NOSETESTS} tests.sshpbspro_tests
+    # ${NOSETESTS} tests.ssh_tests
+    # ${NOSETESTS} tests.sshtorque_tests
 }
 
 
