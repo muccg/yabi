@@ -19,8 +19,8 @@ AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
-PIP_OPTS='--download-cache ~/.pip/cache --process-dependency-links'
-
+PIP_OPTS="--download-cache ~/.pip/cache"
+PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
 
 if [ "${YABI_CONFIG}" = "" ]; then
     YABI_CONFIG="dev_postgresql"
@@ -361,15 +361,14 @@ installyabi() {
         echo $PATH
     fi
     virtualenv-2.7 ${VIRTUALENV}
-    ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
-    ${VIRTUALENV}/bin/pip --version
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
     pushd yabiadmin
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .[dev,mysql,postgresql,tests]
+    ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .[dev,mysql,postgresql,tests]
     popd
 
     echo "Install yabish"
     pushd yabish
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .
+    ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .
     popd
 }
 
