@@ -181,6 +181,7 @@ DATABASES = {
     }
 }
 
+# Add special connection option for MySQL
 if env.get("dbtype", "") == "mysql":
     DATABASES['default']['OPTIONS'] = \
         {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'}

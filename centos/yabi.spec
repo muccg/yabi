@@ -224,6 +224,8 @@ fi
 %attr(-,root,,root) /etc/default/celeryd
 %attr(-,root,,root) /etc/init.d/celery-flower
 %attr(710,root,apache) /etc/yabiadmin
+%attr(640,root,apache) /etc/yabiadmin/settings.py
+%attr(640,root,apache) /etc/yabiadmin/yabiadmin.conf
 %config(noreplace) /etc/yabiadmin/settings.py
 %config(noreplace) /etc/yabiadmin/yabiadmin.conf
 
