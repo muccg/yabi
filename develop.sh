@@ -193,7 +193,7 @@ do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
     NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
-    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -I test(mysql|postgresql)settings.py"
     TEST_CASES="tests yabiadmin/yabiadmin"
     TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
 

@@ -846,10 +846,6 @@ YUI().use(
         function unselectFileIfInvalid(param, fileObj) {
           var lsURL = appURL + 'ws/fs/ls?uri=' + escape(fileObj.toString());
 
-          if (lsURL.indexOf('AA') > 0 || lsURL.indexOf('dircolors') > 0) {
-            lsURL += 'x';
-          }
-
           function onSuccess(transId, response) {
             var json = null;
             var fileIdx;
