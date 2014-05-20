@@ -181,6 +181,10 @@ DATABASES = {
     }
 }
 
+if env.get("dbtype", "") == "mysql":
+    DATABASES['default']['OPTIONS'] = \
+        {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'}
+
 # Make this unique, and don't share it with anybody.
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env.get("secret_key", "changeme")
@@ -296,6 +300,12 @@ SCHEDULER_COMMAND_PATHS = {
                "qdel": os.path.join(sge_path, "qdel"),
                "qacct": os.path.join(sge_path, "qacct")},
 }
+
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+
+# Any settings that should be changed for just for testing runs
+if env.get("use_testing_settings", False):
+    SWIFT_BACKEND_SEGMENT_SIZE = 1234567  # approx 1MB segments
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 

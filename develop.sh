@@ -44,18 +44,38 @@ project_needed() {
 }
 
 settings() {
+    export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+
     case ${YABI_CONFIG} in
     test_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.testmysqlsettings"
+        export DBTYPE=mysql
+        export DBNAME=test_yabi
+        export DBUSER=root
+        export DBPASS=""
+        export TORQUE_PATH=/opt/torque/2.3.13/bin
+        export SGE_PATH=/opt/sge6/bin/linux-x64
+        export USE_TESTING_SETTINGS=1
         ;;
     test_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.testpostgresqlsettings"
+        export DBTYPE=pgsql
+        export DBNAME=test_yabi
+        export DBUSER=yabiapp
+        export DBPASS=yabiapp
+        export TORQUE_PATH=/opt/torque/2.3.13/bin
+        export SGE_PATH=/opt/sge6/bin/linux-x64
+        export USE_TESTING_SETTINGS=1
         ;;
     dev_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.mysqlsettings"
+        export DBTYPE=mysql
+        export DBNAME=dev_yabi
+        export DBUSER=root
+        export DBPASS=""
         ;;
     dev_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+        export DBTYPE=pgsql
+        export DBNAME=dev_yabi
+        export DBUSER=yabiapp
+        export DBPASS=yabiapp
         ;;
     *)
         echo "No YABI_CONFIG set, exiting"
