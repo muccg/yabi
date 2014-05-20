@@ -150,8 +150,8 @@ mkdir -p %{buildroot}/var/log/celery
 mkdir -p %{buildroot}/var/run/celery
 
 # Install prodsettings conf file to /etc, and replace with symlink
-install --mode=0600 -D ../centos/yabiadmin.conf.example %{buildroot}/etc/yabiadmin/yabiadmin.conf
-install --mode=0600 -D yabiadmin/prodsettings.py %{buildroot}/etc/yabiadmin/settings.py
+install --mode=0640 -D ../centos/yabiadmin.conf.example %{buildroot}/etc/yabiadmin/yabiadmin.conf
+install --mode=0640 -D yabiadmin/prodsettings.py %{buildroot}/etc/yabiadmin/settings.py
 ln -sfT /etc/yabiadmin/settings.py %{buildinstalldir}/${APP_PACKAGE_DIR}/prodsettings.py
 
 ##############################
