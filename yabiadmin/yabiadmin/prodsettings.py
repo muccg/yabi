@@ -12,8 +12,3 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = True
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
-
-try:
-    from localsettings import *
-except ImportError, e:
-    pass
