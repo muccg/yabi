@@ -14,7 +14,7 @@ a first choice over MySQL or other databases.
 Dependencies
 ------------
 
-    o python (we are currently using 2.6)
+    o python (we are currently using 2.7.6)
     o Gcc
     o Mercurial
     o Virtualenv
