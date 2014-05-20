@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 import os
-import os.path
 import sys
 import pwd
-
-# Production centos django admin script
 
 production_user = "apache"
 
