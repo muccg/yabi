@@ -864,9 +864,6 @@ YUI().use(
           var cfg = {
             on: {
               success: onSuccess,
-              // TODO LS on SFTP backends return 500
-              // remove failure handler when that is fixed
-              failure: onSuccess
             }
           };
           Y.io(lsURL, cfg);
@@ -881,7 +878,6 @@ YUI().use(
 
             param.fileSelector.selectFile(fileObj);
             unselectFileIfInvalid(param, fileObj);
-            //setFileIfExists(param, fileObj);
           }
         }
 
