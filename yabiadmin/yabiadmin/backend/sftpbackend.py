@@ -27,7 +27,7 @@
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.sshexec import SSHExec
 from yabiadmin.backend.backend import fs_credential
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.utils import sshclient
 from yabiadmin.constants import ENVVAR_FILENAME
@@ -222,6 +222,8 @@ class SFTPBackend(FSBackend):
             output = {}
             output[parts.path] = results
             return output
+        except FileNotFoundError as fnfe:
+            return {}
         except Exception as exc:
             logger.exception("ls: %s" % uri)
             raise RetryException(exc, traceback.format_exc())
@@ -237,8 +239,12 @@ class SFTPBackend(FSBackend):
 
         def is_dir(path):
             import stat
-            sftp_stat_result = sftp.stat(path)
-            return stat.S_ISDIR(sftp_stat_result.st_mode)
+            try:
+                sftp_stat_result = sftp.stat(path)
+                return stat.S_ISDIR(sftp_stat_result.st_mode)
+            except IOError as e:
+                if e.errno == errno.ENOENT:
+                    raise FileNotFoundError()
 
         if is_dir(path):
             dirs, files = self._do_ls_dir(sftp, path)

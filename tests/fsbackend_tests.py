@@ -194,12 +194,8 @@ class FSBackendTests(object):
 
     def test_ls_dir_no_exist(self):
         uri, path = self.get_uri("this_directory_no_exist/")
-        if self.scheme == "sftp":
-            # fixme: in SFTP we are expecting 500 internal server error ... pretty lame
-            ls = self.getcmd("ls", uri, isjson=False, expected_status=500)
-        else:
-            ls = self.getcmd("ls", uri)
-            self.assertEqual(ls, {})
+        ls = self.getcmd("ls", uri)
+        self.assertEqual(ls, {})
 
     def test_mkdir_ls_rmdir(self):
         path = "test_mkdir_ls_rmdir_%s" % os.getpid()
@@ -268,15 +264,6 @@ class FSBackendTests(object):
 
         self.getcmdok("rm", diruri)
 
-        if self.scheme == "sftp":
-            # fixme: 500 internal server error isn't so good
-            ls = self.getcmd("ls", diruri, isjson=False, expected_status=500)
-        else:
-            ls = self.getcmd("ls", diruri)
-
-        # fixme: this kills the swift and s3 backend tests
-        if self.scheme not in ("swift", "s3", "sftp"):
-            self.assertEqual(ls, {})
 
     def test_large_upload(self):
         baseuri, basepath = self.get_uri("")
@@ -457,6 +444,12 @@ class S3BackendTests(FSBackendTests, RequestTest):
     def skip_if_fakes3(self, msg=None):
         if self.hostname == "fakes3":
             self.skipTest(msg or "test doesn't work with fakes3")
+
+    def test_ls(self):
+        self.skipTest("doesn't work for s3")
+
+    def test_ls_dir(self):
+        self.skipTest("doesn't work for s3")
 
     def test_ls_dir_no_exist(self):
         self.skipTest("doesn't work for s3")

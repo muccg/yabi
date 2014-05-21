@@ -92,18 +92,17 @@ class S3Backend(FSBackend):
         is_empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
         is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
 
-        def filter_clause(item):
-            return is_item_matching_name(item) and not is_empty_key_for_dir(item)
-
         try:
             bucket = self.bucket(bucket_name)
             keys_and_prefixes = ifilter(
-                    filter_clause,
+                    is_item_matching_name,
                     bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
                     delimiter=DELIMITER))
 
             # Keys correspond to files, prefixes to directories
-            keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
+            allkeys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
+            empty_dir_key, keys = partition(is_empty_key_for_dir, allkeys)
+
 
             files = [(self.basename(k.name), k.size, self.format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
             dirs = [(self.basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
@@ -119,10 +118,17 @@ class S3Backend(FSBackend):
             # This code is not executed by Celery tasks
             raise RetryException(e, traceback.format_exc())
 
-        return {path: {
-            'files': files,
-            'directories': dirs
-        }}
+        is_dir = len(list(empty_dir_key)) != 0
+        if len(files) == 0 and len(dirs) == 0 and not is_dir:
+            result = {}
+        else:
+            result = {
+                path: {
+                    "files": files,
+                    "directories": dirs,
+                }}
+
+        return result
 
     def rm(self, uri):
         bucket_name, path = self.parse_s3_uri(uri)
