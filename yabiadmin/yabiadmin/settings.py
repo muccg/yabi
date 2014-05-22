@@ -173,7 +173,7 @@ MAKO_MODULENAME_CALLABLE = ''
 DATABASES = {
     'default': {
         'ENGINE': env.get_db_engine("dbtype", "pgsql"),
-        'NAME': env.get("dbname", "yabiadmin"),
+        'NAME': env.get("dbname", "dev_yabi"),
         'USER': env.get("dbuser", "yabiapp"),
         'PASSWORD': env.get("dbpass", "yabiapp"),
         'HOST': env.get("dbserver", ""),
