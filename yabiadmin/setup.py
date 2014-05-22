@@ -34,7 +34,7 @@ install_requires = [
     'python-keystoneclient==0.6.0',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
-    'six>=1.4,<1.5',
+    'six>=1.5,<1.6',
     'flower>=0.5',
 ]
 
