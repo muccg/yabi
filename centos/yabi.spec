@@ -189,6 +189,7 @@ rm %{shbuildinstalldir}/bin/python*
 /usr/bin/getent passwd celery >/dev/null || \
     /usr/sbin/useradd -r -g celery -d /var/run/celery -s /bin/bash \
     -c "celery distributed task queue" celery
+/usr/sbin/usermod -a -G apache celery
 exit 0
 
 %post admin
