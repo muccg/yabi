@@ -215,7 +215,7 @@ do_nosetests() {
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
     COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
     NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
-    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -I test(mysql|postgresql)settings.py"
+    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
     TEST_CASES="tests yabiadmin/yabiadmin"
     TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
 
