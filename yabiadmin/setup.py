@@ -101,7 +101,7 @@ setup(name='yabiadmin',
               for fileglob in ['*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg', '*.feature']]
       },
       zip_safe=False,
-      scripts=["yabiadmin/yabiadmin-manage.py"],
+      scripts=["yabiadmin/yabiadmin-manage.py", "yabiadmin/yabicelery.py"],
       install_requires=install_requires,
       dependency_links=dependency_links,
       extras_require={
