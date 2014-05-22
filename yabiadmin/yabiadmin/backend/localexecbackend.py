@@ -34,15 +34,29 @@ import time
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.yabiengine.enginemodels import EngineTask
 from yabiadmin.backend.utils import blocking_execute
 
 logger = logging.getLogger(__name__)
 
 WAIT_TO_TERMINATE_SECS = 3
 
+EXEC_SCRIPT_PREFIX = 'yabi_lexec_'
+DEFAULT_TEMP_DIRECTORY = '/tmp'
 
 class LocalExecBackend(ExecBackend):
+    backend_desc = "Local execution"
+    backend_auth = {}
+
+    def __init__(self, *args, **kwargs):
+        ExecBackend.__init__(self, *args, **kwargs)
+        self.backend = None
+
+    @property
+    def temp_directory(self):
+        temp_dir = DEFAULT_TEMP_DIRECTORY
+        if self.backend and self.backend.temporary_directory:
+            temp_dir = self.backend.temporary_directory
+        return temp_dir
 
     def submit_task(self):
         """
@@ -100,7 +114,8 @@ class LocalExecBackend(ExecBackend):
         return status
 
     def create_script(self, script_contents):
-        script_name = '/tmp/yabi_lexec_%s.sh' % uuid.uuid4()
+        script_name = os.path.join(self.temp_directory,
+                            '%s%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
         with open(script_name, 'w') as f:
             f.write(script_contents)
         st = os.stat(script_name)
@@ -125,6 +140,7 @@ class LocalExecBackend(ExecBackend):
         kill_process(pid, with_SIGKILL=True)
 
     def is_aborting(self):
+        from ..yabiengine.enginemodels import EngineTask
         task = EngineTask.objects.get(pk=self.task.pk)
         return task.is_workflow_aborting
 

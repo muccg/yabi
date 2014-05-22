@@ -25,7 +25,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 import os
 from django.conf.urls.defaults import *
 from django.conf import settings
@@ -36,7 +36,7 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 from django import forms
 from django.utils import simplejson as json
 from django.core.cache import cache
-from ccg.utils import webhelpers
+from ccg_django_utils import webhelpers
 from yabiadmin.yabi.models import User
 from yabiadmin.responses import *
 from yabiadmin.preview import html
@@ -124,6 +124,7 @@ def login(request):
 
     def render_form(form, error='Invalid login credentials'):
         return render_to_response('fe/login.html', {
+                 'request': request,
                  'h': webhelpers,
                  'base_site_url': webhelpers.url("").rstrip("/"),
                  'form': form,
@@ -155,7 +156,8 @@ def login(request):
                             cred.on_login(username, password)
                         except DecryptException as e:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
-                    return HttpResponseRedirect(webhelpers.url("/"))
+                    next_page = request.GET.get('next', webhelpers.url("/"))
+                    return HttpResponseRedirect(next_page)
 
             else:
                 form = LoginForm()
@@ -276,7 +278,7 @@ def preview(request):
         return unavailable()
 
     size = result.values()[0]["files"][0][1]
-    resp = get(request, bytes=min(size, settings.PREVIEW_SIZE_LIMIT))
+    resp = get(request)
 
     if resp.status_code != 200:
         logger.warning("Attempted to preview inaccessible URI '%s'", uri)
@@ -296,20 +298,29 @@ def preview(request):
     type_settings = settings.PREVIEW_SETTINGS[content_type]
     content_type = type_settings.get("override_mime_type", content_type)
 
-    # now work with the resulting file
-    content = resp.content
-
+    # Now work with the resulting file.
     # If the file is beyond the size limit, we'll need to check whether to
     # truncate it or not.
     truncated = False
-    if size > settings.PREVIEW_SIZE_LIMIT:
-        if type_settings.get("truncate", False):
-            logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            content = content[0:settings.PREVIEW_SIZE_LIMIT]
-            truncated = True
-        else:
-            logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            return unavailable("This file is too large to be previewed.")
+    contents = []
+    size = 0
+    try:
+        for chunk in resp.streaming_content:
+            contents.append(chunk)
+            size += len(chunk)
+            if size > settings.PREVIEW_SIZE_LIMIT:
+                if type_settings.get("truncate", False):
+                    logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                    contents[-1] = contents[-1][:settings.PREVIEW_SIZE_LIMIT - size]
+                    truncated = True
+                    break
+                else:
+                    logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                    return unavailable("This file is too large to be previewed.")
+        content = "".join(contents)
+    except Exception:
+        logger.exception("Problem when streaming response")
+        return unavailable("The file could not be accessed.")
 
     # Cache some metadata about the preview so we can retrieve it later.
     key = preview_key(uri)

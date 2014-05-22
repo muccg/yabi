@@ -41,19 +41,18 @@ def put_file(yabiusername, filename, uri):
     Returns the opened fifo for the upload to write to
     """
     from yabiadmin.backend.fsbackend import FSBackend
-    upload_as_fifo = FSBackend.remote_file_upload(yabiusername, filename, uri)
-    upload = open(upload_as_fifo, 'w')
-    return upload
+    return FSBackend.remote_file_upload(yabiusername, filename, uri)
 
 
-def get_file(yabiusername, uri, bytes=None):
+def get_file(yabiusername, uri):
     """Get a file from a backend"""
-    # TODO bytes is ignored, its for partial download
     from yabiadmin.backend.fsbackend import FSBackend
-    download_as_fifo = FSBackend.remote_file_download(yabiusername, uri)
-    download = open(download_as_fifo)
-    #os.remove(download_as_fifo)
-    return download
+    return FSBackend.remote_file_download(yabiusername, uri)
+
+
+def get_zipped_dir(yabiusername, uri):
+    from yabiadmin.backend.fsbackend import FSBackend
+    return FSBackend.remote_file_download(yabiusername, uri, is_dir=True)
 
 
 def copy_file(yabiusername, src_uri, dst_uri):

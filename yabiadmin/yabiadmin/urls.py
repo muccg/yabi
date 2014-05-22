@@ -49,12 +49,7 @@ urlpatterns = patterns('yabiadmin.yabifeapp.views',
                        (r'^logout[/]*$', 'logout'),
                        (r'^wslogin[/]*$', 'wslogin', {'SSL': True}),
                        (r'^wslogout[/]*$', 'wslogout'),
-                       (r'^registration/', include('yabiadmin.registration.urls'), {'SSL': True}),
                        (r'^exception[/]*$', 'exception_view'))
-
-# temporary url for file upload direct
-urlpatterns += patterns('yabiadmin.uploader.views',
-                        (r'^ws/fs/put[/]*$', 'put'))
 
 # dispatch to either webservice, admin or general
 urlpatterns += patterns('yabiadmin.yabi.views',

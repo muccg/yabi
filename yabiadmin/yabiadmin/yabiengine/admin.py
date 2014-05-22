@@ -25,14 +25,13 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
+from django.contrib import admin, messages
+from django.core import urlresolvers
+
 from yabiadmin.yabi.models import User
 from yabiadmin.yabiengine.models import *
 from yabiadmin.yabiengine.enginemodels import *
-
-from django.contrib import admin
-from django.contrib import messages
-from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.backend.celerytasks import request_workflow_abort
 
 
@@ -86,38 +85,26 @@ class BaseModelAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link', 'is_aborting']
+    list_display = ['summary_link', 'status', 'stageout', 'change_link', link_to_jobs, link_to_tasks, link_to_stageins, 'is_aborting']
     list_filter = ['status', 'user']
     search_fields = ['name']
-    actions = ['archive_workflow', 'abort_workflow']
+    actions = ['abort_workflow']
     fieldsets = (
         (None, {
             'fields': ('name', 'user', 'start_time', 'end_time', 'status', 'stageout')
         }),
     )
 
-    def archive_workflow(self, request, queryset):
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    def summary_link(self, workflow):
+        return '<a href="%s">%s</a>' % (workflow.summary_url(), workflow.name)
+    summary_link.short_description = 'Summary'
+    summary_link.allow_tags = True
 
-        for id in selected:
-            wf = EngineWorkflow.objects.get(id=id)
-            success = StoreHelper.archiveWorkflow(wf)
-
-        if success:
-            if len(selected):
-                if len(selected) == 1:
-                    message_bit = "1 workflow archived."
-                else:
-                    message_bit = "%s workflows were archived." % len(selected)
-
-                messages.success(request, message_bit)
-        else:
-            messages.error(request, "Couldn't archive workflow(s)!")
-
-        # pass on to delete action
-        #return delete_selected(self, request, queryset)
-
-    archive_workflow.short_description = "Archive selected Workflows."
+    def change_link(self, workflow):
+        change_url = urlresolvers.reverse('admin:yabiengine_engineworkflow_change', args=(workflow.id,))
+        return '<a href="%s">Change</a>' % change_url
+    change_link.short_description = 'Change'
+    change_link.allow_tags = True
 
     def abort_workflow(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -179,7 +166,7 @@ class TaskAdmin(BaseModelAdmin):
         }),
         ('Remote Information', {
             'classes': ('collapse',),
-            'fields': ('remote_id', 'remote_info', 'working_dir', 'name', 'tasktag')
+            'fields': ('remote_id', 'remote_info', 'working_dir', 'name')
         }),
         ('Status Information', {
             'classes': ('collapse',),

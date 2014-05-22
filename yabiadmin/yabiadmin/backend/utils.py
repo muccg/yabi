@@ -206,20 +206,14 @@ def create_paramiko_pkey(key, passphrase=None):
     return pkey
 
 
-def get_credential_data(credential):
-    access = credential.get_credential_access()
-    decrypted = access.get()
-    return credential.username, decrypted['cert'], decrypted['key'], decrypted['password']
-
-
 def sshclient(hostname, port, credential):
     if port is None:
         port = 22
     ssh = None
 
-    username, _, key, passphrase = get_credential_data(credential)
+    c = credential.get_decrypted()
 
-    logger.debug('Connecting to {0}@{1}:{2}'.format(username, hostname, port))
+    logger.debug('Connecting to {0}@{1}:{2}'.format(c.username, hostname, port))
 
     try:
         ssh = paramiko.SSHClient()
@@ -229,7 +223,7 @@ def sshclient(hostname, port, credential):
         connect = partial(ssh.connect,
                           hostname=hostname,
                           port=port,
-                          username=username,
+                          username=c.username,
                           key_filename=None,
                           timeout=None,
                           allow_agent=False,
@@ -237,12 +231,12 @@ def sshclient(hostname, port, credential):
                           compress=False,
                           sock=None)
 
-        if key:
-            private_key = create_paramiko_pkey(key, passphrase)
+        if c.key:
+            private_key = create_paramiko_pkey(c.key, c.password)
             connect(pkey=private_key)
         else:
             logger.debug("Connecting using password")
-            connect(password=passphrase)
+            connect(password=c.password)
 
     except paramiko.BadHostKeyException as bhke:  # BadHostKeyException - if the server's host key could not be verified
         raise RetryException(bhke, traceback.format_exc())

@@ -26,20 +26,47 @@
 ### END COPYRIGHT ###
 from django import forms
 from django.conf import settings
-from yabiadmin.yabi.models import *
-from yabiadmin import constants
-from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
 from django.contrib import admin
+from django.utils import simplejson as json
+from yabiadmin.yabi.models import *
+from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
+from django.core.exceptions import ValidationError
+
+def get_backend_caps():
+    from ..backend import BaseBackend
+    return BaseBackend.get_caps()
+
+class CapsField(forms.CharField):
+    def __init__(self):
+        super(CapsField, self).__init__(required=False,
+                                        widget=forms.HiddenInput,
+                                        initial=json.dumps(get_backend_caps()))
 
 class BackendForm(forms.ModelForm):
+    caps = CapsField()
+
     class Meta:
         model = Backend
 
-    def clean_scheme(self):
-        scheme = self.cleaned_data['scheme']
-        if scheme not in constants.VALID_SCHEMES:
-            raise forms.ValidationError("Scheme not valid. Options: %s" % ",".join(constants.VALID_SCHEMES))
-        return scheme
+    def clean(self):
+        cleaned_data = super(BackendForm, self).clean()
+        scheme = self.cleaned_data.get('scheme')
+
+        caps = get_backend_caps()
+
+        if scheme in caps:
+            for attr, name in (("lcopy_supported", "Local Copy"), ("link_supported", "Linking")):
+                if self.cleaned_data.get(attr) and not caps[scheme].get(attr, False):
+                    self._errors[attr] = self.error_class(["%s not supported on %s." % (name, scheme)])
+                    del cleaned_data[attr]
+        elif not scheme:
+            self._errors["scheme"] = self.error_class(["This field is required."])
+        else:
+            msg = "Scheme not valid. Options: " + ", ".join(sorted(caps))
+            self._errors["scheme"] = self.error_class([msg])
+            del cleaned_data["scheme"]
+
+        return cleaned_data
 
     def clean_hostname(self):
         hostname = self.cleaned_data['hostname']
@@ -56,6 +83,9 @@ class BackendForm(forms.ModelForm):
         return path
 
 class CredentialForm(forms.ModelForm):
+    auth_class = forms.ChoiceField(label="Type", required=False)
+    caps = CapsField()
+
     class Meta:
         model = Credential
 
@@ -64,7 +94,7 @@ class CredentialForm(forms.ModelForm):
         security_state = cleaned_data.get('security_state')
 
         # fields to which security_state applies, or from which it can be inferred
-        crypto_fields = ('password', 'cert', 'key')
+        crypto_fields = ('password', 'key')
         crypto_values = [cleaned_data.get(t) for t in crypto_fields]
 
         # are any of the crypto_fields set to a non-empty, non-annotated-block value?
@@ -159,6 +189,16 @@ class ToolParameterForm(forms.ModelForm):
                 self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object)
             else:
                 self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object).exclude(pk=tool_param.pk)
+
+    def clean_possible_values(self):
+        possible_values = self.cleaned_data['possible_values']
+        if possible_values.strip() == '':
+            return ''
+        try:
+            json.loads(possible_values)
+        except ValueError as e:
+            raise ValidationError('Not valid JSON')
+        return possible_values
 
 
 class ToolOutputExtensionForm(forms.ModelForm):

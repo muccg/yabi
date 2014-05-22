@@ -15,7 +15,7 @@ from yabishell.utils import human_readable_size
 from six.moves import filter
 from six.moves import map
 
-YABI_DEFAULT_URL = os.environ.get('YABISH_YABI_URL', 'http://localhost:8000/')
+YABI_DEFAULT_URL = os.environ.get('YABISH_YABI_URL', 'https://ccgapps.com.au/yabi/')
 
 def main():
     debug = False

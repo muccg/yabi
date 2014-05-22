@@ -37,6 +37,7 @@ from django.utils import simplejson as json
 from yabiadmin.yabi.models import BackendCredential, Tool
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
+from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger 
 from yabiadmin.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse
 from .backendhelper import get_exec_backendcredential_for_uri
 import logging
@@ -105,7 +106,8 @@ class EngineWorkflow(Workflow):
 
     @transaction.commit_on_success
     def create_jobs(self):
-        logger.debug('----- Creating jobs for workflow id %d -----' % self.id)
+        wfl_logger = create_workflow_logger(logger, self.pk)
+        logger.debug('----- Creating jobs for workflow id %d -----' % self.pk)
 
         try:
             workflow_dict = json.loads(self.original_json)
@@ -123,13 +125,14 @@ class EngineWorkflow(Workflow):
             for i, job_dict in enumerate(workflow_dict["jobs"]):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.add_job(job_dict)
+            wfl_logger.info("Created %d jobs for workflow %d", i, self.pk)
 
             self.status = STATUS_READY
             self.save()
 
         except Exception:
             transaction.rollback()
-            logger.exception("Exception during creating jobs for workflow {0}".format(self.pk))
+            wfl_logger.exception("Exception during creating jobs for workflow {0}".format(self.pk))
 
             self.status = STATUS_ERROR
             self.save()
@@ -280,12 +283,13 @@ class EngineJob(Job):
 
     @transaction.commit_on_success
     def create_tasks(self):
+        job_logger = create_job_logger(logger, self.pk)
         logger.debug('----- creating tasks for Job %s -----' % self.pk)
         assert self.total_tasks() == 0, "Job already has tasks"
 
         updated = Job.objects.filter(pk=self.pk, status=STATUS_PENDING).update(status=JOB_STATUS_PROCESSING)
         if updated == 0:
-            logger.info("Another process_jobs() must have picked up job %s already" % self.pk)
+            job_logger.info("Another process_jobs() must have picked up job %s already" % self.pk)
             return
 
         try:
@@ -297,7 +301,7 @@ class EngineJob(Job):
 
             # there must be at least one task for every job
             if not self.total_tasks():
-                logger.critical('No tasks for job: %s' % self.pk)
+                job_logger.critical('No tasks for job: %s' % self.pk)
                 self.status = STATUS_ERROR
                 self.workflow.status = STATUS_ERROR
                 self.save()
@@ -314,6 +318,7 @@ class EngineJob(Job):
 
         except:
             transaction.rollback()
+            job_logger.exception("Error while creating db tasks for job %d", self.pk)
             # We couldn't sucessfully create tasks for the job so we will set
             # the status to PENDING (ie. allowing a retry to pick it up again)
             self.status = STATUS_PENDING
@@ -441,7 +446,6 @@ class EngineTask(Task):
         else:
             self.command = template.render(uridict)
 
-        self.tasktag = settings.TASKTAG
         self.save()
 
         # non batch stageins

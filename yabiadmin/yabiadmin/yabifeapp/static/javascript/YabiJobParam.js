@@ -38,10 +38,10 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
   this.containerEl = document.createElement('div');
   this.containerEl.className = 'jobParam';
 
-  if (this.payload.mandatory !== true) {
+  if (!(this.payload.mandatory || this.payload.common)) {
     this.containerEl.style.display = 'none';
-    this.isMandatory = false;
   }
+  this.isMandatory = this.payload.mandatory;
 
   if (this.payload.file_assignment == 'batch' ||
       this.payload.file_assignment == 'all') {
@@ -303,8 +303,8 @@ YabiJobParam.prototype.setHelpText = function(text) {
  * hides or shows this parameter from view
  */
 YabiJobParam.prototype.toggleDisplay = function(shouldDisplay) {
-  //mandatory params are always shown
-  if (this.payload.mandatory === true) {
+  //mandatory and common params are always shown
+  if (this.payload.mandatory || this.payload.common) {
     return;
   }
 

@@ -30,8 +30,8 @@ from django.db import models
 from yabiadmin.yabi.models import User, BackendCredential, Tool
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
-from ccg.utils import webhelpers
-from ccg.utils.webhelpers import url
+from ccg_django_utils import webhelpers
+from ccg_django_utils.webhelpers import url
 import os
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from datetime import datetime
@@ -99,12 +99,6 @@ class Workflow(models.Model, Editable, Status):
     def summary_url(self):
         return ('workflow_summary', (), {'workflow_id': self.id})
 
-    def summary_link(self):
-        return '<a href="%s">Summary</a>' % self.summary_url()
-
-    summary_link.short_description = 'Summary'
-    summary_link.allow_tags = True
-
     def delete_cascade(self):
         tags = [t.tag for t in self.workflowtag_set.all()]
         self.delete()
@@ -144,6 +138,7 @@ class Workflow(models.Model, Editable, Status):
         self.save()
 
         return self.status
+
 
     def get_status_colour(self):
         return Status.COLOURS.get(self.status, 'grey')
@@ -302,7 +297,6 @@ class Task(models.Model, Editable, Status):
 
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
-    tasktag = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
 
     # the following field is a convenience pointer (not normalised) to the backendcredential table row used for the execution credential
     # they are used by the task view to help group and count the tasks quickly and efficiently to load control the backend executer

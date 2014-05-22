@@ -129,5 +129,54 @@ The domain of the hostname should be set to ``amazonaws.com`` and the hostname t
 For example ``mybucket.amazonaws.com`` as the hostname will access the bucket ``mybucket`` on amazon.
 
 In setting up the credential for access to S3, your remote username is ignored, so you can place any text in here you like. You will need to 
-fill in two fields: cert, and key. Into the yabi cert field put the Amazon ACCESS ID and into the yabi key field put the Amazon SECRET KEY.
+fill in two fields: password and key. Into the yabi key field put the Amazon ACCESS ID and into the yabi password field put the Amazon SECRET KEY.
 
+OpenStack Swift Backend
+-----------------------
+
+Yabi can use `OpenStack Object Storage`_ (commonly known as *Swift*)
+as a filesystem backend. Swift is similar to S3 in that it is a
+key-value store, not a heirachical file system. Yabi will present the
+keys in a directory tree, using forward slashes (``/``) to separate
+directory paths.
+
+The OpenStack cluster must use Keystone_ 2.0 auth. To set up the Swift
+backend, set its hostname to the hostname part of the Keystone API
+endpoint. For example, if the Keystone auth URL is
+``https://keystone.bioplatforms.com/v2.0/``, then the backend hostname
+will be ``keystone.bioplatforms.com``.
+
+OpenStack users are associated with projects (also called
+"tenants"). In Swift, files are collected in "containers" which belong
+to the project. Each project has its own set of containers. The
+backend path must specify both the project and container.
+
+============== =================================================
+Backend Option Setting
+============== =================================================
+Name           OpenStack Swift
+Description    OpenStack object storage
+Scheme         ``swift``
+Hostname       *The hostname part of the Keystone API endpoint.*
+Port           *Not required, defaults to 443*
+Path           ``/tenant/container/``
+...            *All other options left blank.*
+============== =================================================
+
+When creating a credential entry for the Swift backend, use Keystone
+credentials.
+
+============ ================================================
+Credential   Setting
+============ ================================================
+Description  OpenStack Keystone credentials for *user name*.
+Username     The Keystone user name.
+Password     The Keystone password.
+Cert
+Key
+User         The Yabi user.
+Expires on   A date in the future.
+============ ================================================
+
+.. _`OpenStack Object Storage`: http://swift.openstack.org/
+.. _Keystone: http://docs.openstack.org/developer/keystone/

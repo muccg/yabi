@@ -92,11 +92,6 @@ _statuses_order = [st[0] for st in STATUS_MAP if st[0] != '' and st[0] not in (J
 _statuses_order.reverse()
 STATUSES_REVERSE_ORDER = _statuses_order
 
-# validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'explode', 'null']
-FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 'sftp', 's3', 'localfs', 'file', 'null']
-VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
-
 # Celery Settings
 MAX_CELERY_TASK_RETRIES = 3
 

@@ -4,31 +4,48 @@ import os, ConfigParser
 
 class Configuration(object):
 
-    def __init__(self, section='DEFAULT'):
-        self.config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests.conf" )
-        print("Loading config section: %s" % section)
-        self.load(section)
+    def __init__(self, filename=None, section=None):
+        config_dir = os.path.dirname(os.path.realpath(__file__))
+        default_config_file = os.path.join(config_dir, "tests.conf")
+        self._load_conf_file(default_config_file, section)
+        if filename:
+            self._load_conf_file(filename, section)
 
-    def load(self, section):
+    def _load_conf_file(self, filename=None, section=None):
+        print("Loading config file: %s" % filename)
         cp = ConfigParser.ConfigParser()
-        cp.readfp(open(self.config_file))
-        self.yabiusername = cp.get(section, 'yabi_username')
-        self.yabipassword = cp.get(section, 'yabi_password')
-        self.yabiadminusername = cp.get(section, 'yabi_admin_username')
-        self.yabiadminpassword = cp.get(section, 'yabi_admin_password')
-        self.yabiurl = cp.get(section, 'yabi_url')
-        self.yabibeurl = cp.get(section, 'yabibe_url')
-        self.jsondir = cp.get(section, 'json_dir')
-        self.tmpdir = cp.get(section, 'tmp_dir')
-        self.testdatadir = cp.get(section, 'test_data_dir')
-        self.dbrebuild = cp.get(section, 'db_rebuild')
-        self.yabidir = cp.get(section, 'yabi_dir')
-        self.yabish = cp.get(section, 'yabish')
-        self.startyabi = cp.get(section, 'startyabi')
-        self.stopyabi = cp.get(section, 'stopyabi')
-        self.stopyabibe = cp.get(section, 'stopyabibe')
-        self.startyabibe = cp.get(section, 'startyabibe')
-        self.cleanyabi = cp.get(section, 'cleanyabi')
-        self.yabistatus = cp.get(section, 'yabistatus')
-        self.s3_server = cp.get(section, 's3_server')
-        self.s3_port = cp.get(section, 's3_port')
+        cp.readfp(open(filename))
+        self._load_section(cp, "DEFAULT")
+        if section:
+            self._load_section(cp, section)
+
+    def _load_section(self, cp, section):
+        print("Loading config section: %s" % section)
+        for attr, key in self.configs:
+            option = key or attr
+            if cp.has_option(section, option):
+                setattr(self, attr, cp.get(section, option))
+
+    configs = (
+        ("yabidir", "yabi_dir"),
+        ("yabish", "yabish"),
+        ("yabiusername", "yabi_username"),
+        ("yabipassword", "yabi_password"),
+        ("yabiadminusername", "yabi_admin_username"),
+        ("yabiadminpassword", "yabi_admin_password"),
+        ("yabiurl", "yabi_url"),
+        ("jsondir", "json_dir"),
+        ("tmpdir", "tmp_dir"),
+        ("testdatadir", "test_data_dir"),
+        ("s3_host", None),
+        ("s3_port", None),
+        ("s3_user", None),
+        ("s3_bucket", None),
+        ("aws_access_key_id", None),
+        ("aws_secret_access_key", None),
+        ("keystone_host", None),
+        ("swift_tenant", None),
+        ("swift_username", None),
+        ("swift_password", None),
+        ("swift_bucket", None),
+    )

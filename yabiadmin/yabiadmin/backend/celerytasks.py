@@ -26,21 +26,68 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from functools import wraps
 from django.db import transaction
 from datetime import datetime
-from yabiadmin.backend.exceptions import RetryException, JobNotFoundException
+from functools import partial
+from celery import chain
+from celery.utils.log import get_task_logger
+from six.moves import filter
+from yabiadmin.backend.exceptions import RetryException, RetryPollingException, JobNotFoundException
 from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_COMPLETE, STATUS_EXEC, STATUS_STAGEOUT, STATUS_STAGEIN, STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-from yabiadmin.yabiengine.models import Task
+from yabiadmin.yabiengine.models import Workflow, Job, Task, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
+from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, create_logger, YabiDBHandler, YabiContextFilter
 import celery
-from celery import current_task, chain
-from celery.utils.log import get_task_logger
-from six.moves import filter
+import os
+from django.conf import settings
+from django.db.models import Q
+from celery.signals import after_setup_task_logger
+import logging
+
 logger = get_task_logger(__name__)
+
+app = celery.Celery('yabiadmin.backend.celerytasks')
+
+app.config_from_object('django.conf:settings')
+
+# Celery uses its own logging setup. All our custom logging setup has to be
+# done in this callback
+def setup_logging(*args, **kwargs):
+    handler = YabiDBHandler()
+    log_filter = YabiContextFilter()
+    handler.addFilter(log_filter)
+    level = getattr(settings, 'YABIDBHANDLER_LOG_LEVEL', 'DEBUG')
+    handler.setLevel(logging.getLevelName(level))
+    logger.addHandler(handler)
+
+after_setup_task_logger.connect(setup_logging)
+
+
+# Use this function instead of direct access, to allow testing
+def get_current_celery_task():
+    from celery import current_task
+    return current_task
+
+
+def log_it(ctx_type):
+
+    def logging_decorator(original_function):
+        @wraps(original_function)
+        def decorated_function(pk, *args, **kwargs):
+            original_function_name = original_function.__name__
+            task_logger = create_logger(ctx_type, logger, pk)
+            task_logger.info("Starting %s for %s %s.", original_function_name, ctx_type, pk)
+            result = original_function(pk, *args, **kwargs)
+            task_logger.info("Finished %s for %s %s.", original_function_name, ctx_type, pk)
+            return result
+        return decorated_function
+
+    return logging_decorator
 
 
 # Celery Tasks working on a Workflow
@@ -49,14 +96,16 @@ def process_workflow(workflow_id):
     return chain(create_jobs.s(workflow_id) | process_jobs.s())
 
 
-@celery.task
+@app.task
+@log_it('workflow')
 def create_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     workflow.create_jobs()
     return workflow.pk
 
 
-@celery.task
+@app.task
+@log_it('workflow')
 def process_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     if workflow.is_aborting:
@@ -68,26 +117,34 @@ def process_jobs(workflow_id):
         chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
 
 
-@celery.task
+@app.task
+@log_it('workflow')
 def abort_workflow(workflow_id):
-    logger.debug("Aborting workflow %s", workflow_id)
+    wfl_logger = create_workflow_logger(logger, workflow_id)
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     if workflow.status == STATUS_ABORTED:
         return
     not_aborted_tasks = EngineTask.objects.filter(job__workflow__id=workflow.pk).exclude(job__status=STATUS_ABORTED)
 
     running_tasks = list(filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks))
-    logger.debug("Found %s running tasks", len(running_tasks))
+    wfl_logger.info("Found %s running tasks", len(running_tasks))
     for task in running_tasks:
         abort_task.apply_async((task.pk,))
+
+
+@app.task
+def on_workflow_completed(workflow_id):
+    delete_all_syslog_messages(workflow_id)
 
 
 # Celery Tasks working on a Job
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
+@log_it('job')
 def create_db_tasks(job_id):
-    request = current_task.request
+    job_logger = create_job_logger(logger, job_id)
+    request = get_current_celery_task().request
     try:
         job = EngineJob.objects.get(pk=job_id)
         if job.status == STATUS_READY:
@@ -95,7 +152,7 @@ def create_db_tasks(job_id):
             # after tasks have been created and the transaction has been
             # commited, but the Celery task didn't return yet
             assert job.total_tasks() > 0, "Job in READY state, but has no tasks"
-            logger.warning("Job was already in READY state. Skipping creation of db tasks.")
+            job_logger.warning("Job was already in READY state. Skipping creation of db tasks.")
             return job_id
 
         if job.is_workflow_aborting:
@@ -110,12 +167,12 @@ def create_db_tasks(job_id):
         return job_id
 
     except DecryptedCredentialNotAvailable as dcna:
-        logger.exception("Decrypted credential not available.")
+        job_logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
-        logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(job_id, countdown))
-        raise current_task.retry(exc=dcna, countdown=countdown)
+        job_logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(job_id, countdown))
+        raise get_current_celery_task().retry(exc=dcna, countdown=countdown)
     except Exception:
-        logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
+        job_logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
         job.status = STATUS_ERROR
         job.workflow.status = STATUS_ERROR
         job.save()
@@ -123,14 +180,14 @@ def create_db_tasks(job_id):
         raise
 
 
-@celery.task()
+@app.task()
 def spawn_ready_tasks(job_id):
-    logger.debug('spawn_ready_tasks for job {0}'.format(job_id))
     if job_id is None:
-        logger.debug('no tasks to process, exiting early')
+        logger.warning('no tasks to process, exiting early')
         return
+    job_logger = create_job_logger(logger, job_id)
+    job_logger.info("Starting spawn_ready_tasks for Job %s", job_id)
     try:
-        # TODO deprecate tasktag
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
@@ -149,10 +206,12 @@ def spawn_ready_tasks(job_id):
             job.save()
             job.workflow.update_status()
 
+        job_logger.info("Finished spawn_ready_tasks for Job %s", job_id)
+
         return job_id
 
     except Exception:
-        logger.exception("Exception when submitting tasks for job {0}".format(job_id))
+        job_logger.exception("Exception when spawning tasks for job {0}".format(job_id))
         job = EngineJob.objects.get(pk=job_id)
         job.status = STATUS_ERROR
         job.workflow.status = STATUS_ERROR
@@ -164,19 +223,19 @@ def spawn_ready_tasks(job_id):
 # Celery Tasks working on a Yabi Task
 
 def mark_workflow_as_error(task_id):
-    logger.debug("Task chain for Task {0} failed.".format(task_id))
+    task_logger = create_task_logger(logger, task_id)
+    task_logger.error("Task chain for Task {0} failed.".format(task_id))
     task = Task.objects.get(pk=task_id)
     task.job.status = STATUS_ERROR
     task.job.workflow.status = STATUS_ERROR
     task.job.save()
     task.job.workflow.save()
-    logger.debug("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
+    task_logger.info("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
 
 
 @transaction.commit_on_success()
+@log_it('task')
 def spawn_task(task_id):
-    logger.debug('Spawn task {0}'.format(task_id))
-
     task = Task.objects.get(pk=task_id)
     if task.is_workflow_aborting:
         change_task_status(task_id, STATUS_ABORTED)
@@ -188,54 +247,52 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
-def mark_task_as_retrying(task_id, message="Some error occurred"):
-    task = Task.objects.get(pk=task_id)
-    task.mark_task_as_retrying(message)
+def retry_current_celery_task(original_function_name, task_id, exc, countdown):
+    task_logger = create_task_logger(logger, task_id)
+    task_logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
+    try:
+        get_current_celery_task().retry(exc=exc, countdown=countdown)
+    except celery.exceptions.RetryTaskError:
+        # This is normal operation, Celery is signaling to the Worker
+        # that this task should be retried by throwing an RetryTaskError
+        # Just re-raise it
+        raise
+    except Exception as ex:
+        if ex is exc:
+            # The same exception we passed to retry() has been re-raised
+            # This means the max_retry limit has been exceeded
+            task_logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
+        else:
+            # Some other Exception occured, log the details
+            task_logger.exception(("{0}.retry {1} failed - changing status to error".format(original_function_name, task_id)))
+
+        mark_task_as_error(task_id, str(ex))
+        raise
+
 
 def retry_on_error(original_function):
     @wraps(original_function)
     def decorated_function(task_id, *args, **kwargs):
-        request = current_task.request
+        task_logger = create_task_logger(logger, task_id)
+        request = get_current_celery_task().request
         original_function_name = original_function.__name__
+
+        retry_celery_task = partial(retry_current_celery_task, original_function_name, task_id)
         try:
             result = original_function(task_id, *args, **kwargs)
-        except RetryException as rexc:
-            if rexc.type == RetryException.TYPE_ERROR:
-                logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
-                mark_task_as_retrying(task_id)
+        except RetryPollingException as exc:
+            # constant for polling
+            countdown = 30
+            retry_celery_task(exc, countdown)
 
-            if rexc.backoff_strategy == RetryException.BACKOFF_STRATEGY_EXPONENTIAL:
-                countdown = backoff(request.retries)
-            else:
-                # constant for polling
-                countdown = 30
-
-            try:
-                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
-                current_task.retry(exc=rexc, countdown=countdown)
-            except RetryException:
-                logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
-                change_task_status(task_id, STATUS_ERROR)
-                raise
-            except celery.exceptions.RetryTaskError:
-                raise
-            except Exception as ex:
-                logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
-                change_task_status(task_id, STATUS_ERROR)
-                mark_workflow_as_error(task_id)
-                raise
-
-        except Exception as ex:
-            # Retry always
-            countdown = backoff(request.retries)
-            logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
-            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
+        except Exception as exc:
+            task_logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
             mark_task_as_retrying(task_id)
-            current_task.retry(exc=ex, countdown=countdown)
+            countdown = backoff(request.retries)
+            retry_celery_task(exc, countdown)
 
-        task = EngineTask.objects.get(pk=task_id)
-        if task.is_retrying:
-            task.recovered_from_error()
+        if task_id is not None:
+            remove_task_retrying_mark(task_id)
 
         return result
 
@@ -255,9 +312,10 @@ def skip_if_no_task_id(original_function):
     return decorated_function
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
+@log_it('task')
 def stage_in_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
     if abort_task_if_needed(task):
@@ -267,9 +325,10 @@ def stage_in_files(task_id):
     return task_id
 
 
-@celery.task(max_retries=MAX_CELERY_TASK_RETRIES)
+@app.task(max_retries=MAX_CELERY_TASK_RETRIES)
 @retry_on_error
 @skip_if_no_task_id
+@log_it('task')
 def submit_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
     if abort_task_if_needed(task):
@@ -282,9 +341,10 @@ def submit_task(task_id):
     return task_id
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
+@log_it('task')
 def poll_task_status(task_id):
     task = EngineTask.objects.get(pk=task_id)
     try:
@@ -296,9 +356,10 @@ def poll_task_status(task_id):
         raise
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
+@log_it('task')
 def stage_out_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
     if abort_task_if_needed(task):
@@ -308,9 +369,10 @@ def stage_out_files(task_id):
     return task_id
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
+@log_it('task')
 def clean_up_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
     if abort_task_if_needed(task):
@@ -320,9 +382,9 @@ def clean_up_task(task_id):
     change_task_status(task.pk, STATUS_COMPLETE)
 
 
-@celery.task
+@app.task
+@log_it('task')
 def abort_task(task_id):
-    logger.debug("Aborting task %s", task_id)
     task = EngineTask.objects.get(pk=task_id)
     backend.abort_task(task)
 
@@ -347,15 +409,40 @@ def backoff(count=0):
     return 5 ** (count + 1)
 
 
+def mark_task_as_retrying(task_id, message="Some error occurred"):
+    task = Task.objects.get(pk=task_id)
+    task.mark_task_as_retrying(message)
+
+
+def remove_task_retrying_mark(task_id):
+    task = Task.objects.get(pk=task_id)
+    if task.is_retrying:
+        task.recovered_from_error()
+
+
+def set_task_error_message(task_id, error_msg):
+    task = Task.objects.get(pk=task_id)
+    task.error_msg = error_msg
+    task.save()
+
+
+def mark_task_as_error(task_id, error_msg="Some error occured"):
+    remove_task_retrying_mark(task_id)
+    change_task_status(task_id, STATUS_ERROR)
+    set_task_error_message(task_id, error_msg)
+    mark_workflow_as_error(task_id)
+
+
 # Service methods
 # TODO TSZ move to another file?
 
 
 @transaction.commit_manually()
 def change_task_status(task_id, status):
+    task_logger = create_task_logger(logger, task_id)
     try:
-        logger.debug("Setting status of task {0} to {1}".format(task_id, status))
-        task = EngineTask.objects.get(pk=task_id)
+        task_logger.debug("Setting status of task {0} to {1}".format(task_id, status))
+        task = Task.objects.get(pk=task_id)
         task.set_status(status)
         task.save()
         transaction.commit()
@@ -366,16 +453,21 @@ def change_task_status(task_id, status):
 
         if job_status_changed:
             transaction.commit()
+            old_status = task.job.workflow.status
             task.job.workflow.update_status()
             # commit before submission of Celery Tasks
             transaction.commit()
-            process_workflow_jobs_if_needed(task)
+            new_status = task.job.workflow.status
+            if old_status != new_status and new_status == STATUS_COMPLETE:
+                on_workflow_completed.apply_async((task.job.workflow.pk,))
+            else:
+                process_workflow_jobs_if_needed(task)
 
         transaction.commit()
 
     except Exception:
         transaction.rollback()
-        logger.exception("Exception when updating task's {0} status to {1}".format(task_id, status))
+        task_logger.exception("Exception when updating task's {0} status to {1}".format(task_id, status))
         raise
 
 
@@ -393,6 +485,7 @@ def process_workflow_jobs_if_needed(task):
             process_jobs.apply_async((workflow.pk,))
 
 
+@log_it('workflow')
 @transaction.commit_manually()
 def request_workflow_abort(workflow_id, yabiuser=None):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
@@ -405,3 +498,17 @@ def request_workflow_abort(workflow_id, yabiuser=None):
     transaction.commit()
     abort_workflow.apply_async((workflow_id,))
     return True
+
+
+def delete_all_syslog_messages(workflow_id):
+    logger.info("Deleting all the Syslog objects of workflow %s" % workflow_id)
+    job_ids = [j.pk for j in Job.objects.filter(workflow__pk=workflow_id)]
+    task_ids = [t.pk for t in Task.objects.filter(job__workflow__pk=workflow_id)]
+
+    Syslog.objects.filter(
+            Q(table_name='workflow') & Q(table_id=workflow_id)  |
+            Q(table_name='job')      & Q(table_id__in=job_ids)  |
+            Q(table_name='task')     & Q(table_id__in=task_ids)
+    ).delete()
+
+

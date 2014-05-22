@@ -29,12 +29,13 @@
 import mimetypes
 import os
 import re
+import itertools
 from datetime import datetime, timedelta
 from urllib import unquote
 from urlparse import urlparse, urlunparse
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, ToolSet, BackendCredential
 from django.utils import simplejson as json
@@ -42,13 +43,11 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
-from django.core.servers.basehttp import FileWrapper
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
-from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import cache_keyname
 from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
@@ -89,18 +88,22 @@ def menu(request):
 
     try:
         all_tools = {}
-        toolsets = ToolSet.objects.filter(users__name=username)
-        for toolset in toolsets:
-            for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
-                tg = all_tools.setdefault(toolgroup.tool_group.name, {})
-                if toolgroup.tool.enabled:  # only include tools that are enabled
-                    tool = tg.setdefault(toolgroup.tool.name, {})
-                    if not tool:
-                        tool["name"] = toolgroup.tool.name
-                        tool["displayName"] = toolgroup.tool.display_name
-                        tool["description"] = toolgroup.tool.description
-                        tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                        tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+        prefetch_related = (
+            'tool__tooloutputextension_set__file_extension',
+            'tool__toolparameter_set__accepted_filetypes__extensions',
+        )
+        select_related = ('tool_group',)
+
+        for toolgroup in ToolGrouping.objects.filter(tool_set__users__name=username).prefetch_related(*prefetch_related).select_related(*select_related):
+            tg = all_tools.setdefault(toolgroup.tool_group.name, {})
+            if toolgroup.tool.enabled:  # only include tools that are enabled
+                tool = tg.setdefault(toolgroup.tool.name, {})
+                if not tool:
+                    tool["name"] = toolgroup.tool.name
+                    tool["displayName"] = toolgroup.tool.display_name
+                    tool["description"] = toolgroup.tool.description
+                    tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
+                    tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
         # from here down is getting the tools into a form
         # used by the front end so no changes are needed there
@@ -211,39 +214,75 @@ def rm(request):
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
 
+@authentication_required
+def mkdir(request):
+    backend.mkdir(request.user.username, request.GET['uri'])
+    return HttpResponse("OK")
+
+def backend_get_file(yabiusername, uri, is_dir=False):
+    if is_dir:
+        f, status_queue = backend.get_zipped_dir(yabiusername, uri)
+    else:
+        f, status_queue = backend.get_file(yabiusername, uri)
+
+    CHUNKSIZE = 64 * 1024
+
+    for chunk in iter(lambda: f.read(CHUNKSIZE), ""):
+        yield chunk
+    f.close()
+
+    success = status_queue.get()
+
+    if not success:
+        raise Exception("Backend file download was not successful")
+
+def filename_from_uri(uri, default='default.txt'):
+    try:
+        return uri.rstrip('/').rsplit('/', 1)[1]
+    except IndexError:
+        logger.critical('Unable to get filename from uri: %s' % uri)
+        return default
 
 @authentication_required
-def get(request, bytes=None):
+def get(request):
     """ Returns the requested uri.  """
     yabiusername = request.user.username
 
     logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
     uri = request.GET['uri']
 
-    try:
-        filename = uri.rsplit('/', 1)[1]
-    except IndexError:
-        logger.critical('Unable to get filename from uri: %s' % uri)
-        filename = 'default.txt'
-
-    if bytes is not None:
-        try:
-            bytes = int(bytes)
-        except ValueError:
-            bytes = None
+    filename = filename_from_uri(uri)
 
     try:
-        download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+        response = StreamingHttpResponse(backend_get_file(yabiusername, uri))
     except FileNotFoundError:
-        return HttpResponseNotFound()
-    response = HttpResponse(FileWrapper(download_handle))
+        response = HttpResponseNotFound()
+    else:
+        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
+        mtype, file_encoding = mimetypes.guess_type(filename, False)
+        if mtype is not None:
+            response['content-type'] = mtype
 
-    mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
-    mtype, file_encoding = mimetypes.guess_type(filename, False)
-    if mtype is not None:
-        response['content-type'] = mtype
+        response['content-disposition'] = 'attachment; filename="%s"' % filename
 
-    response['content-disposition'] = 'attachment; filename=%s' % filename
+    return response
+
+@authentication_required
+def zget(request):
+    yabiusername = request.user.username
+
+    logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
+    uri = request.GET['uri']
+
+    filename = filename_from_uri(uri, default='default.tar.gz')
+
+    try:
+        response = StreamingHttpResponse(backend_get_file(yabiusername, uri, is_dir=True))
+    except FileNotFoundError:
+        response = HttpResponseNotFound()
+    else:
+        response['content-type'] = "application/x-gtar"
+        response['content-disposition'] = 'attachment; filename="%s.tar.gz"' % filename
 
     return response
 
@@ -261,13 +300,28 @@ def put(request):
     logger.debug("uri: %s" % request.GET['uri'])
     uri = request.GET['uri']
 
+    num_success = 0
+    num_fail = 0
+
     for key, f in request.FILES.items():
-        upload_handle = backend.put_file(yabiusername, uri)
+        upload_handle, status_queue = backend.put_file(yabiusername, f.name, uri)
         for chunk in f.chunks():
             upload_handle.write(chunk)
         upload_handle.close()
 
-    return HttpResponse("OK")
+        if status_queue.get():
+            num_success += 1
+        else:
+            num_fail += 1
+
+    response = {
+        "level": "success" if num_fail == 0 else "failure",
+        "num_success": num_success,
+        "num_fail": num_fail,
+        "message": 'no message'
+    }
+
+    return HttpResponse(content=json.dumps(response))
 
 
 @authentication_required
@@ -309,28 +363,21 @@ def submit_workflow(request):
 
 def munge_name(user, workflow_name):
     if EngineWorkflow.objects.filter(user__name=user, name=workflow_name).count() == 0:
-        if not db.does_workflow_exist(user, name=workflow_name):
-            return workflow_name
+        return workflow_name
 
-    # See if the name has already been munged.
     match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_name)
-    if match:
-        base = match.group(1)
-        val = int(match.group(2))
-    else:
-        base = workflow_name
-        val = 1
+    base = match.group(1) if match else workflow_name
 
     used_names = [wf.name for wf in EngineWorkflow.objects.filter(user__name=user, name__startswith=base)]
-    used_names.extend(db.workflow_names_starting_with(user, base))
-    used_names = dict(zip(used_names, [None] * len(used_names)))
+    used_names = frozenset(used_names)
 
-    munged_name = "%s (%d)" % (base, val)
-    while munged_name in used_names:
-        val += 1
-        munged_name = "%s (%d)" % (base, val)
+    unused_name = lambda name: name not in used_names
+    infinite_range = itertools.count
 
-    return munged_name
+    generate_unique_names = ("%s (%d)" % (base, i) for i in infinite_range(1))
+    next_available_name = find_first(unused_name, generate_unique_names)
+
+    return next_available_name
 
 
 @authentication_required
@@ -344,20 +391,18 @@ def get_workflow(request, workflow_id):
 
     workflow_id = int(workflow_id)
     workflows = EngineWorkflow.objects.filter(id=workflow_id)
-    if len(workflows) == 1:
-        response = workflow_to_response(workflows[0])
-    else:
-        try:
-            response = db.get_workflow(yabiusername, workflow_id)
-        except (db.NoSuchWorkflow) as e:
-            logger.critical('%s' % e)
-            return JsonMessageResponseNotFound(e)
+    if len(workflows) != 1:
+        msg = 'Workflow %d not found' % workflow_id
+        logger.critical(msg)
+        return JsonMessageResponseNotFound(msg)
+
+    response = workflow_to_response(workflows[0])
 
     return HttpResponse(json.dumps(response),
                         mimetype='application/json')
 
 
-def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True):
+def workflow_to_response(workflow, parse_json=True, retrieve_tags=True):
     fmt = DATE_FORMAT
     response = {
         'id': workflow.id,
@@ -372,9 +417,6 @@ def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True
 
     if retrieve_tags:
         response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()]
-
-    if key is not None:
-        response = (getattr(workflow, key), response)
 
     return response
 
@@ -397,9 +439,6 @@ def workflow_datesearch(request):
     else:
         end = datetime.strptime(end, fmt)
     sort = request.GET['sort'] if 'sort' in request.GET else '-created_on'
-    sort_dir, sort_field = ('ASC', sort)
-    if sort[0] == '-':
-        sort_dir, sort_field = ('DESC', sort[1:])
 
     # Retrieve the matched workflows.
     workflows = EngineWorkflow.objects.filter(
@@ -413,19 +452,13 @@ def workflow_datesearch(request):
     workflow_tags = WorkflowTag.objects.select_related("tag", "workflow").filter(workflow__in=workflows)
     tags = {}
     for wt in workflow_tags:
-        tags[wt.workflow.id] = tags.get(wt.workflow.id, []) + [wt.tag.value]
+        tags.setdefault(wt.workflow.id, []).append(wt.tag.value)
 
     response = []
     for workflow in workflows:
-        workflow_response = workflow_to_response(workflow, sort_field, parse_json=False, retrieve_tags=False)
-        workflow_response[1]["tags"] = tags.get(workflow.id, [])
+        workflow_response = workflow_to_response(workflow, parse_json=False, retrieve_tags=False)
+        workflow_response["tags"] = tags.get(workflow.id, [])
         response.append(workflow_response)
-
-    archived_workflows = db.find_workflow_by_date(yabiusername, start, end, sort_field, sort_dir)
-
-    response.extend(archived_workflows)
-    response.sort(key=lambda x: x[0], reverse=sort_dir == 'DESC')
-    response = [r[1] for r in response]
 
     return HttpResponse(json.dumps(response), mimetype='application/json')
 
@@ -447,13 +480,10 @@ def workflow_change_tags(request, id=None):
     try:
         workflow = EngineWorkflow.objects.get(pk=id)
     except EngineWorkflow.DoesNotExist:
-        if db.does_workflow_exist(yabiusername, id=id):
-            db.change_workflow_tags(yabiusername, id, taglist)
-        else:
-            return HttpResponseNotFound()
+        return HttpResponseNotFound()
 
-    else:
-        workflow.change_tags(taglist)
+    workflow.change_tags(taglist)
+
     return HttpResponse("Success")
 
 
@@ -567,3 +597,9 @@ def save_credential(request, id):
     credential.save()
 
     return JsonMessageResponse("Credential updated successfully")
+
+
+def find_first(pred, sequence):
+    for x in sequence:
+        if pred(x):
+            return x

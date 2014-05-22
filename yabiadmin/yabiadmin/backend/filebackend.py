@@ -31,6 +31,7 @@ from yabiadmin.yabiengine.urihelper import uriparse
 import os
 import shutil
 import logging
+import tarfile
 import traceback
 import threading
 logger = logging.getLogger(__name__)
@@ -39,58 +40,53 @@ logger = logging.getLogger(__name__)
 LS_PATH = '/bin/ls'
 LS_TIME_STYLE = r"+%b %d  %Y"
 
-
-class CopyThread(threading.Thread):
-
-    def __init__(self, src, dst, purge=None, queue=None):
-        threading.Thread.__init__(self)
-        self.src = src
-        self.dst = dst
-        self.purge = purge
-        self.queue = queue
-
-    def run(self):
-        status = -1
-        logger.debug('CopyThread {0} -> {1}'.format(self.src, self.dst))
-        try:
-            logger.debug('CopyThread start copy')
-            shutil.copyfileobj(open(self.src, 'r'), open(self.dst, 'w'))
-            #shutil.copyfileobj(open(self.src, os.O_RDONLY), open(self.dst, 'w+'))
-            #shutil.copyfileobj(os.open(self.src, os.O_RDONLY), os.open(self.dst, os.O_WRONLY|os.O_CREAT))
-            logger.debug('CopyThread end copy')
-            status = 0
-        except Exception as exc:
-            logger.error(traceback.format_exc())
-            logger.error(exc)
-        finally:
-            if self.queue is not None:
-                self.queue.put(status)
-            # I was using purge to optionally remove a fifi after a copy
-            if self.purge is not None and os.path.exists(self.purge):
-                #os.unlink(self.purge)
-                pass
-
-
 class FileBackend(FSBackend):
+    backend_desc = "File system"
+    backend_auth = { }
 
-    def fifo_to_remote(self, uri, fifo, queue=None):
-        """initiate a copy from local fifo to uri"""
+    def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)
-        assert os.path.exists(fifo)
-        # purge the fifo after we finish reading from it
-        thread = CopyThread(src=fifo, dst=parts.path, purge=fifo, queue=queue)
-        thread.start()
-        return thread
+        return self._copy_file(src, open(parts.path, "wb"))
 
-    def remote_to_fifo(self, uri, fifo, queue=None):
-        """initiate a copy from local file to fifo"""
+    def download_file(self, uri, dst):
         scheme, parts = uriparse(uri)
         if not os.path.exists(parts.path):
             raise FileNotFoundError(uri)
-        assert os.path.exists(fifo)
-        thread = CopyThread(src=parts.path, dst=fifo, queue=queue)
-        thread.start()
-        return thread
+        return self._copy_file(open(parts.path, "rb"), dst)
+
+    def download_dir(self, uri, dst):
+        scheme, parts = uriparse(uri)
+        if not os.path.exists(parts.path):
+            raise FileNotFoundError(uri)
+        return self._tar_and_copy_dir(parts.path, dst)
+
+    def _copy_file(self, src, dst):
+        success = False
+        logger.debug('CopyThread {0} -> {1}'.format(src, dst))
+        logger.debug('CopyThread start copy')
+        try:
+            shutil.copyfileobj(src, dst)
+        except Exception as exc:
+            # fixme: just catch the shutil and ioerror exceptions
+            logger.exception("FileBackend _copy_file error")
+        else:
+            logger.debug('CopyThread end copy')
+            success = True
+        return success
+
+    def _tar_and_copy_dir(self, src, dst):
+        success = False
+        logger.debug('TarAndCopyThread {0} -> {1}'.format(src, dst))
+        logger.debug('TarAndCopyThread start tar')
+        try:
+            with tarfile.open(fileobj=dst, mode='w|gz') as f:
+                f.add(src, arcname=os.path.basename(src.rstrip('/')))
+        except Exception as exc:
+            logger.exception("FileBackend _tar_and_copy_dir error")
+        else:
+            logger.debug('TarAndCopyThread end tar')
+            success = True
+        return success
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
@@ -181,9 +177,10 @@ class FileBackend(FSBackend):
             raise Exception('rm target ({0}) is not a file or directory'.format(parts.path))
 
         try:
-            if os.path.isdir(parts.path):
-                shutil.rmtree(parts.path)
-            elif os.path.isfile(parts.path):
-                os.unlink(parts.path)
+            path = parts.path.rstrip('/')
+            if os.path.isfile(path) or os.path.islink(path):
+                os.unlink(path)
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())

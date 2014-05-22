@@ -61,8 +61,6 @@ def run_test(test_case, tester):
     """Called once for each test_case file"""
     test_case = os.path.join(TEST_CASES_DIR, test_case)
     setup_dict, expectations_dict = tester.parse_testcase(test_case)
-    logger.debug('\nTest Case: %s\n%s\n%s', test_case, 
-                                            setup_dict, expectations_dict)
     tester.setup(setup_dict)
     tester.act()
     tester.do_assert(expectations_dict)

@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 
 class SelectFileBackend(FSBackend):
+    backend_desc = "Select file (\"null\" backend)"
+    backend_auth = { }
 
     def stage_in_files(self):
         """

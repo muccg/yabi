@@ -29,15 +29,11 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseBadRequest
-from ccg.http import HttpResponseUnauthorized
+from ccg_django_utils.http import HttpResponseUnauthorized
 from django.conf import settings
-
-import hmac
 
 import logging
 logger = logging.getLogger(__name__)
-
-HTTP_HMAC_KEY = 'HTTP_HMAC_DIGEST'
 
 
 def authentication_required(f):
@@ -67,31 +63,6 @@ def profile_required(func):
 
         return func(request, *args, **kwargs)
 
-    return newfunc
-
-
-#
-# for views to be used only by the yabi backend, use this decorator to lock it down
-# also use authentication_required
-#
-def hmac_authenticated(func):
-    """Ensure that the user viewing this view is the backend system user"""
-    def newfunc(request, *args, **kwargs):
-
-        # check hmac result
-        hmac_digest = hmac.new(settings.HMAC_KEY)
-        hmac_digest.update(request.get_full_path())
-
-        if HTTP_HMAC_KEY not in request.META:
-            logger.critical("Hmac-digest header not present in incoming request. Denying.")
-            return HttpResponseBadRequest("Hmac-digest header not present in request\n")
-
-        # check HMAC matches
-        if request.META[HTTP_HMAC_KEY] != hmac_digest.hexdigest():
-            logger.critical("Hmac-digest header does not match expected. Authentication denied.")
-            return HttpResponseUnauthorized("Hmac-digest authentication failed\n")
-
-        return func(request, *args, **kwargs)
     return newfunc
 
 

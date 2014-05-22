@@ -30,9 +30,7 @@ import os
 import shutil
 logger = logging.getLogger(__name__)
 
-
 class BaseBackend(object):
-
     task = None
     cred = None
     yabiusername = None
@@ -60,3 +58,71 @@ class BaseBackend(object):
         if os.path.exists(local_remnants_dir):
             shutil.rmtree(local_remnants_dir)
         os.makedirs(local_remnants_dir)
+
+    # The following backend_auth description is used by multiple backends
+    SSH_AUTH = {
+        "class": "SSH",
+        "username": "Login name for remote host",
+        "key": "Optional SSH private key.",
+        "password": "Can be a normal login password, passphrase for SSH key, or empty."
+    }
+
+    _backends = []
+
+    @classmethod
+    def register(cls, *schemes):
+        for scheme in schemes:
+            BaseBackend._backends.append((scheme, cls))
+        return cls
+
+    @classmethod
+    def get_scheme_choices(cls):
+        return [(k, "%s - %s" % (k, getattr(backendcls, "backend_desc", backendcls.__name__)))
+                for k, backendcls in cls._backends]
+
+    @classmethod
+    def get_auth_class_choices(cls):
+        auths = [getattr(backendcls, "backend_auth", {}).get("class", None)
+                 for k, backendcls in cls._backends]
+        return [(c, c) for c in sorted(set(auths)) if c]
+
+    @classmethod
+    def get_backend_cls_for_scheme(cls, scheme, basecls=None):
+        """
+        Returns the backend class registered with `scheme'. If `basecls' is
+        given, the backend class must be a subclass of it. If no
+        matching class is found, None is returned.
+        """
+        basecls = basecls or cls
+        for backendscheme, backendcls in cls._backends:
+            if backendscheme == scheme and issubclass(backendcls, basecls):
+                return backendcls
+        return None
+
+    @classmethod
+    def create_backend_for_scheme(cls, scheme, basecls=None, *args, **kwargs):
+        """
+        Instantiates a backend for the given URL scheme which is an
+        instance of `basecls'.
+        """
+        BackendCls = cls.get_backend_cls_for_scheme(scheme, basecls)
+        return BackendCls(*args, **kwargs) if BackendCls else None
+
+    @classmethod
+    def get_caps(cls):
+        """
+        Returns a dict mapping backend schemes to their "capabilities" --
+        i.e. whether they are for filesystem or execution backends, or
+        both.
+        """
+        caps = {}
+        from . import FSBackend, ExecBackend
+        for scheme, be in cls._backends:
+            k = caps.setdefault(scheme, {})
+            k["fs"] = k.get("fs", False) or issubclass(be, FSBackend)
+            k["exec"] = k.get("exec", False) or issubclass(be, ExecBackend)
+            if hasattr(be, "backend_auth"):
+                k.setdefault("auth", {}).update(be.backend_auth)
+            for attr in "lcopy_supported", "link_supported":
+                k[attr] = k.get(attr, False) or getattr(be, attr, False)
+        return caps

@@ -82,8 +82,14 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        *
        * fetches updated file listing based on a new browse
        * location
+       * - pass in loadContents false if you don't want the files to be loaded
+       *   this is useful in case you know the files aren't ready yet on the
+       *   server
        */
-      YabiFileSelector.prototype.updateBrowser = function(loc) {
+      YabiFileSelector.prototype.updateBrowser = function(loc, loadContents) {
+        if (Y.Lang.isUndefined(loadContents)) {
+            loadContents = true;
+        }
         //console.log(location);
         this.pathComponents = loc.pathComponents.slice();
         if (loc.filename !== '') {
@@ -116,7 +122,9 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           this.enableUpload();
         }
 
-        this.hydrate(loc.toString());
+        if (loadContents) {
+            this.hydrate(loc.toString());
+        }
 
         this.updateBreadcrumbs();
       };
@@ -200,6 +208,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         // files as an array and directories as an array
         // each file and directory is an array of [fname, size in bytes, date]
         var rownumber = 0;
+        var isSymlink = false;
         for (var toplevelindex in this.browseListing) {
           for (index in this.browseListing[toplevelindex].directories) {
             rownumber += 1;
@@ -207,7 +216,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             fileEl.className = 'dirItem';
             fileName = this.browseListing[toplevelindex].directories[index][0];
             if (this.browseListing[toplevelindex].directories[index][3]) {
-              // this is a symlink, so change the icon image
+              isSymlink = true;
               fileEl.className += ' dirLink';
             }
 
@@ -222,10 +231,15 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
             this.fileListEl.appendChild(fileEl);
 
+            var fileValue = new YabiSimpleFileValue(this.pathComponents,
+                  fileName, 'directory');
+            if (isSymlink) {
+                fileValue.isSymlink = true;
+            }
+
             invoker = {
               'target': this,
-              'object': new YabiSimpleFileValue(this.pathComponents,
-                  fileName, 'directory')
+              'object': fileValue
             };
 
             Y.one(fileEl).on('click', this.expandCallback, null, invoker);
@@ -251,7 +265,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
                 var schema = this.pathComponents[0].substring(0,
                     this.pathComponents[0].indexOf('://'));
-                if (schema == 'scp' || schema == 'localfs')
+                if (schema == 'scp' || schema == 'sftp' || schema == 'localfs')
                 {
                   downloadEl = document.createElement('div');
                   downloadEl.className = 'download';
@@ -284,7 +298,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             fileEl = document.createElement('div');
             fileEl.className = 'fileItem';
             if (this.browseListing[toplevelindex].files[index][3]) {
-              // this is a symlink, so change the icon image
+              isSymlink = true;
               fileEl.className += ' fileLink';
             }
             if (rownumber % 2 == 0) {
@@ -309,10 +323,14 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             sizeEl.appendChild(document.createTextNode(fileSize));
             fileEl.appendChild(sizeEl);
 
+            var fileValue = new YabiSimpleFileValue(this.pathComponents,
+                  this.browseListing[toplevelindex].files[index][0]);
+            if (isSymlink) {
+                fileValue.isSymlink = true;
+            }
             invoker = {
               target: this,
-              object: new YabiSimpleFileValue(this.pathComponents,
-                  this.browseListing[toplevelindex].files[index][0]),
+              object: fileValue,
               topLevelIndex: toplevelindex
             };
 
@@ -666,6 +684,15 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
       };
 
 
+      YabiFileSelector.prototype.indexOfFile = function(file) {
+        for (var index in this.selectedFiles) {
+          if (this.selectedFiles[index].isEqual(file)) {
+            return index;
+          }
+        }
+        return -1;
+      };
+
       /**
        * selectFile
        *
@@ -673,11 +700,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        */
       YabiFileSelector.prototype.selectFile = function(file) {
         //duplicate detection
-        for (var index in this.selectedFiles) {
-          if (this.selectedFiles[index].isEqual(file)) {
-            return;
-          }
-        }
+        if (this.indexOfFile(file) >= 0) return;
 
         this.selectedFiles.push(file);
 
@@ -896,9 +919,26 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           e, invoker) {
         e.halt(true);
         var target = invoker.target;
+        var fileValue = invoker.object;
 
-        //file deletion
-        target.deleteRemoteFile(invoker.object);
+        if (target.confirmDelete(fileValue)) {
+            target.deleteRemoteFile(fileValue);
+        }
+      };
+
+      YabiFileSelector.prototype.confirmDelete = function(fileValue) {
+        var fileType = 'file';
+        var contentsSuffix = '';
+        if (fileValue.isSymlink) {
+            fileType = 'symlink';
+        } else if (fileValue.type === 'directory') {
+            fileType = 'directory';
+            contentsSuffix = ' and all its contents';
+        }
+        var confirmMessage = 'Are you sure you want to delete the ' + fileType +
+                             '\n' + fileValue + contentsSuffix + '?';
+
+        return confirm(confirmMessage);
       };
 
       YabiFileSelector.prototype.unselectFileCallback = function(e, invoker) {

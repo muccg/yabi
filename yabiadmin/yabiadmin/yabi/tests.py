@@ -3,10 +3,13 @@
 from django.utils import unittest as unittest
 from django.test.client import Client
 from django.contrib.auth.models import User as DjangoUser
+from model_mommy import mommy
 from yabiadmin.yabi.models import User
+from yabiadmin.yabi.ws_frontend_views import munge_name
 
 from django.contrib.auth.models import User as DjangoUser
 from yabiadmin.yabi.models import Credential, User, Backend, Tool, ToolSet, ToolGroup
+from yabiadmin.yabi.forms import BackendForm
 from django.core.cache import cache
 
 from django.utils import simplejson as json
@@ -65,7 +68,7 @@ class CredentialTests(unittest.TestCase):
         self.credential.get_credential_access().clear_cache()
         decrypted = self.credential.get_credential_access().get()
         self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})
-        # logging in must encrypt the credential, and also shove a copy of the 
+        # logging in must encrypt the credential, and also shove a copy of the
         # decrypted and then protected credential into the cache
         self.credential.get_credential_access().clear_cache()
         self.credential.on_login(self.django_user.username, 'pass')
@@ -77,7 +80,7 @@ class CredentialTests(unittest.TestCase):
         self.credential.get_credential_access().clear_cache()
         self.credential.on_login(self.django_user.username, 'pass')
         decrypted = self.credential.get_credential_access().get()
-        self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})        
+        self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})
 
     def test_cache_keyname_replaces_unicode_character(self):
         access = self.credential.get_credential_access()
@@ -228,8 +231,103 @@ class TestOrderByCustomFilter(unittest.TestCase):
         self.assertTrue(index_of_zzzz > index_of_mmmm > index_of_aaaa, "order by failed")
 
 
+class TestWorkflowNameMunging(unittest.TestCase):
+    def setUp(self):
+        self.user = User.objects.get(name='demo')
+        self.workflow = mommy.make('Workflow', name='Unmunged yet', user=self.user)
+        self.munged_workflows = [
+            mommy.make('Workflow', name='Munged', user=self.user),
+            mommy.make('Workflow', name='Munged (1)', user=self.user),
+            mommy.make('Workflow', name='Munged (2)', user=self.user),
+        ]
+
+    def tearDown(self):
+        self.workflow.delete()
+        for w in self.munged_workflows:
+            w.delete()
+
+    def test_unique_name_does_not_get_munged(self):
+        name = munge_name(self.user.name, 'does not exist yet')
+        self.assertEquals('does not exist yet', name)
+
+    def test_unmunged_unique_workflow_name(self):
+        name = munge_name(self.user.name, 'Unmunged yet')
+        self.assertEquals('Unmunged yet (1)', name)
+
+    def test_already_munged_called_with_basename(self):
+        name = munge_name(self.user.name, 'Munged')
+        self.assertEquals('Munged (3)', name)
+
+    def test_already_munged_called_with_munged_name(self):
+        name = munge_name(self.user.name, 'Munged (1)')
+        self.assertEquals('Munged (3)', name)
 
 
+class TestBackendFormValidation(unittest.TestCase):
+    def setUp(self):
+        pass
 
+    def minimal_valid_data(self):
+        return {"name": "some name",
+            "scheme": "sftp",
+            "hostname": "ahostname",
+            "path": "/a/path/"}
 
+    def test_should_be_valid_with_minimal_data(self):
+        form = BackendForm(self.minimal_valid_data())
+        self.assertTrue(form.is_valid(), "Form should be valid")
 
+    def test_mandatory_fields_are_required(self):
+        mandatory_fields = ('name', 'scheme', 'hostname', 'path',)
+        def field_is_required_error(field, errors):
+            return errors.get(field) == [u'This field is required.']
+
+        form = BackendForm({})
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        for mand_field in mandatory_fields:
+            self.assertTrue(field_is_required_error(mand_field, form.errors),
+                    "Field '%s' should be reported as required" % mand_field)
+
+    def test_scheme_is_a_valid_scheme(self):
+        data = self.minimal_valid_data()
+        data['scheme'] = "not valid"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertRegexpMatches(form.errors['scheme'][0], r"^Scheme not valid. Options: ")
+
+    def test_path_should_start_with_slash(self):
+        data = self.minimal_valid_data()
+        data['path'] = "no/slash/at/start/"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['path'][0], u"Path must start with a /.")
+
+    def test_path_should_end_with_slash(self):
+        data = self.minimal_valid_data()
+        data['path'] = "/no/slash/at/end"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['path'][0], u"Path must end with a /.")
+
+    def test_hostname_can_not_end_in_slash(self):
+        data = self.minimal_valid_data()
+        data['hostname'] = "hostname-ending-in/"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['hostname'][0], u"Hostname must not end with a /.")
+
+    def test_lcopy_unsupported_on_s3(self):
+        data = self.minimal_valid_data()
+        data['scheme'] = "s3"
+        data['lcopy_supported'] = True
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['lcopy_supported'][0], u"Local Copy not supported on s3.")
+
+    def test_link_unsupported_on_s3(self):
+        data = self.minimal_valid_data()
+        data['scheme'] = "s3"
+        data['link_supported'] = True
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['link_supported'][0], u"Linking not supported on s3.")
