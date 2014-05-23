@@ -15,7 +15,7 @@ setup(name='yabish',
      package_data = {
         '': ['help/*'],
      },
-     scripts = ['yabish'],
+     entry_points = { 'console_scripts': [ 'yabish = yabishell.yabish:main' ] },
      install_requires = [
          'yaphc==0.1.5',
          'six>=1.5,<1.6',
