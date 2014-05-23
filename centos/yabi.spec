@@ -21,7 +21,7 @@
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
 
 # Variables for yabish
-%define shinstalldir /usr/local/yabish
+%define shinstalldir /opt/yabish
 %define shbuildinstalldir %{buildroot}/%{shinstalldir}
 
 
