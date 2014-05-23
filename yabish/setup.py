@@ -17,12 +17,10 @@ setup(name='yabish',
      },
      scripts = ['yabish'],
      install_requires = [
-         'argparse==1.2.1', 
          'yaphc==0.1.5',
-         'six>=1.4,<1.5',
+         'six>=1.5,<1.6',
      ],
      dependency_links = [
         "https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz",
-        "https://argparse.googlecode.com/files/argparse-1.2.1.tar.gz"
      ]
 )
