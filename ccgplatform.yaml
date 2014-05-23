@@ -1,0 +1,85 @@
+project:
+  name: yabi
+
+ccgplatform:
+  version: ahunter-1
+
+ccgpuppet:
+  version: ahunter-1
+
+instances:
+
+  yabi:
+    extends: centos_lxc_puppet3
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet
+    puppet_manifest: yabi-local-dev.pp
+    post_puppet: 
+      - ./develop.sh install
+      - ./develop.sh syncmigrate
+
+  yabi_raring:
+    extends: raring_lxc
+    pre_puppet: 
+      - which git || sudo apt-get -y install git
+      - which librarian-puppet || sudo gem install librarian-puppet
+      - which puppet || sudo apt-get -y install puppet
+    puppet_manifest: yabi-local-dev.pp
+    post_puppet: 
+      - ./develop.sh install
+      - ./develop.sh syncmigrate
+
+  aws_yabi_test:
+    extends: aws_oregon_centos
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet
+    puppet_manifest: aws-yabi-test.pp
+    aws_instance_type: m3.large
+
+  aws_yabi_torque_test:
+    extends: aws_oregon_centos
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet
+    puppet_manifest: aws-yabi-torque-test.pp
+    aws_instance_type: m3.medium
+
+  aws_syd_yabi_prod:
+    instance_class: ec2
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet
+    puppet_manifest: aws-syd-yabi-prod.pp
+    ssh_user: ec2-user
+    key_filename: ~/.ssh/ccg-syd-ops.pem
+    aws_ondemand: True
+    aws_region: ap_southeast_2
+    aws_image_id: ami-d19902eb
+    aws_instance_type: c3.large
+    aws_key_name: ccg-syd-ops
+    aws_security_groups: 
+      - default
+      - ssh
+      - proxied
+      - rdsaccess
+    aws_disable_api_termination: True
+
+  aws_syd_yabi_staging_ah:
+    extends: aws_syd_yabi_staging
+
+  aws_syd_yabi_staging:
+    extends: aws_syd_centos
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet
+    puppet_manifest: aws-syd-yabi-staging.pp
+    aws_instance_type: m3.medium
+
+  local-staging:
+    extends: centos_lxc_puppet3
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet
+    puppet_manifest: aws-syd-yabi-staging.pp
