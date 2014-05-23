@@ -290,8 +290,19 @@ ALLOWED_HOSTS = env.get("allowed_hosts", "").split()
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
-torque_path = env.get("torque_path", "")
-sge_path = env.get("sge_path", "")
+# Any settings that should be changed for just for testing runs
+if env.get("use_testing_settings", False):
+    SWIFT_BACKEND_SEGMENT_SIZE = 1234567  # approx 1MB segments
+    torque_path = "/opt/torque/2.3.13/bin"
+    sge_path = "/opt/sge6/bin/linux-x64"
+else:
+    torque_path = ""
+    sge_path = ""
+
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+
+torque_path = env.get("torque_path", torque_path)
+sge_path = env.get("sge_path", sge_path)
 SCHEDULER_COMMAND_PATHS = {
     "torque": {"qsub": os.path.join(torque_path, "qsub"),
                "qstat": os.path.join(torque_path, "qstat"),
@@ -301,12 +312,6 @@ SCHEDULER_COMMAND_PATHS = {
                "qdel": os.path.join(sge_path, "qdel"),
                "qacct": os.path.join(sge_path, "qacct")},
 }
-
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
-
-# Any settings that should be changed for just for testing runs
-if env.get("use_testing_settings", False):
-    SWIFT_BACKEND_SEGMENT_SIZE = 1234567  # approx 1MB segments
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 

@@ -21,7 +21,7 @@
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
 
 # Variables for yabish
-%define shinstalldir /usr/local/yabish
+%define shinstalldir /opt/yabish
 %define shbuildinstalldir %{buildroot}/%{shinstalldir}
 
 
@@ -183,6 +183,10 @@ find %{shbuildinstalldir} -name RECORD -exec sed -i -e "s|${RPM_BUILD_ROOT}||" {
 # don't need a copy of python interpreter in the virtualenv
 rm %{shbuildinstalldir}/bin/python*
 
+# Symlink script into system bin
+mkdir -p %{buildroot}/%{_bindir}
+ln -fsT %{shinstalldir}/bin/yabish %{buildroot}/%{_bindir}/yabish
+
 %pre admin
 # https://fedoraproject.org/wiki/Packaging:UsersAndGroups?rd=Packaging/UsersAndGroups
 /usr/bin/getent group celery >/dev/null || /usr/sbin/groupadd -r celery
@@ -232,4 +236,5 @@ fi
 
 %files shell
 %defattr(-,root,root,-)
+%{_bindir}/yabish
 %{shinstalldir}
