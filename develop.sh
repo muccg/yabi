@@ -52,8 +52,6 @@ settings() {
         export DBNAME=test_yabi
         export DBUSER=root
         export DBPASS=""
-        export TORQUE_PATH=/opt/torque/2.3.13/bin
-        export SGE_PATH=/opt/sge6/bin/linux-x64
         export USE_TESTING_SETTINGS=1
         ;;
     test_postgresql)
@@ -61,8 +59,6 @@ settings() {
         export DBNAME=test_yabi
         export DBUSER=yabiapp
         export DBPASS=yabiapp
-        export TORQUE_PATH=/opt/torque/2.3.13/bin
-        export SGE_PATH=/opt/sge6/bin/linux-x64
         export USE_TESTING_SETTINGS=1
         ;;
     dev_mysql)
