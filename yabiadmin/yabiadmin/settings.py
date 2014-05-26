@@ -378,6 +378,8 @@ CELERY_ACKS_LATE = True
 CELERYD_MAX_TASKS_PER_CHILD = env.get("celeryd_max_tasks_per_child", 100)
 CELERYD_FORCE_EXECV = True
 
+CELERYD_LOG_FORMAT = "YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s"
+
 ### PREVIEW SETTINGS
 
 # The truncate key controls whether the file may be previewed in truncated form
@@ -424,9 +426,9 @@ JAVASCRIPT_LIBRARIES = {
     },
 }
 
-### LOGGING SETUP ###
-# see https://docs.djangoproject.com/en/dev/topics/logging/
-
+# The logging settings here apply only to the Django WSGI process.
+# Celery is left to hijack the root logger. We add our custom handlers after
+# that in yabiadmin.backend.celerytasks.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
