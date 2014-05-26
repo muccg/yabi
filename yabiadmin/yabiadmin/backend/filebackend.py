@@ -162,8 +162,11 @@ class FileBackend(FSBackend):
         logger.debug('symbolic_link {0} -> {1}'.format(link_uri, target_uri))
         target_scheme, target_parts = uriparse(target_uri)
         link_scheme, link_parts = uriparse(link_uri)
+        target = target_parts.path
         try:
-            os.symlink(target_parts.path, link_parts.path)
+            if not os.path.exists(target):
+                raise FileNotFoundError("Source of symbolic link '%s' doesn't exist" % target)
+            os.symlink(target, link_parts.path)
         except OSError as ose:
             raise RetryException(ose, traceback.format_exc())
 
