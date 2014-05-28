@@ -11,6 +11,6 @@ def uriparse(uri):
     and yabi:// is not one of them. The ParseResult object is read-only so
     we cannot inject the scheme back into it.
     """
-    scheme, rest = uri.split(":",1)
-    assert re_url_schema.match(scheme)        
+    scheme, rest = uri.split(":", 1)
+    assert re_url_schema.match(scheme)
     return (scheme, urlparse(rest))

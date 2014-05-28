@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 
 import os
 import datetime
@@ -32,12 +28,11 @@ import uuid
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 from django.db.transaction import is_managed
-from django.conf import settings
 from django.utils import simplejson as json
 from yabiadmin.yabi.models import BackendCredential, Tool
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
-from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger 
+from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger
 from yabiadmin.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse
 from .backendhelper import get_exec_backendcredential_for_uri
 import logging

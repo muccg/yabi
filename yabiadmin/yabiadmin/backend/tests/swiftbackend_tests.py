@@ -3,6 +3,7 @@
 from django.utils import unittest
 from yabiadmin.backend.swiftbackend import SwiftBackend
 
+
 class SwiftURIParseTests(unittest.TestCase):
     def test_basic(self):
         uri = "swift://username@keystone.bioplatforms.com:443/tenant/bucket/file.txt"

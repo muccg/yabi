@@ -3,7 +3,6 @@ from argparse import ArgumentParser
 from collections import namedtuple
 import json
 import os
-import readline
 import sys
 import uuid
 
@@ -17,6 +16,7 @@ from six.moves import map
 
 YABI_DEFAULT_URL = os.environ.get('YABISH_YABI_URL', 'https://ccgapps.com.au/yabi/')
 
+
 def main():
     debug = False
     yabi = None
@@ -27,7 +27,7 @@ def main():
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
         argparser.add_argument("--yabi-bg", action='store_true', help="Run in background")
         argparser.add_argument("--yabi-url", help="The URL of the YABI server", default=YABI_DEFAULT_URL)
-        options, args = argparser.parse_known_args()        
+        options, args = argparser.parse_known_args()
 
         args = CommandLineArguments(args)
 
@@ -58,13 +58,15 @@ def main():
     finally:
         if yabi is not None:
             yabi.session_finished()
-            
+
     exit(exit_code)
+
 
 def print_help():
     help_file = os.path.join(os.path.dirname(__file__), 'help/main')
     with open(help_file) as f:
         print(f.read())
+
 
 class StageIn(object):
     def __init__(self, yabi, args):
@@ -72,23 +74,23 @@ class StageIn(object):
         self.args = args
         self.stageindir = None
         self.files = None
-   
+
     @property
     def debug(self):
         return self.yabi.debug
- 
+
     def do(self):
         if not self.args.local_files:
             return
-        self.files = self.files_to_stagein()       
+        self.files = self.files_to_stagein()
         if not self.files:
             return
- 
+
         files_to_uris = {}
         alldirs, allfiles, total_size = self.collect_files()
         stagein_dir, dir_uris = self.create_stagein_dir(alldirs)
         print("Staging in %s in %i directories and %i files." % (
-                human_readable_size(total_size), len(alldirs), len(allfiles)))
+            human_readable_size(total_size), len(alldirs), len(allfiles)))
         files_to_uris.update(dir_uris)
         for f in allfiles:
             rel_path, fname = os.path.split(f.relpath)
@@ -112,11 +114,11 @@ class StageIn(object):
                 for root, dirs, files in os.walk(f):
                     for adir in dirs:
                         dpath = os.path.join(root, adir)
-                        rel_dir = dpath[len(f)-1:] 
+                        rel_dir = dpath[len(f) - 1:]
                         alldirs.append(RelativeFile(rel_dir, dpath))
                     for afile in files:
                         fpath = os.path.join(root, afile)
-                        rpath = fpath[len(f)-1:]
+                        rpath = fpath[len(f) - 1:]
                         allfiles.append(RelativeFile(rpath, fpath))
                         total_size += os.path.getsize(fpath)
         return alldirs, allfiles, total_size
@@ -124,7 +126,7 @@ class StageIn(object):
     def files_to_stagein(self):
         uri = 'ws/yabish/is_stagein_required'
         params = {'name': self.args.first_argument}
-        for i,a in enumerate(self.args.rest_of_arguments):
+        for i, a in enumerate(self.args.rest_of_arguments):
             params['arg%i' % i] = a
         resp, json_response = self.yabi.post(uri, params)
         response = json.loads(json_response)
@@ -136,13 +138,13 @@ class StageIn(object):
     def create_stagein_dir(self, dir_structure):
         uri = 'ws/yabish/createstageindir'
         params = {'uuid': uuid.uuid1()}
-        for i,d in enumerate(dir_structure):
+        for i, d in enumerate(dir_structure):
             params['dir_%i' % i] = d.relpath
         resp, json_response = self.yabi.post(uri, params)
         response = json.loads(json_response)
         if not response.get('success'):
             raise errors.RemoteError(
-                "Couldn't create stagein directory on the server (%s)" % response.get('msg')) 
+                "Couldn't create stagein directory on the server (%s)" % response.get('msg'))
         stageindir_uri = response['uri']
         dir_uri_mapping = {}
         for d in dir_structure:
@@ -158,7 +160,7 @@ class StageIn(object):
         finfo = (fname, fname, f.fullpath)
         params = {}
         print('  Staging in file: %s (%s).' % (
-                f.relpath,human_readable_size(os.path.getsize(f.fullpath))))
+            f.relpath, human_readable_size(os.path.getsize(f.fullpath))))
         resp, json_response = self.yabi.post(uri, params, files=[finfo])
         assert resp.status == 200
         return os.path.join(stagein_dir, fname)
@@ -166,6 +168,7 @@ class StageIn(object):
     def delete_stageindir(self):
         if self.stageindir:
             self.yabi.delete_dir(self.stageindir)
+
 
 class Yabi(object):
     def __init__(self, url, bg=False, debug=False):
@@ -201,17 +204,22 @@ class Yabi(object):
         login_action = actions.Login(self)
         return login_action.process([username, password])
 
-    def request(self, method, url, params=None, files=None):
+    def _create_request(self, method, url, params=None, files=None):
+        if method not in ('GET', 'POST'):
+            raise ValueError("Method should be GET or POST")
         if params is None:
             params = {}
         act_as_ajax = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+        if method == 'GET':
+            request = GetRequest(url, params, headers=act_as_ajax)
+        elif method == 'POST':
+            request = PostRequest(url, params, files=files, headers=act_as_ajax)
+
+        return request
+
+    def request(self, method, url, params=None, files=None):
         try:
-            if method == 'GET':
-                request = GetRequest(url, params, headers=act_as_ajax)
-            elif method == 'POST':
-                request = PostRequest(url, params, files=files, headers=act_as_ajax)
-            else:
-                assert False, "Method should be GET or POST"
+            request = self._create_request(method, url, params)
             if self.debug:
                 print('=' * 5 + 'Making HTTP request')
             resp, contents = self.http.make_request(request)
@@ -247,9 +255,11 @@ class Yabi(object):
         if self._http:
             self._http.finish_session()
 
+
 def print_version():
-    from .version import __version__ 
+    from .version import __version__
     print('yabish %s' % __version__)
+
 
 def print_error(error, debug=False):
     print('An error occured: \n\t%s' % error, file=sys.stderr)
@@ -257,6 +267,7 @@ def print_error(error, debug=False):
         print('-' * 5 + ' DEBUG ' + '-' * 5, file=sys.stderr)
         import traceback
         traceback.print_exc()
+
 
 class CommandLineArguments(object):
     def __init__(self, args):
@@ -292,9 +303,8 @@ class CommandLineArguments(object):
             else:
                 # also try right-side of = to handle combined with equals with file values
                 if '=' in arg:
-                    name,value = arg.split('=', 1)
+                    name, value = arg.split('=', 1)
                     if os.path.isfile(value) or os.path.isdir(value):
                         new_arg = "%s=%s" % (name, urls.get(os.path.basename(value), value))
-            return new_arg 
+            return new_arg
         self.args = list(map(file_to_url, self.args))
-

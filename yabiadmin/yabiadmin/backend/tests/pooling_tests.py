@@ -30,7 +30,7 @@ class PoolingTest(unittest.TestCase):
 
     def test_borrow_two_object_both_connect(self):
         self.setup_mock_two_connections()
-        ssh  = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
+        ssh = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
         ssh2 = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
         self.assertEqual(ssh, "my fake connection")
         self.assertEqual(ssh2, "my second fake connection")
@@ -39,7 +39,7 @@ class PoolingTest(unittest.TestCase):
         self.setup_mock_two_connections()
         when(self.connectorMock).is_active("my fake connection").thenReturn(True)
 
-        ssh  = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
+        ssh = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
         self.pool.give_back(ssh, self.HOST, self.PORT, self.CREDENTIAL)
         ssh2 = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
 
@@ -50,7 +50,7 @@ class PoolingTest(unittest.TestCase):
         when(self.connectorMock).connect(self.HOST, self.PORT, self.CREDENTIAL).thenReturn("my fake connection")
         when(self.connectorMock).connect("other host", self.PORT, self.CREDENTIAL).thenReturn("my other fake connection")
 
-        ssh  = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
+        ssh = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
         self.pool.give_back(ssh, self.HOST, self.PORT, self.CREDENTIAL)
         ssh2 = self.pool.borrow("other host", self.PORT, self.CREDENTIAL)
 
@@ -61,7 +61,7 @@ class PoolingTest(unittest.TestCase):
         self.setup_mock_two_connections()
         when(self.connectorMock).is_active("my fake connection").thenReturn(False)
 
-        ssh  = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
+        ssh = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
         self.pool.give_back(ssh, self.HOST, self.PORT, self.CREDENTIAL)
         ssh2 = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
 
@@ -75,15 +75,14 @@ class PoolingTest(unittest.TestCase):
         when(self.connectorMock).connect(self.HOST, self.PORT, self.CREDENTIAL).thenReturn(first_connection).thenReturn(second_connection)
         when(self.connectorMock).connect("other host", self.PORT, self.CREDENTIAL).thenReturn(third_connection)
 
-        ssh  = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
-        ssh2  = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
+        ssh = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
+        ssh2 = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
         ssh3 = self.pool.borrow("other host", self.PORT, self.CREDENTIAL)
 
-        self.pool.give_back(ssh,  self.HOST, self.PORT, self.CREDENTIAL)
+        self.pool.give_back(ssh, self.HOST, self.PORT, self.CREDENTIAL)
         self.pool.give_back(ssh2, self.HOST, self.PORT, self.CREDENTIAL)
         self.pool.give_back(ssh3, "other host", self.PORT, self.CREDENTIAL)
 
         self.pool.release()
 
         verify(self.connectorMock).close(first_connection)
-

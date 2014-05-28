@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import httplib
 from urllib import urlencode
@@ -43,13 +39,13 @@ def proxy(request, url, server, base):
     logger.debug(server)
     logger.debug(base)
 
-    ## TODO CODEREVIEW
-    ## Is is possible to post to a page and still send get params,
-    ## are they dropped by this proxy. Would it be possible to override yabiusername by
-    ## crafting a post and sending yabiusername as a get param as well
+    # TODO CODEREVIEW
+    # Is is possible to post to a page and still send get params,
+    # are they dropped by this proxy. Would it be possible to override yabiusername by
+    # crafting a post and sending yabiusername as a get param as well
 
     if request.method == "GET":
-        #resource = "%s?%s" % (os.path.join(base, url), request.META['QUERY_STRING']+"&yabiusername=%s"%quote(request.user.username) )
+        # resource = "%s?%s" % (os.path.join(base, url), request.META['QUERY_STRING']+"&yabiusername=%s"%quote(request.user.username) )
         resource = "%s?%s" % (os.path.join(base, url), request.META['QUERY_STRING'])
         logger.debug('Proxying get: %s%s' % (server, resource))
         conn = httplib.HTTPConnection(server)
@@ -59,7 +55,7 @@ def proxy(request, url, server, base):
     elif request.method == "POST":
         resource = os.path.join(base, url)
         post_params = copy.copy(request.POST)
-        #post_params['yabiusername'] = request.user.username
+        # post_params['yabiusername'] = request.user.username
         logger.debug('Proxying post: %s%s' % (server, resource))
         data = urlencode(post_params)
         headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}

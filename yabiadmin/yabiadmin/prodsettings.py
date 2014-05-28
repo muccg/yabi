@@ -1,6 +1,6 @@
 from settings import *
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 DEBUG = False
 
@@ -11,4 +11,4 @@ SSL_FORCE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = True
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#

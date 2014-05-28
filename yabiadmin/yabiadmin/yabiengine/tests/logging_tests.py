@@ -1,9 +1,4 @@
 from django.utils import unittest as unittest
-
-from model_mommy import mommy
-
-from django.conf import settings
-
 from yabiadmin.yabiengine.models import Syslog
 from yabiadmin.yabiengine.engine_logging import create_task_logger, create_job_logger, create_workflow_logger, YabiDBHandler
 
@@ -84,19 +79,16 @@ class YabiDBHandlerLoggingTest(unittest.TestCase):
         self.assertEquals('workflow', syslog.table_name)
         self.assertEquals(WORKFLOW_ID, syslog.table_id)
 
-
     def test_exception_info_is_logged(self):
         logger = logging.getLogger('yabiadmin')
         wfl_logger = create_workflow_logger(logger, WORKFLOW_ID)
 
         try:
             raise MyVerySpecificException("my error message")
-        except MyVerySpecificException as exc:
+        except MyVerySpecificException:
             wfl_logger.exception("Exception caught")
 
         syslog = Syslog.objects.get(table_name='workflow', table_id=WORKFLOW_ID, message__startswith="Exception caught")
 
         self.assertTrue('MyVerySpecificException' in syslog.message, "Information about the exception should be logged")
         self.assertTrue('my error message' in syslog.message, "The excpetions value should be logged")
-
-

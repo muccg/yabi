@@ -190,8 +190,7 @@ ci_authorized_keys() {
 
 # lint using flake8
 lint() {
-    project_needed
-    ${VIRTUALENV}/bin/flake8 ${PROJECT} --ignore=E501 --count
+    ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count
 }
 
 

@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,11 +20,10 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('yabiadmin.yabi.adminviews',
+urlpatterns = patterns(
+    'yabiadmin.yabi.adminviews',
     url(r'^user/(?P<user_id>\d+)/tools/$', 'user_tools', name='user_tools_view'),
     url(r'^user/(?P<user_id>\d+)/backends/$', 'user_backends', name='user_backends_view'),
     url(r'^tool/(?P<tool_id>\d+)/$', 'tool', name='tool_view'),

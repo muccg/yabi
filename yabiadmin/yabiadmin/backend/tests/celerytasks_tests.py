@@ -1,8 +1,6 @@
 from django.utils import unittest as unittest
-from django.conf import settings
 
 import celery
-from celery import _state
 from mockito import *
 from model_mommy import mommy
 
@@ -12,7 +10,7 @@ from yabiadmin.constants import STATUS_ERROR
 from yabiadmin.yabiengine.models import Task, Syslog
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, YabiDBHandler
 from yabiadmin.backend.celerytasks import retry_on_error
-from yabiadmin.backend.exceptions import RetryException, RetryPollingException
+from yabiadmin.backend.exceptions import RetryPollingException
 
 import logging
 
@@ -37,6 +35,7 @@ class FakeRequest(object):
         self.retries = 0 if retries is None else retries
         self.exception = None
         self.countdown = None
+
 
 class FakeCeleryTask(object):
     def __init__(self, retries=None):
@@ -92,10 +91,10 @@ class RetryOnErrorTest(unittest.TestCase):
 
         retry_delay_when_failed_with = self.retry_delay_when_failed_with
 
-        self.assertEquals(   5, retry_delay_when_failed_with(retries=0))
-        self.assertEquals(  25, retry_delay_when_failed_with(retries=1))
-        self.assertEquals( 125, retry_delay_when_failed_with(retries=2))
-        self.assertEquals( 625, retry_delay_when_failed_with(retries=3))
+        self.assertEquals(5, retry_delay_when_failed_with(retries=0))
+        self.assertEquals(25, retry_delay_when_failed_with(retries=1))
+        self.assertEquals(125, retry_delay_when_failed_with(retries=2))
+        self.assertEquals(625, retry_delay_when_failed_with(retries=3))
         self.assertEquals(3125, retry_delay_when_failed_with(retries=4))
         self.assertEquals(3125, retry_delay_when_failed_with(retries=5))
         self.assertEquals(3125, retry_delay_when_failed_with(retries=100))
@@ -116,7 +115,7 @@ class RetryOnErrorTest(unittest.TestCase):
         self.celery_current_task.request.retries = 1
         self.task.mark_task_as_retrying("A previous error")
 
-        result = self.retrying_fn(self.task.pk)
+        self.retrying_fn(self.task.pk)
 
         reloaded_task = Task.objects.get(pk=self.task.pk)
         self.assertFalse(reloaded_task.is_retrying)
@@ -140,7 +139,6 @@ class RetryOnErrorTest(unittest.TestCase):
         self.assertFalse(reloaded_task.is_retrying, "Shouldn't be marked as retrying anymore")
         self.assertEqual("just an exception", reloaded_task.error_msg)
 
-
     def test_task_is_marked_as_errored_when_celery_error_on_retry(self):
         self.setup_function_that_errors(ValueError("just an exception"))
 
@@ -160,7 +158,6 @@ class RetryOnErrorTest(unittest.TestCase):
         self.assertFalse(reloaded_task.is_retrying, "Shouldn't be marked as retrying anymore")
         self.assertEqual("a celery exception", reloaded_task.error_msg)
 
-
     def setup_function_that_succeeds(self):
         def wrapped_fn(task_id):
             return task_id
@@ -171,6 +168,7 @@ class RetryOnErrorTest(unittest.TestCase):
 
     def setup_function_that_errors(self, exception=None):
         self.my_exception = Exception() if exception is None else exception
+
         def wrapped_fn(task_id):
             raise self.my_exception
 
@@ -202,9 +200,9 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
         delete_models(self.workflow, self.tool)
 
     def delete_log_messages(self):
-        Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk+1)).delete()
-        Syslog.objects.filter(table_name='job', table_id__in=(self.job.pk, self.job.pk+1)).delete()
-        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.task.pk+1)).delete()
+        Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk + 1)).delete()
+        Syslog.objects.filter(table_name='job', table_id__in=(self.job.pk, self.job.pk + 1)).delete()
+        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.task.pk + 1)).delete()
         Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.workflow.pk)).delete()
 
     def test_no_syslog_messages_to_start_with(self):
@@ -252,5 +250,3 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
         after_delete_log_count = Syslog.objects.count()
 
         self.assertEquals(6, log_count - after_delete_log_count, "Only 6 log messages should be deleted")
-
-

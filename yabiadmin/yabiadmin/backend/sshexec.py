@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import os
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.exceptions import RetryException
@@ -123,5 +119,3 @@ def create_remote_file(sftp, remote_path, body):
 def make_user_executable(sftp, path):
     st = sftp.stat(path)
     sftp.chmod(path, st.st_mode | stat.S_IEXEC)
-
-
