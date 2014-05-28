@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.utils import partition
@@ -34,13 +30,13 @@ import boto
 from functools import partial
 from itertools import ifilter
 from io import BytesIO
-from itertools import ifilterfalse
 
 
 logger = logging.getLogger(__name__)
 
 NEVER_A_SYMLINK = False
 DELIMITER = '/'
+
 
 class S3Backend(FSBackend):
     """
@@ -78,6 +74,7 @@ class S3Backend(FSBackend):
                'a/anything' included
                'a/anything/deeper' ignored"""
         name_and_delimiter = name + DELIMITER if not name.endswith(DELIMITER) else name
+
         def no_more_delimiters(item):
             item_name_end = item.name.rstrip(DELIMITER)[len(name_and_delimiter):]
             return DELIMITER not in item_name_end
@@ -95,14 +92,13 @@ class S3Backend(FSBackend):
         try:
             bucket = self.bucket(bucket_name)
             keys_and_prefixes = ifilter(
-                    is_item_matching_name,
-                    bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
-                    delimiter=DELIMITER))
+                is_item_matching_name,
+                bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
+                                    delimiter=DELIMITER))
 
             # Keys correspond to files, prefixes to directories
             allkeys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
             empty_dir_key, keys = partition(is_empty_key_for_dir, allkeys)
-
 
             files = [(self.basename(k.name), k.size, self.format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
             dirs = [(self.basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
@@ -176,7 +172,7 @@ class S3Backend(FSBackend):
 
     def _get_connect_params(self, bucket_name):
         c = self.cred.credential.get_decrypted()
-        params = { "aws_access_key_id": c.key, "aws_secret_access_key": c.password }
+        params = {"aws_access_key_id": c.key, "aws_secret_access_key": c.password}
 
         # Use different boto options for e2e tests against fakes3
         from django.conf import settings
@@ -205,7 +201,7 @@ class S3Backend(FSBackend):
                 logger.error("Key not found for uri")
                 return False
         except:
-            logger.exception("Exception thrown while S3 downloading %s to %s", uri, filename)
+            logger.exception("Exception thrown while S3 downloading %s to %s", uri, dst)
             return False
 
     def upload_file(self, uri, src):
@@ -237,7 +233,7 @@ class S3Backend(FSBackend):
                 multipart_upload.complete_upload()
             return True
         except:
-            logger.exception("Exception thrown while S3 uploading %s to %s", filename, uri)
+            logger.exception("Exception thrown while S3 uploading %s to %s", src, uri)
             return False
 
     def get_keys_recurse(self, bucket, path):
@@ -246,8 +242,9 @@ class S3Backend(FSBackend):
         is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
 
         keys_and_prefixes = ifilter(
-                is_item_matching_name,
-                bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
+            is_item_matching_name,
+            bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
+                                delimiter=DELIMITER))
 
         # Keys correspond to files, prefixes to directories
         keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)

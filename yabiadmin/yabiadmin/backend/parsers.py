@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,14 +21,13 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 """A suite of useful parsers for us"""
 from __future__ import print_function
 import urlparse
 import re
 re_url_schema = re.compile(r'\w+')
+
 
 def parse_url(uri):
     """Parse a url via the inbuilt urlparse. But this is slightly different
@@ -39,4 +36,3 @@ def parse_url(uri):
     scheme, rest = uri.split(":", 1)
     assert re_url_schema.match(scheme)
     return scheme, urlparse.urlparse(rest)
-

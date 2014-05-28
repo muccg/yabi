@@ -2,17 +2,22 @@
 from datetime import datetime
 import six
 
+
 class Settings:
     user = None
     orm = None
 
+
 settings = Settings()
+
 
 def set_default_user(user):
     settings.user = user
 
+
 def set_default_orm(orm):
     settings.orm = orm
+
 
 def auth_user(username, password, email, active=True, staff=False, superuser=False, user=None, orm=None):
     user = user or settings.user
@@ -31,12 +36,14 @@ def auth_user(username, password, email, active=True, staff=False, superuser=Fal
     authuser.is_superuser = superuser
     return authuser
 
+
 def make_password_hash(password):
     import random
     import hashlib
     from django.contrib.auth.hashers import make_password
     salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
     return make_password(password, salt=salt, hasher='sha1')
+
 
 def yabi_user(username, user=None, orm=None):
     user = user or settings.user
@@ -50,6 +57,7 @@ def yabi_user(username, user=None, orm=None):
     yabi_user.name = username
 
     return yabi_user
+
 
 def yabi_backend(name, description, scheme, hostname, port, path, max_connections=None, lcopy=True, link=True, submission='', user=None, orm=None):
     user = user or settings.user
@@ -71,6 +79,7 @@ def yabi_backend(name, description, scheme, hostname, port, path, max_connection
     yabi_backend.link_supported = link
     yabi_backend.submission = submission
     return yabi_backend
+
 
 def yabi_credential(credentialuser, description, username="", password="", cert="", key="", user=None, orm=None):
     user = user or settings.user
@@ -94,7 +103,9 @@ def yabi_credential(credentialuser, description, username="", password="", cert=
 
     return yabi_credential
 
-def yabi_backendcredential(backend,credential,homedir,visible = False,default_stageout = False,submission='', user=None, orm=None):
+
+def yabi_backendcredential(backend, credential, homedir, visible=False,
+                           default_stageout=False, submission='', user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
 
@@ -110,6 +121,7 @@ def yabi_backendcredential(backend,credential,homedir,visible = False,default_st
     yabi_backendcredential.default_stageout = default_stageout
     yabi_backendcredential.submission = submission
     return yabi_backendcredential
+
 
 def yabi_filetype(name, description, extension_list, user=None, orm=None):
     user = user or settings.user
@@ -131,7 +143,8 @@ def yabi_filetype(name, description, extension_list, user=None, orm=None):
 
     return yabi_filetype
 
-def yabi_parameterswitchuse(display_text, formatstring,description, user=None, orm=None):
+
+def yabi_parameterswitchuse(display_text, formatstring, description, user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
 
@@ -145,7 +158,11 @@ def yabi_parameterswitchuse(display_text, formatstring,description, user=None, o
     yabi_parameterswitchuse.description = description
     return yabi_parameterswitchuse
 
-def yabi_tool(name, display_name, path, description, backend, fs_backend, enabled=True, accepts_input=False, cpus='', walltime='',module='',queue='',max_memory='',job_type='',lcopy=False, link=False, user=None, orm=None):
+
+def yabi_tool(name, display_name, path, description, backend, fs_backend,
+              enabled=True, accepts_input=False, cpus='', walltime='', module='',
+              queue='', max_memory='', job_type='', lcopy=False, link=False,
+              user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
 
@@ -184,7 +201,7 @@ def yabi_toolparameter(tool, switch, switch_use, rank, mandatory, hidden, output
     yabi_toolparameter.created_on = datetime.now()
     yabi_toolparameter.tool = tool
     yabi_toolparameter.switch = switch
-    yabi_toolparameter.switch_use =  switch_use
+    yabi_toolparameter.switch_use = switch_use
     yabi_toolparameter.rank = rank
     yabi_toolparameter.mandatory = mandatory
     yabi_toolparameter.hidden = hidden
@@ -216,6 +233,7 @@ def yabi_tooloutputextension(tool, extension, user=None, orm=None):
 
     return yabi_tooloutputextension
 
+
 def yabi_toolgroup(name, user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
@@ -228,6 +246,7 @@ def yabi_toolgroup(name, user=None, orm=None):
     yabi_toolgroup.name = name
     return yabi_toolgroup
 
+
 def yabi_toolset(name, user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
@@ -239,6 +258,7 @@ def yabi_toolset(name, user=None, orm=None):
     yabi_toolset.created_by = user
     yabi_toolset.name = name
     return yabi_toolset
+
 
 def yabi_toolgrouping(toolgroup, tool, toolset, user=None, orm=None):
     user = user or settings.user
@@ -253,6 +273,7 @@ def yabi_toolgrouping(toolgroup, tool, toolset, user=None, orm=None):
     yabi_toolgrouping.tool = tool
     yabi_toolgrouping.tool_set = toolset
     return yabi_toolgrouping
+
 
 def yabi_fileextension(pattern, user=None, orm=None):
     user = user or settings.user

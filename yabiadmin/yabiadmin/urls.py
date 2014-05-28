@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,15 +20,13 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
 from django.views.generic.base import RedirectView
 from yabiadmin import admin
-from yabiadmin.yabifeapp.views import handler404, handler500
+
 djangoadmin.autodiscover()
 
 urlpatterns = patterns('yabiadmin.yabifeapp.views',

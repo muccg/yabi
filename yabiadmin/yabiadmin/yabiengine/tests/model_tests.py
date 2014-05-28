@@ -1,10 +1,6 @@
 from django.utils import unittest as unittest
-
-from  model_mommy import mommy
-
-from yabiadmin.yabi.models import User, ParameterSwitchUse
+from model_mommy import mommy
 from yabiadmin.yabiengine import models as m
-from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate, SwitchFilename, make_fname
 
 
 def create_workflow_with_job_and_2_tasks(obj):
@@ -15,9 +11,11 @@ def create_workflow_with_job_and_2_tasks(obj):
     obj.second_task = mommy.make('Task', job=obj.job)
     obj.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
 
+
 def delete_models(*args):
     for model in args:
         model.delete()
+
 
 class TaskRetryingTest(unittest.TestCase):
 
@@ -40,7 +38,6 @@ class TaskRetryingOneTaskMarkedAsRetryingTest(unittest.TestCase):
         create_workflow_with_job_and_2_tasks(self)
 
         # We mark the second task as retrying, with an error msg
-        from yabiadmin.backend.celerytasks import mark_task_as_retrying
         self.second_task.mark_task_as_retrying("Big error")
 
     def tearDown(self):
@@ -79,4 +76,3 @@ class TaskRetryingOneTaskMarkedAsRetryingTest(unittest.TestCase):
 
         self.assertFalse(self.job.is_retrying)
         self.assertFalse(self.workflow.is_retrying)
-

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 
 import os
 from yabiadmin.yabi.models import Tool
@@ -327,12 +323,15 @@ class CommandTemplate(object):
         self.arguments = []                 # a list of our flags, parameters and arguments
         self.files = []                     # a list of any extra 'input files' required. The items are dictionaries that are copies of the "parameter" input dictionary describing the selection
         self.backrefs = []                  # a list of any previous jobs we are waiting on
-        self.batchfiles = {}                # once a previous job is finished, the files that are represented by the output of that job for use by us are assembled here
-                                            # these are the URIs that are converted to the final /full/directory/path to use in the command. the keys are the switch strings
-                                            # the value the files.
-        self.backfiles = {}                 # when the backrefs are processed, this array is filled with the decoded reference URIs. this is to be used by the caller to be passed back into render
-                                            # this represents ALL the possibilities that could be batched, not _just_ those relating to render()
-                                            # the keys here are the switch name. The value is a list of 'details'
+
+        # once a previous job is finished, the files that are represented by the output of that job for use by us are assembled here
+        # these are the URIs that are converted to the final /full/directory/path to use in the command. the keys are the switch strings
+        # the value the files.
+        self.batchfiles = {}
+        # when the backrefs are processed, this array is filled with the decoded reference URIs. this is to be used by the caller to be passed back into render
+        # this represents ALL the possibilities that could be batched, not _just_ those relating to render()
+        # the keys here are the switch name. The value is a list of 'details'
+        self.backfiles = {}
 
         self.batch_switches = []            # the switches that need to have the input files batched
         self.consume_switches = []          # the switches that need to have the input files consumed
@@ -732,7 +731,7 @@ class CommandTemplate(object):
         primary_set = self.backfiles[primary_set_key]       # the set of files to loop over
         for details_hash in primary_set:
             filename = details_hash['filename']             # the filename we have to find the most similar other filename to
-            #batch_type = details_hash['batch_type']         # consume all or batch
+            # batch_type = details_hash['batch_type']         # consume all or batch
             batch_set = {primary_set_key: details_hash}
 
             # for each other set
@@ -788,4 +787,3 @@ class CommandTemplate(object):
             strippedComponents = [components[0].rstrip('/')] + [x.strip('/') for x in components[1:]]
         fulluri = "/".join(strippedComponents) + '/'
         return fulluri
-

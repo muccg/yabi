@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,18 +21,16 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render_to_response, get_object_or_404
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
-from yabiadmin.yabiengine.models import Task, Syslog
-from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
+from yabiadmin.yabiengine.models import Task
+from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.constants import *
 import logging
 logger = logging.getLogger(__name__)
@@ -58,7 +54,6 @@ def workflow_summary(request, workflow_id):
     workflow = get_object_or_404(EngineWorkflow, pk=workflow_id)
 
     jobs_by_order = workflow.job_set.all().order_by('order')
-    import json
     if workflow.json:
         workflow_json = json.dumps(json.loads(workflow.json), indent=2)
     else:

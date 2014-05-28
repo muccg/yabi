@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import os
 import stat
 import shlex
@@ -42,6 +38,7 @@ WAIT_TO_TERMINATE_SECS = 3
 
 EXEC_SCRIPT_PREFIX = 'yabi_lexec_'
 DEFAULT_TEMP_DIRECTORY = '/tmp'
+
 
 class LocalExecBackend(ExecBackend):
     backend_desc = "Local execution"
@@ -115,7 +112,7 @@ class LocalExecBackend(ExecBackend):
 
     def create_script(self, script_contents):
         script_name = os.path.join(self.temp_directory,
-                            '%s%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
+                                   '%s%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
         with open(script_name, 'w') as f:
             f.write(script_contents)
         st = os.stat(script_name)

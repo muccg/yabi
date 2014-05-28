@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,13 +21,10 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import httplib
 import random
 import mimetypes
-from django.conf import settings
 from django.core.files.uploadhandler import FileUploadHandler
 
 
@@ -51,7 +46,7 @@ class UploadStreamer(FileUploadHandler):
     def encode_multipart_content_type(self):
         return 'multipart/form-data; boundary="%s"' % self.BOUNDARY
 
-    def get_content_type(self,filename):
+    def get_content_type(self, filename):
         return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
     def post_multipart(self, host, port, selector, cookies=None):
@@ -68,11 +63,11 @@ class UploadStreamer(FileUploadHandler):
         self.stream.putheader('Content-Type', content_type)
         if cookies:
             for cookie in cookies:
-                self.stream.putheader("Cookie",cookie)
+                self.stream.putheader("Cookie", cookie)
         self.stream.putheader('Transfer-Encoding', 'chunked')
         self.stream.putheader('User-Agent', 'YabiUploadStreamer/0.0')
-        self.stream.putheader('Expect','100-continue')
-        self.stream.putheader('Accept','*/*')
+        self.stream.putheader('Expect', '100-continue')
+        self.stream.putheader('Accept', '*/*')
 
         self.stream.endheaders()
 
@@ -83,13 +78,13 @@ class UploadStreamer(FileUploadHandler):
 
     def flush(self):
         """flush the buffer"""
-        self.stream.send(hex(len(self._buff))[2:].upper()+self.CRLF)
+        self.stream.send(hex(len(self._buff))[2:].upper() + self.CRLF)
         self.stream.send(self._buff)
         self.stream.send(self.CRLF)
         self._buff = ""
 
-    def send_fields(self,fields):
-        for (key,value) in fields:
+    def send_fields(self, fields):
+        for (key, value) in fields:
             self.send('--' + self.BOUNDARY + self.CRLF)
             self.send('Content-Disposition: form-data; name="%s"' % key + self.CRLF)
             self.send(self.CRLF)
@@ -99,25 +94,25 @@ class UploadStreamer(FileUploadHandler):
         self.flush()
 
     def new_file(self, filename):
-        assert self._present_file == None
+        assert self._present_file is None
         self._present_file = filename
         self._file_count += 1
 
-        self.send('--' + self.BOUNDARY + self.CRLF )
-        self.send('Content-Disposition: form-data; name="%s"; filename="%s"' % ("file-%d"%(self._file_count), filename) + self.CRLF)
+        self.send('--' + self.BOUNDARY + self.CRLF)
+        self.send('Content-Disposition: form-data; name="%s"; filename="%s"' % ("file-%d" % (self._file_count), filename) + self.CRLF)
         self.send('Content-Type: %s' % self.get_content_type(filename) + self.CRLF)
         self.send(self.CRLF)
 
         self.flush()
 
     def file_data(self, data):
-        assert self._present_file != None
+        assert self._present_file is not None
 
         self.send(data)
         self.flush()
 
     def end_file(self):
-        assert self._present_file != None
+        assert self._present_file is not None
         self._present_file = None
 
         self.send(self.CRLF)
