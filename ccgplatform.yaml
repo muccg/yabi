@@ -32,7 +32,7 @@ instances:
 
   aws_yabi_test:
     extends: centos_aws_oregon
-    pre_puppet: 
+    pre_puppet:
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet
     puppet_manifest: test.pp
@@ -40,11 +40,18 @@ instances:
 
   aws_yabi_torque_test:
     extends: centos_aws_oregon
-    pre_puppet: 
+    pre_puppet:
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet
     puppet_manifest: torque-test.pp
     aws_instance_type: m3.medium
+
+  aws_syd_yabi_prod_ah:
+    extends: aws_syd_yabi_prod_ah_2
+
+  aws_syd_yabi_prod_ah_2:
+    extends: aws_syd_yabi_prod
+    aws_ondemand: True
 
   aws_syd_yabi_prod:
     extends: centos_prod_aws_syd
@@ -52,10 +59,7 @@ instances:
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet
     puppet_manifest: prod.pp
-    aws_ondemand: True
     aws_instance_type: c3.large
-    aws_key_name: ccg-syd-ops
-    aws_disable_api_termination: True
 
   aws_syd_yabi_staging:
     extends: centos_aws_syd
