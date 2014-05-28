@@ -219,7 +219,7 @@ class Yabi(object):
 
     def request(self, method, url, params=None, files=None):
         try:
-            request = self._create_request(method, url, params)
+            request = self._create_request(method, url, params, files)
             if self.debug:
                 print('=' * 5 + 'Making HTTP request')
             resp, contents = self.http.make_request(request)
