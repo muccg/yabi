@@ -10,7 +10,6 @@ node default {
   include repo::pgrpms
   include repo::ccgcentos
 
-  # There are some leaked local secrets here we don't care about
   $django_config = {
     'deployment'  => 'prod',
     'release'     => '7.2.4-1',
