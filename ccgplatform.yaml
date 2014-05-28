@@ -69,9 +69,6 @@ instances:
     puppet_manifest: staging.pp
     aws_instance_type: m3.medium
 
-  aws_rpmbuild_centos6:
-    extends: centos_6_rpmbuild
-
   local-staging:
     extends: centos_64_lxc
     pre_puppet: 
