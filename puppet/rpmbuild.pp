@@ -6,4 +6,9 @@ node default {
   include repo::epel
   include repo::ius
   include repo::pgrpms
+
+  file { '/usr/local/src':
+    ensure => directory,
+    mode   => '0777',
+  }
 }
