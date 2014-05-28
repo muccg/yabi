@@ -7,14 +7,15 @@ class QBaseExecBackend(SchedulerExecBackend):
     """
     A _abstract_ backend which allows job submission via qsub
     """
-    QSUB_TEMPLATE = "\n".join(["#!/bin/sh",
-                    'script_temp_file_name="{0}"',
-                    "cat<<\"EOS\">$script_temp_file_name",
-                    "{1}",
-                    "EOS",
-                    "cd '{2}'",
-                    "%s", # QSUB_COMMAND_LINE will be inserted here
-                    "rm $script_temp_file_name"])
+    QSUB_TEMPLATE = "\n".join([
+        "#!/bin/sh",
+        'script_temp_file_name="{0}"',
+        "cat<<\"EOS\">$script_temp_file_name",
+        "{1}",
+        "EOS",
+        "cd '{2}'",
+        "%s",  # QSUB_COMMAND_LINE will be inserted here
+        "rm $script_temp_file_name"])
     QSUB_COMMAND_LINE = "<QSUB_COMMAND> -N {3} $script_temp_file_name"
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh", "<QSTAT_COMMAND> -f -1 {0}"])
     QDEL_TEMPLATE = "\n".join(['#!/bin/sh', '<QDEL_COMMAND> "{0}"'])

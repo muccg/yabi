@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.sshexec import SSHExec
 from yabiadmin.backend.backend import fs_credential
@@ -39,7 +35,6 @@ import stat
 import traceback
 import time
 import logging
-import threading
 from itertools import dropwhile
 from functools import reduce
 from pooling import get_ssh_pool_manager
@@ -49,6 +44,7 @@ logger = logging.getLogger(__name__)
 pool_manager = get_ssh_pool_manager()
 
 BLOCK_SIZE = 1024
+
 
 class SFTPBackend(FSBackend):
     backend_desc = "SFTP remote file system"
@@ -82,7 +78,6 @@ class SFTPBackend(FSBackend):
                 pool_manager.give_back(ssh, host, port, credential)
         return status
 
-
     def upload_file(self, uri, infile):
         scheme, parts = uriparse(uri)
         return self._sftp_copy(host=parts.hostname,
@@ -103,7 +98,6 @@ class SFTPBackend(FSBackend):
                                copy='get',
                                hostkey=None)
 
-
     def download_dir(self, uri, outfile):
         logger.debug("SFTPBackend.download_dir: %s => tarball => %s",
                      uri, outfile)
@@ -116,7 +110,7 @@ class SFTPBackend(FSBackend):
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
-        remotepath=parts.path
+        remotepath = parts.path
         ssh = None
         try:
             ssh = pool_manager.borrow(parts.hostname, parts.port, self.cred.credential)
@@ -124,9 +118,9 @@ class SFTPBackend(FSBackend):
 
             stat = sftp.stat(remotepath)
 
-            return { 'atime': stat.st_atime, 'mtime': stat.st_mtime }
+            return {'atime': stat.st_atime, 'mtime': stat.st_mtime}
 
-        except Exception as exc:
+        except Exception:
             logger.exception("Exception while stating '%s'", uri)
             raise
         finally:
@@ -136,15 +130,15 @@ class SFTPBackend(FSBackend):
 
     def set_remote_uri_times(self, uri, atime, mtime):
         scheme, parts = uriparse(uri)
-        remotepath=parts.path
+        remotepath = parts.path
         ssh = None
         try:
             ssh = pool_manager.borrow(parts.hostname, parts.port, self.cred.credential)
             sftp = ssh.open_sftp()
 
-            stat = sftp.utime(remotepath, (atime, mtime))
+            sftp.utime(remotepath, (atime, mtime))
 
-        except Exception as exc:
+        except Exception:
             logger.exception("Exception while setting times for '%s'", uri)
             raise
         finally:
@@ -152,14 +146,13 @@ class SFTPBackend(FSBackend):
                 sftp.close()
                 pool_manager.give_back(ssh, parts.hostname, parts.port, self.cred.credential)
 
-
     # http://stackoverflow.com/questions/6674862/recursive-directory-download-with-paramiko
     def isdir(self, sftp, path):
         """isdir at path using sftp client"""
         try:
             return stat.S_ISDIR(sftp.stat(path).st_mode)
         except IOError:
-            #Path does not exist, so by definition not a directory
+            # Path does not exist, so by definition not a directory
             return False
 
     def path_exists(self, sftp, path):
@@ -222,7 +215,7 @@ class SFTPBackend(FSBackend):
             output = {}
             output[parts.path] = results
             return output
-        except FileNotFoundError as fnfe:
+        except FileNotFoundError:
             return {}
         except Exception as exc:
             logger.exception("ls: %s" % uri)

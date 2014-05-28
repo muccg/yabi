@@ -26,5 +26,3 @@ def do_import(parser, token):
     parts = token.split_contents()
     module_name = parts[1]
     return SimpleImportNode(module_name)
-
-

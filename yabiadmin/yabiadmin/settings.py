@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,16 +21,12 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 
-import os, sys
+import os
 from ccg_django_utils.webhelpers import url
 from ccg_django_utils.conf import EnvConfig
 
 from kombu import Queue
-import logging
-import logging.handlers
 
 env = EnvConfig()
 
@@ -88,7 +82,7 @@ ROOT_URLCONF = 'yabiadmin.urls'
 SESSION_COOKIE_AGE = 60 * 60
 SESSION_COOKIE_PATH = url('/')
 SESSION_COOKIE_NAME = 'yabi_sessionid'
-#SESSION_SAVE_EVERY_REQUEST = True
+# SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_NAME = "csrftoken_yabi"
@@ -106,7 +100,7 @@ USE_I18N = True
 LOGIN_URL = url('/login/')
 LOGOUT_URL = url('/logout/')
 
-### static file management ###
+# ## static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
 # deployment uses an apache alias
 # STATICFILES_DIRS = [os.path.join(WEBAPP_ROOT,"static")]
@@ -132,9 +126,9 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
 
-##
-## CAPTCHA settings
-##
+#
+# CAPTCHA settings
+#
 # the filesystem space to write the captchas into
 CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 
@@ -167,7 +161,7 @@ MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, 'templates')
 # mako module name
 MAKO_MODULENAME_CALLABLE = ''
 
-### USER SPECIFIC SETUP ###
+# ## USER SPECIFIC SETUP ###
 # these are the settings you will most likely change to reflect your setup
 
 DATABASES = {
@@ -225,13 +219,13 @@ SERVER_EMAIL = env.get("server_email", "noreply@ccg_yabiadmin_prod")
 # admins to email error reports to
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
-    ( 'alert', env.get("alert_email", "root@localhost") )
+    ('alert', env.get("alert_email", "root@localhost"))
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # yabi uses modelbackend by default, but can be overridden here
 # code used for additional user related operations
@@ -258,7 +252,7 @@ AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", 'uniqueMember')
 AUTH_LDAP_USERDN = env.get("auth_ldap_userdn", 'ou=People')
 LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 if env.get("memcache", False):
     CACHES = {
@@ -283,12 +277,12 @@ else:
     SESSION_ENGINE = 'django.contrib.sessions.backends.file'
     SESSION_FILE_PATH = WRITABLE_DIRECTORY
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
 ALLOWED_HOSTS = env.get("allowed_hosts", "").split()
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # Any settings that should be changed for just for testing runs
 if env.get("use_testing_settings", False):
@@ -299,7 +293,7 @@ else:
     torque_path = ""
     sge_path = ""
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 torque_path = env.get("torque_path", torque_path)
 sge_path = env.get("sge_path", sge_path)
@@ -308,12 +302,12 @@ SCHEDULER_COMMAND_PATHS = {
                "qstat": os.path.join(torque_path, "qstat"),
                "qdel": os.path.join(torque_path, "qdel")},
     "sge": {"qsub": os.path.join(sge_path, "qsub"),
-               "qstat": os.path.join(sge_path, "qstat"),
-               "qdel": os.path.join(sge_path, "qdel"),
-               "qacct": os.path.join(sge_path, "qacct")},
+            "qstat": os.path.join(sge_path, "qstat"),
+            "qdel": os.path.join(sge_path, "qdel"),
+            "qacct": os.path.join(sge_path, "qacct")},
 }
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
@@ -326,9 +320,9 @@ DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 DEFAULT_CRED_CACHE_TIME = 60 * 60 * 24                   # 1 day default
 
 
-### CELERY ###
+# ## CELERY ###
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
-#BROKER_URL = 'django://'
+# BROKER_URL = 'django://'
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 # http://celery.readthedocs.org/en/latest/whatsnew-3.1.html#last-version-to-enable-pickle-by-default
@@ -361,8 +355,8 @@ CELERY_QUEUES = (
 )
 
 FILE_OPERATIONS_ROUTE = {
-        'queue': FILE_OPERATIONS,
-        'routing_key': FILE_OPERATIONS,
+    'queue': FILE_OPERATIONS,
+    'routing_key': FILE_OPERATIONS,
 }
 
 CELERY_ROUTES = {
@@ -380,7 +374,7 @@ CELERYD_FORCE_EXECV = True
 
 CELERYD_LOG_FORMAT = "YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s"
 
-### PREVIEW SETTINGS
+# ## PREVIEW SETTINGS
 
 # The truncate key controls whether the file may be previewed in truncated form
 # (ie the first "size" bytes returned). If set to false, files beyond the size

@@ -13,11 +13,8 @@ class PyNode(template.Node):
         return eval(self.code, code_context)
 
 
-
 @register.tag(name='py')
 def do_code(parser, token):
     parts = token.split_contents()
     code = " ".join(parts[1:])
     return PyNode(code)
-
-

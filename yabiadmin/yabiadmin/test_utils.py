@@ -55,4 +55,4 @@ class override_settings(object):
     def disable(self):
         settings._wrapped = self.wrapped
         for key in self.options:
-            new_value = getattr(settings, key, None)
+            getattr(settings, key, None)

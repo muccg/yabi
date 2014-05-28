@@ -1,8 +1,8 @@
 from django.utils import unittest as unittest
 
-from  model_mommy import mommy
+from model_mommy import mommy
 
-from yabiadmin.yabi.models import User, ParameterSwitchUse
+from yabiadmin.yabi.models import ParameterSwitchUse
 from yabiadmin.yabiengine import models as m
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate, SwitchFilename, make_fname
 
@@ -87,9 +87,9 @@ class CommandLineTemplateTest(unittest.TestCase):
 
     def test_param_combined_with_equals(self):
         job_dict = self.job_dict_with_params({
-                    'switchName': '-arg1',
-                    'valid': True,
-                    'value': ['value']})
+            'switchName': '-arg1',
+            'valid': True,
+            'value': ['value']})
 
         command = self.render_command(self.job, job_dict)
 
@@ -97,9 +97,9 @@ class CommandLineTemplateTest(unittest.TestCase):
 
     def test_param_value_only(self):
         job_dict = self.job_dict_with_params({
-                    'switchName': '-arg2',
-                    'valid': True,
-                    'value': ['value']})
+            'switchName': '-arg2',
+            'valid': True,
+            'value': ['value']})
 
         command = self.render_command(self.job, job_dict)
 
@@ -107,13 +107,13 @@ class CommandLineTemplateTest(unittest.TestCase):
 
     def test_rank_respected(self):
         job_dict = self.job_dict_with_params({
-                    'switchName': '-arg1',
-                    'valid': True,
-                    'value': ['value']},
-                {
-                    'switchName': '-arg2',
-                    'valid': True,
-                    'value': ['other value']})
+            'switchName': '-arg1',
+            'valid': True,
+            'value': ['value']},
+            {
+                'switchName': '-arg2',
+                'valid': True,
+                'value': ['other value']})
 
         command = self.render_command(self.job, job_dict)
 
@@ -121,19 +121,17 @@ class CommandLineTemplateTest(unittest.TestCase):
 
     def test_direct_file_reference(self):
         job_dict = self.job_dict_with_params({
-                    'switchName': '-arg3',
-                    'valid': True,
-                    'value': [{
-                        'path': ['some', 'path'],
-                        'root': 'sftp://demo@localhost:22/',
-                        'type': 'file',
-                        'filename': 'a.txt'}]})
+            'switchName': '-arg3',
+            'valid': True,
+            'value': [{
+                'path': ['some', 'path'],
+                'root': 'sftp://demo@localhost:22/',
+                'type': 'file',
+                'filename': 'a.txt'}]})
 
         command = self.render_command(self.job, job_dict, uri_conversion='/tools/workdir/input/%(filename)s')
 
         self.assertEquals('tool.sh "/tools/workdir/input/a.txt"', command)
 
-        #TODO Assert file will be staged in?
+        # TODO Assert file will be staged in?
         # for f in self.template.other_files():
-
-

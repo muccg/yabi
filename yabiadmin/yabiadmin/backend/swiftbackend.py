@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 NEVER_A_SYMLINK = False
 
+
 class SwiftBackend(FSBackend):
     """
     Storage backend using the OpenStack Swift object store through the
@@ -163,7 +164,7 @@ class SwiftBackend(FSBackend):
         def get_content_length(entry):
             "Fills in the file size for dynamic large object entries"
             if ("name" in entry and entry.get("bytes", -1) == 0 and
-                not entry["name"].endswith("/")):
+                    not entry["name"].endswith("/")):
                 headers = conn.head_object(swift.bucket, entry["name"])
                 entry["bytes"] = int(headers.get("content-length", "") or 0)
             return entry
@@ -187,7 +188,7 @@ class SwiftBackend(FSBackend):
 
         bucket = self.list_bucket(swift, shallow=True)
         if (len(bucket) == 1 and "subdir" in bucket[0] and
-            bucket[0]["subdir"].rstrip(swift.DELIMITER) == swift.prefix):
+                bucket[0]["subdir"].rstrip(swift.DELIMITER) == swift.prefix):
             # if uri corresponds to a "subdirectory", add a slash and
             # list again to get the contents
             swift = swift.ensure_trailing_slash()
@@ -303,8 +304,8 @@ class SwiftBackend(FSBackend):
                                                 resp_chunk_size=self.CHUNKSIZE)
             for chunk in contents:
                 outfile.write(chunk)
-        except swiftclient.exceptions.ClientException as e:
-            logger.exception("Error downloading %s to %s", uri, filename)
+        except swiftclient.exceptions.ClientException:
+            logger.exception("Error downloading %s to %s", uri, outfile)
         except IOError:
             logger.exception("Error writing %s to file", uri)
         else:
@@ -358,14 +359,14 @@ class SwiftBackend(FSBackend):
                                 content_length=length,
                                 chunk_size=self.CHUNKSIZE)
             except swiftclient.exceptions.ClientException:
-                logger.exception("Error uploading %s to %s", filename, uri)
+                logger.exception("Error when uploading segment")
                 raise
             except IOError:
-                logger.exception("Error reading from file for %s", uri)
+                logger.exception("Error when uploading segment")
                 raise
 
         def upload_manifest(bucket, prefix):
-            headers = { "X-Object-Manifest": "%s_segments/%s/" % (bucket, prefix) }
+            headers = {"X-Object-Manifest": "%s_segments/%s/" % (bucket, prefix)}
             conn.put_object(bucket, prefix, "", content_length=0,
                             headers=headers)
 
