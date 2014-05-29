@@ -233,8 +233,8 @@ MANAGERS = ADMINS
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
 if env.get("auth_ldap_server", False):
     AUTHENTICATION_BACKENDS = [
-        'ccg.auth.backends.LDAPBackend',
-        'ccg.auth.backends.NoAuthModelBackend',
+        'ccg_django_utils.auth.backends.LDAPBackend',
+        'ccg_django_utils.auth.backends.NoAuthModelBackend',
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 else:
