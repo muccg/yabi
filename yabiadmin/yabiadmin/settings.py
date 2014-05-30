@@ -470,14 +470,14 @@ LOGGING = {
             'when': 'midnight',
             'formatter': 'verbose'
         },
-        'db_logfile':{
+        'db_logfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin_db.log'),
             'when': 'midnight',
             'formatter': 'db'
         },
-        'syslog':{
+        'syslog': {
             'level': 'DEBUG',
             'class': 'logging.handlers.SysLogHandler',
             'address': '/dev/log',
@@ -488,7 +488,7 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
-            'formatter':'verbose',
+            'formatter': 'verbose',
             'include_html': True
         },
         'yabi_db_handler': {
@@ -504,8 +504,8 @@ LOGGING = {
             'propagate': True,
         },
         'django': {
-            'handlers':['django_file'],
-            'level':'WARNING',
+            'handlers': ['django_file'],
+            'level': 'WARNING',
             'propagate': True,
         },
         'django.request': {

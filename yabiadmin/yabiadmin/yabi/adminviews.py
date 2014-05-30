@@ -42,6 +42,7 @@ import six
 
 logger = logging.getLogger(__name__)
 
+
 class AddToolForm(forms.Form):
     tool_json = forms.CharField(widget=forms.Textarea)
 
