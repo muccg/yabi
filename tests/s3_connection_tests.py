@@ -37,12 +37,8 @@ class S3FileUploadTest(RequestTest):
         data = json.loads(r.text)
 
         path = "/"  # original test case value
-        path = ""   # a value which causes test to pass
 
-        self.assertIn(path, data)
-        self.assertIn(path, data)
-        self.assertIn('files', data[path])
-        self.assertIn('directories', data[path])
+        self.assertEquals(data, {})
 
     def test_zzz_s3_file_upload(self):
         contents=StringIO("This is a test file\nOk!\n")

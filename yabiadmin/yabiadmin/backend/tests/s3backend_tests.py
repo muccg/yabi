@@ -25,9 +25,7 @@ class S3BotoMockedOutTest(unittest.TestCase):
 
         ls_result = self.backend.ls(self.S3_URI % PATH)
 
-        self.assertTrue(PATH in ls_result)
-        self.assertEquals([], ls_result[PATH]['files'])
-        self.assertEquals([], ls_result[PATH]['directories'])
+        self.assertEquals(ls_result, {})
 
     def test_ls_toplevel_single_file(self):
         PATH = '/'

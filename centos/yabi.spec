@@ -4,9 +4,9 @@
 %define pyver 27
 %define pybasever 2.7
 
-%define version 7.2.3
-%define unmangled_version 7.2.3
-%define release 1
+%define version 7.2.4
+%define unmangled_version 7.2.4
+%define release 2
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
 %define shellname yabish
@@ -14,7 +14,6 @@
 # Variables used for yabiadmin django app
 %define installdir %{webapps}/%{webappname}
 %define buildinstalldir %{buildroot}/%{installdir}
-%define settingsdir %{buildinstalldir}/defaultsettings
 %define staticdir %{buildinstalldir}/static
 %define logdir %{buildroot}/var/log/%{webappname}
 %define scratchdir %{buildroot}/var/lib/%{webappname}/scratch
@@ -22,7 +21,7 @@
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
 
 # Variables for yabish
-%define shinstalldir /usr/local/yabish
+%define shinstalldir /opt/yabish
 %define shbuildinstalldir %{buildroot}/%{shinstalldir}
 
 
@@ -71,7 +70,7 @@ fi
 
 %install
 
-for directory in "%{settingsdir} %{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir}"; do
+for directory in "%{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir}"; do
     mkdir -p $directory;
 done;
 
@@ -120,12 +119,10 @@ rm %{buildinstalldir}/bin/python*
 
 # Create symlinks under install directory to real persistent data directories
 APP_SETTINGS_FILE=`find %{buildinstalldir} -path "*/%{webappname}/settings.py" | sed s:^%{buildinstalldir}/::`
-VENV_LIB_DIR=$(dirname `dirname ${APP_SETTINGS_FILE}`)
+APP_PACKAGE_DIR=`dirname ${APP_SETTINGS_FILE}`
+VENV_LIB_DIR=`dirname ${APP_PACKAGE_DIR}`
 
-# Create settings symlink so we can run collectstatic with the default settings
-touch %{settingsdir}/__init__.py
-ln -fsT ../${APP_SETTINGS_FILE} %{settingsdir}/%{webappname}.py
-ln -fsT %{installdir}/defaultsettings %{buildinstalldir}/${VENV_LIB_DIR}/defaultsettings
+# Create static files symlink within module directory
 ln -fsT %{installdir}/static %{buildinstalldir}/${VENV_LIB_DIR}/static
 
 # Create symlinks under install directory to real persistent data directories
@@ -151,6 +148,11 @@ install -m 0755 -D init_scripts/centos/celery-flower.init %{buildroot}/etc/init.
 # make dirs for celery
 mkdir -p %{buildroot}/var/log/celery
 mkdir -p %{buildroot}/var/run/celery
+
+# Install prodsettings conf file to /etc, and replace with symlink
+install --mode=0640 -D ../centos/yabiadmin.conf.example %{buildroot}/etc/yabiadmin/yabiadmin.conf
+install --mode=0640 -D yabiadmin/prodsettings.py %{buildroot}/etc/yabiadmin/settings.py
+ln -sfT /etc/yabiadmin/settings.py %{buildinstalldir}/${APP_PACKAGE_DIR}/prodsettings.py
 
 ##############################
 # yabi-shell
@@ -181,12 +183,17 @@ find %{shbuildinstalldir} -name RECORD -exec sed -i -e "s|${RPM_BUILD_ROOT}||" {
 # don't need a copy of python interpreter in the virtualenv
 rm %{shbuildinstalldir}/bin/python*
 
+# Symlink script into system bin
+mkdir -p %{buildroot}/%{_bindir}
+ln -fsT %{shinstalldir}/bin/yabish %{buildroot}/%{_bindir}/yabish
+
 %pre admin
 # https://fedoraproject.org/wiki/Packaging:UsersAndGroups?rd=Packaging/UsersAndGroups
 /usr/bin/getent group celery >/dev/null || /usr/sbin/groupadd -r celery
 /usr/bin/getent passwd celery >/dev/null || \
     /usr/sbin/useradd -r -g celery -d /var/run/celery -s /bin/bash \
     -c "celery distributed task queue" celery
+/usr/sbin/usermod -a -G apache celery
 exit 0
 
 %post admin
@@ -221,7 +228,13 @@ fi
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/default/celeryd
 %attr(-,root,,root) /etc/init.d/celery-flower
+%attr(710,root,apache) /etc/yabiadmin
+%attr(640,root,apache) /etc/yabiadmin/settings.py
+%attr(640,root,apache) /etc/yabiadmin/yabiadmin.conf
+%config(noreplace) /etc/yabiadmin/settings.py
+%config(noreplace) /etc/yabiadmin/yabiadmin.conf
 
 %files shell
 %defattr(-,root,root,-)
+%{_bindir}/yabish
 %{shinstalldir}

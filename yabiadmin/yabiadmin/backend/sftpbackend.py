@@ -27,7 +27,7 @@
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.sshexec import SSHExec
 from yabiadmin.backend.backend import fs_credential
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.utils import sshclient
 from yabiadmin.constants import ENVVAR_FILENAME
@@ -222,6 +222,8 @@ class SFTPBackend(FSBackend):
             output = {}
             output[parts.path] = results
             return output
+        except FileNotFoundError as fnfe:
+            return {}
         except Exception as exc:
             logger.exception("ls: %s" % uri)
             raise RetryException(exc, traceback.format_exc())
@@ -237,8 +239,12 @@ class SFTPBackend(FSBackend):
 
         def is_dir(path):
             import stat
-            sftp_stat_result = sftp.stat(path)
-            return stat.S_ISDIR(sftp_stat_result.st_mode)
+            try:
+                sftp_stat_result = sftp.stat(path)
+                return stat.S_ISDIR(sftp_stat_result.st_mode)
+            except IOError as e:
+                if e.errno == errno.ENOENT:
+                    raise FileNotFoundError()
 
         if is_dir(path):
             dirs, files = self._do_ls_dir(sftp, path)
@@ -394,7 +400,7 @@ ln -s "{0}" "{1}"
         exit_code, stdout, stderr = self.executer.exec_script(cmd)
         if exit_code > 0 or stderr:
             raise RuntimeError("Couldn't symlink %s to %s. Exit code: %s. STDERR:\n%s" % (
-                src, dest, exit_code, stderr()))
+                src, dest, exit_code, stderr))
         return True
 
     def download_dir_as_tarball(self, remotepath, outfile):

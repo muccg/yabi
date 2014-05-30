@@ -193,8 +193,11 @@ class SwiftBackend(FSBackend):
             swift = swift.ensure_trailing_slash()
             bucket = self.list_bucket(swift, shallow=True)
 
+        is_key_for_dir = lambda e: e["name"] == swift.prefix and e["name"].endswith(swift.DELIMITER)
+
         # Keys correspond to files, prefixes to directories
-        prefixes, keys = partition(lambda ob: "subdir" in ob, bucket)
+        prefixes, allkeys = partition(lambda ob: "subdir" in ob, bucket)
+        empty_dir_entry, keys = partition(is_key_for_dir, allkeys)
 
         def remove_prefix(path):
             if swift.prefix.endswith(swift.DELIMITER):
@@ -215,10 +218,20 @@ class SwiftBackend(FSBackend):
             name = remove_prefix(entry["subdir"])
             return (name, 0, None, NEVER_A_SYMLINK) if name else None
 
-        return {swift.path_part: {
-            "files": filter(bool, map(format_file, keys)),
-            "directories": filter(bool, map(format_dir, prefixes)),
-        }}
+        files = filter(bool, map(format_file, keys))
+        directories = filter(bool, map(format_dir, prefixes))
+
+        is_dir = len(list(empty_dir_entry)) != 0
+        if len(files) == 0 and len(directories) == 0 and not is_dir:
+            result = {}
+        else:
+            result = {
+                swift.path_part: {
+                    "files": files,
+                    "directories": directories,
+                }}
+
+        return result
 
     def _delete_object(self, conn, bucket, prefix):
         """

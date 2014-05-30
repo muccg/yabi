@@ -19,8 +19,8 @@ AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
-PIP_OPTS='--download-cache ~/.pip/cache --process-dependency-links'
-
+PIP_OPTS="--download-cache ~/.pip/cache"
+PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
 
 if [ "${YABI_CONFIG}" = "" ]; then
     YABI_CONFIG="dev_postgresql"
@@ -44,18 +44,34 @@ project_needed() {
 }
 
 settings() {
+    export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+
     case ${YABI_CONFIG} in
     test_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.testmysqlsettings"
+        export DBTYPE=mysql
+        export DBNAME=test_yabi
+        export DBUSER=root
+        export DBPASS=""
+        export USE_TESTING_SETTINGS=1
         ;;
     test_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.testpostgresqlsettings"
+        export DBTYPE=pgsql
+        export DBNAME=test_yabi
+        export DBUSER=yabiapp
+        export DBPASS=yabiapp
+        export USE_TESTING_SETTINGS=1
         ;;
     dev_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.mysqlsettings"
+        export DBTYPE=mysql
+        export DBNAME=dev_yabi
+        export DBUSER=root
+        export DBPASS=""
         ;;
     dev_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+        export DBTYPE=pgsql
+        export DBNAME=dev_yabi
+        export DBUSER=yabiapp
+        export DBPASS=yabiapp
         ;;
     *)
         echo "No YABI_CONFIG set, exiting"
@@ -192,7 +208,9 @@ jslint() {
 do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
-    NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
+    XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
+    COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
+    NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
     IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
     TEST_CASES="tests yabiadmin/yabiadmin"
     TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
@@ -208,19 +226,20 @@ do_nosetests() {
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
     ${NOSETESTS} ${IGNORES} ${TEST_CASES}
 
-    # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
-    # ${NOSETESTS} tests.simple_tool_tests
-    # ${NOSETESTS} tests.s3_connection_tests
-    # ${NOSETESTS} tests.ssh_tests
-    # ${NOSETESTS} tests.sshpbspro_tests
-    # ${NOSETESTS} tests.sshtorque_tests
-    # ${NOSETESTS} tests.backend_execution_restriction_tests
-    # ${NOSETESTS} tests.localfs_connection_tests
-    # ${NOSETESTS} tests.rewalk_tests
     # ${NOSETESTS} tests.file_transfer_tests
-    # ${NOSETESTS} tests.ssh_tests
-    # ${NOSETESTS} tests.idempotency_tests
     # ${NOSETESTS} tests.fsbackend_tests
+    # ${NOSETESTS} tests.idempotency_tests
+    # ${NOSETESTS} tests.localfs_connection_tests
+    # ${NOSETESTS} tests.ls_tests
+    # ${NOSETESTS} tests.no_setup_tests
+    # ${NOSETESTS} tests.qbaseexec_command_tests
+    # ${NOSETESTS} tests.rewalk_tests
+    # ${NOSETESTS} tests.s3_connection_tests
+    # ${NOSETESTS} tests.simple_tool_tests
+    # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
+    # ${NOSETESTS} tests.sshpbspro_tests
+    # ${NOSETESTS} tests.ssh_tests
+    # ${NOSETESTS} tests.sshtorque_tests
 }
 
 
@@ -338,15 +357,14 @@ installyabi() {
         echo $PATH
     fi
     virtualenv-2.7 ${VIRTUALENV}
-    ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
-    ${VIRTUALENV}/bin/pip --version
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
     pushd yabiadmin
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .[dev,mysql,postgresql,tests]
+    ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .[dev,mysql,postgresql,tests]
     popd
 
     echo "Install yabish"
     pushd yabish
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .
+    ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .
     popd
 }
 

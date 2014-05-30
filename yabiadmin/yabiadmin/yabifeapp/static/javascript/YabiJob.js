@@ -818,6 +818,8 @@ YabiJob.prototype.solidify = function(obj) {
 
   // now we are finished loading
   this.loaded = true;
+
+  this.workflow.onJobLoaded(this);
 };
 
 

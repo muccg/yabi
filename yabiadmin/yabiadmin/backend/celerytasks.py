@@ -65,8 +65,10 @@ def setup_logging(*args, **kwargs):
     handler.setLevel(logging.getLevelName(level))
     logger.addHandler(handler)
 
-after_setup_task_logger.connect(setup_logging)
+    yabiadminLogger = logging.getLogger('yabiadmin')
+    yabiadminLogger.propagate = 1
 
+after_setup_task_logger.connect(setup_logging)
 
 # Use this function instead of direct access, to allow testing
 def get_current_celery_task():

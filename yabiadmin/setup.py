@@ -10,7 +10,7 @@ install_requires = [
     'pytz>=2013b',
     'ccg-webservices==0.1.2',
     'ccg-introspect==0.1.2',
-    'ccg-django-utils==0.1.10',
+    'ccg-django-utils==0.2.0',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
     'celery==3.1.9',
@@ -34,7 +34,7 @@ install_requires = [
     'python-keystoneclient==0.6.0',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
-    'six>=1.4,<1.5',
+    'six>=1.5,<1.6',
     'flower>=0.5',
 ]
 
@@ -70,10 +70,10 @@ mysql_requires = [
 ]
 
 dependency_links = [
-    'https://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
-    'https://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.1.10.tar.gz',
-    'https://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
+    'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.2.0.tar.gz',
+    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-webservices-0.1.2.tar.gz',
+    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-introspect-0.1.2.tar.gz',
+    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.3.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
 ]
@@ -89,7 +89,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='7.2.3',
+      version='7.2.4',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',
@@ -101,7 +101,7 @@ setup(name='yabiadmin',
               for fileglob in ['*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg', '*.feature']]
       },
       zip_safe=False,
-      scripts=["yabiadmin/yabiadmin-manage.py"],
+      scripts=["yabiadmin/yabiadmin-manage.py", "yabiadmin/yabicelery.py"],
       install_requires=install_requires,
       dependency_links=dependency_links,
       extras_require={

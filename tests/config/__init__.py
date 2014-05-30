@@ -27,8 +27,6 @@ class Configuration(object):
                 setattr(self, attr, cp.get(section, option))
 
     configs = (
-        ("yabidir", "yabi_dir"),
-        ("yabish", "yabish"),
         ("yabiusername", "yabi_username"),
         ("yabipassword", "yabi_password"),
         ("yabiadminusername", "yabi_admin_username"),

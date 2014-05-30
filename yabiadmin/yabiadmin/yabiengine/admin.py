@@ -25,13 +25,13 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
+from django.contrib import admin, messages
+from django.core import urlresolvers
+
 from yabiadmin.yabi.models import User
 from yabiadmin.yabiengine.models import *
 from yabiadmin.yabiengine.enginemodels import *
-
-from django.contrib import admin
-from django.contrib import messages
 from yabiadmin.backend.celerytasks import request_workflow_abort
 
 
@@ -85,7 +85,7 @@ class BaseModelAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link', 'is_aborting']
+    list_display = ['summary_link', 'status', 'stageout', 'change_link', link_to_jobs, link_to_tasks, link_to_stageins, 'is_aborting']
     list_filter = ['status', 'user']
     search_fields = ['name']
     actions = ['abort_workflow']
@@ -94,6 +94,17 @@ class WorkflowAdmin(admin.ModelAdmin):
             'fields': ('name', 'user', 'start_time', 'end_time', 'status', 'stageout')
         }),
     )
+
+    def summary_link(self, workflow):
+        return '<a href="%s">%s</a>' % (workflow.summary_url(), workflow.name)
+    summary_link.short_description = 'Summary'
+    summary_link.allow_tags = True
+
+    def change_link(self, workflow):
+        change_url = urlresolvers.reverse('admin:yabiengine_engineworkflow_change', args=(workflow.id,))
+        return '<a href="%s">Change</a>' % change_url
+    change_link.short_description = 'Change'
+    change_link.allow_tags = True
 
     def abort_workflow(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)

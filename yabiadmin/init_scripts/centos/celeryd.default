@@ -3,7 +3,7 @@
 CELERYD_NODES="yabi-node yabi-node-fsops"
 
 # Absolute or relative path to the 'celery' command:
-CELERY_BIN="/usr/local/webapps/yabiadmin/bin/celery"
+CELERY_BIN="/usr/local/webapps/yabiadmin/bin/yabicelery.py"
 
 # App instance to use
 # comment out this line if you don't use an app
@@ -34,6 +34,4 @@ CELERYD_GROUP="celery"
 # and owned by the userid/group configured.
 CELERY_CREATE_DIRS=0
 
-export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
-
-export PYTHONPATH="/usr/local/webapps/yabiadmin/lib/python2.7/site-packages:/etc/ccgapps-celery"
+export PYTHONPATH="/usr/local/webapps/yabiadmin/lib/python2.7/site-packages"
