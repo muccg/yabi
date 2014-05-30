@@ -34,19 +34,14 @@ from urlparse import urlunparse
 from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, \
     encrypted_block_is_legacy, any_unencrypted, any_annotated_block, DecryptException
 from yabiadmin.utils import cache_keyname
+from yabiadmin import ldaputils
+
 from collections import namedtuple
 
 import logging
 from functools import reduce
 import six
 logger = logging.getLogger(__name__)
-
-try:
-    from yabiadmin import ldaputils
-    LDAP_IN_USE = True
-except ImportError as e:
-    LDAP_IN_USE = False
-    logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
 class DecryptedCredentialNotAvailable(Exception):
