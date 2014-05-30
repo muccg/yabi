@@ -30,23 +30,17 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from yabiadmin.yabi.models import *
+from yabiadmin import ldaputils
 from ccg_django_utils import webhelpers
 from django.utils import simplejson as json
 from django import forms
 from django.views.debug import get_safe_settings
 from django.contrib import messages
-
+from django.conf import settings
 import logging
 import six
+
 logger = logging.getLogger(__name__)
-
-try:
-    from yabiadmin import ldaputils
-    LDAP_IN_USE = True
-except ImportError as e:
-    LDAP_IN_USE = False
-    logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
-
 
 class AddToolForm(forms.Form):
     tool_json = forms.CharField(widget=forms.Textarea)
@@ -219,7 +213,7 @@ def ldap_users(request):
     """
     logger.debug('')
 
-    if not LDAP_IN_USE:
+    if not settings.LDAP_IN_USE:
         return render_to_response("yabi/ldap_not_in_use.html", {
             'user': request.user,
             'root_path': urlresolvers.reverse('admin:index'),
