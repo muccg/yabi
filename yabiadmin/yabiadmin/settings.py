@@ -519,7 +519,7 @@ LOGGING = {
             'propagate': False,
         },
         'yabiadmin': {
-            'handlers': ['file'],
+            'handlers': ['file', 'yabi_db_handler'],
             'level': 'INFO',
             'propagate': False,
         },
