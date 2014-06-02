@@ -520,7 +520,7 @@ LOGGING = {
         },
         'yabiadmin': {
             'handlers': ['file', 'yabi_db_handler'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False,
         },
     }
