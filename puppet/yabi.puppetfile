@@ -10,30 +10,6 @@ mod "puppetlabs/mysql", "2.2.3"
 mod "saz/timezone",
   :git => "git://github.com/saz/puppet-timezone.git"
 
-mod "muccg/python",
-  :git => "git://github.com/muccg/puppet-python.git",
-  :ref => "master"
-
-mod "muccg/ccgcommon",
-  :git => "git://github.com/muccg/puppet-ccgcommon.git",
-  :ref => "master"
-
-mod "muccg/ccgdatabase",
-  :git => "git://github.com/muccg/puppet-ccgdatabase.git",
-  :ref => "master"
-
-mod "muccg/repo",
-  :git => "git://github.com/muccg/puppet-repo.git",
-  :ref => "1408e8bce0bd163a0dfb002cf56ff41eedb80d84"
-
-mod "muccg/ccgapache",
-  :git => "git://github.com/muccg/puppet-ccgapache.git",
-  :ref => "master"
-
-mod "muccg/django",
-  :git => "git://github.com/muccg/puppet-django.git",
-  :ref => "master"
-
 mod "ripienaar/concat",
   :git => "git://github.com/ripienaar/puppet-concat.git",
   :ref => "0.2.0"
@@ -41,3 +17,35 @@ mod "ripienaar/concat",
 mod "stahnma/epel",
   :git => "git://github.com/stahnma/puppet-module-epel.git",
   :ref => "0.0.5"
+
+mod "muccg/profile",
+  :git => "git://github.com/muccg/puppet-profile.git",
+  :ref => "refs/heads/master"
+
+mod "muccg/role",
+  :git => "git://github.com/muccg/puppet-role.git",
+  :ref => "refs/heads/master"
+
+mod "muccg/python",
+  :git => "git://github.com/muccg/puppet-python.git",
+  :ref => "refs/heads/master"
+
+mod "muccg/ccgcommon",
+  :git => "git://github.com/muccg/puppet-ccgcommon.git",
+  :ref => "refs/heads/master"
+
+mod "muccg/ccgdatabase",
+  :git => "git://github.com/muccg/puppet-ccgdatabase.git",
+  :ref => "refs/heads/master"
+
+mod "muccg/repo",
+  :git => "git://github.com/muccg/puppet-repo.git",
+  :ref => "refs/heads/master"
+
+mod "muccg/ccgapache",
+  :git => "git://github.com/muccg/puppet-ccgapache.git",
+  :ref => "refs/heads/master"
+
+mod "muccg/django",
+  :git => "git://github.com/muccg/puppet-django.git",
+  :ref => "refs/heads/master"
