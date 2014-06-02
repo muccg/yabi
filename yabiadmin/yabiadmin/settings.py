@@ -458,21 +458,21 @@ LOGGING = {
         },
         'file': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
             'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin.log'),
             'when': 'midnight',
             'formatter': 'verbose'
         },
         'django_file': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
             'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin_django.log'),
             'when': 'midnight',
             'formatter': 'verbose'
         },
         'db_logfile': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
             'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin_db.log'),
             'when': 'midnight',
             'formatter': 'db'
