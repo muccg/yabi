@@ -198,7 +198,7 @@ jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
-        gjslint --nojsdoc $JS
+        ${VIRTUALENV}/bin/gjslint --nojsdoc $JS
     done
 }
 
