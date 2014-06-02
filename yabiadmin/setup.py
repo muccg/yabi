@@ -47,6 +47,7 @@ install_requires_compiled = [
 
 dev_requires = [
     'flake8>=2.0,<2.1',
+    'closure-linter==2.3.13',
     'Werkzeug',
     'gunicorn',
 ]

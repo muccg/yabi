@@ -232,7 +232,9 @@ YUI().use(
         }
 
         var loadImg;
-        if (this.status !== 'complete' && this.status != 'aborted' && this.status !== 'error') {
+        if (this.status !== 'complete' &&
+            this.status != 'aborted' &&
+            this.status !== 'error') {
           if (!Y.Lang.isValue(this.loadingEl)) {
             this.loadingEl = document.createElement('div');
             this.loadingEl.className = 'workflowLoading';
@@ -531,10 +533,11 @@ YUI().use(
           if (!this.editable) {
               var dirToDisplay = [];
               var loadContents = false;
-              if (!Y.Lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
-                  dirToDisplay = this.payload.jobs[selectedIndex].stageout;
+              var selectedJob = this.payload.jobs[selectedIndex];
+              if (!Y.Lang.isUndefined(selectedJob.stageout)) {
+                  dirToDisplay = selectedJob.stageout;
               }
-              if (this.payload.jobs[selectedIndex].status === 'complete') {
+              if (selectedJob.status === 'complete') {
                 loadContents = true;
               }
               this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue(
@@ -801,7 +804,7 @@ YUI().use(
           // Currently we just make sure fileselector params come before
           // other params. Should be enough.
           var fileSelectors = [];
-          var rest= [];
+          var rest = [];
           var i, param;
 
           for (i = 0; i < params.length; i++) {
@@ -853,7 +856,7 @@ YUI().use(
               json = Y.JSON.parse(response.responseText);
             } catch (e) {}
 
-            if (json == null || Y.JSON.stringify(json) === "{}") {
+            if (json == null || Y.JSON.stringify(json) === '{}') {
               fileIdx = param.fileSelector.indexOfFile(fileObj);
               if (fileIdx >= 0) {
                 param.fileSelector.deleteFileAtIndex(fileIdx);
@@ -863,7 +866,7 @@ YUI().use(
 
           var cfg = {
             on: {
-              success: onSuccess,
+              success: onSuccess
             }
           };
           Y.io(lsURL, cfg);

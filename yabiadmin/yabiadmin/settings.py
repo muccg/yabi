@@ -233,8 +233,8 @@ MANAGERS = ADMINS
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
 if env.get("auth_ldap_server", False):
     AUTHENTICATION_BACKENDS = [
-        'ccg.auth.backends.LDAPBackend',
-        'ccg.auth.backends.NoAuthModelBackend',
+        'ccg_django_utils.auth.backends.LDAPBackend',
+        'ccg_django_utils.auth.backends.NoAuthModelBackend',
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 else:
@@ -423,12 +423,16 @@ JAVASCRIPT_LIBRARIES = {
 # The logging settings here apply only to the Django WSGI process.
 # Celery is left to hijack the root logger. We add our custom handlers after
 # that in yabiadmin.backend.celerytasks.
+CCG_LOG_DIRECTORY = os.path.join(WEBAPP_ROOT, "log")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
             'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
+        },
+        'db': {
+            'format': 'YABI [%(name)s:%(duration)s:%(sql)s:%(params)s] %(message)s'
         },
         'simple': {
             'format': 'YABI %(levelname)s %(message)s'
@@ -452,11 +456,40 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
+            'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin.log'),
+            'when': 'midnight',
+            'formatter': 'verbose'
+        },
+        'django_file': {
+            'level': 'DEBUG',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
+            'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin_django.log'),
+            'when': 'midnight',
+            'formatter': 'verbose'
+        },
+        'db_logfile': {
+            'level': 'DEBUG',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
+            'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin_db.log'),
+            'when': 'midnight',
+            'formatter': 'db'
+        },
+        'syslog': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.SysLogHandler',
+            'address': '/dev/log',
+            'facility': 'local4',
+            'formatter': 'verbose'
+        },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'include_html': True
         },
         'yabi_db_handler': {
             'level': 'DEBUG',
@@ -466,19 +499,28 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'ERROR',
-        },
-
-        'django': {
-            'handlers': ['console'],
-            'propagate': False,
+            'handlers': ['file'],
             'level': 'INFO',
+            'propagate': True,
         },
-
+        'django': {
+            'handlers': ['django_file'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['django_file', 'mail_admins'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['db_logfile', 'mail_admins'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
         'yabiadmin': {
-            'handlers': ['console', 'yabi_db_handler'],
-            'level': 'DEBUG',
+            'handlers': ['file'],
+            'level': 'INFO',
             'propagate': False,
         },
     }
