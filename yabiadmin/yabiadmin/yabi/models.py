@@ -190,7 +190,7 @@ class Tool(Base):
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
             'parameter_list': list(self.toolparameter_set.order_by('fe_rank', 'id').values(
-                "id", "rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
+                "id", "rank", "fe_rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
                 "switch", "switch_use__display_text", "switch_use__formatstring", "switch_use__description",
                 "possible_values", "default_value", "helptext", "batch_bundle_files", "use_output_filename__switch"))
         }

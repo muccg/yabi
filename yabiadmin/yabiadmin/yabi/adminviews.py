@@ -411,7 +411,9 @@ def create_tool(request, tool_dict):
 
         toolparameter = ToolParameter(tool=tool,
                                       rank=parameter["rank"],
+                                      fe_rank=parameter["fe_rank"],
                                       mandatory=parameter["mandatory"],
+                                      common=parameter["common"],
                                       file_assignment=parameter["file_assignment"],
                                       output_file=parameter["output_file"],
                                       default_value=parameter["default_value"],
