@@ -40,6 +40,7 @@ class FakeRequest(object):
 class FakeCeleryTask(object):
     def __init__(self, retries=None):
         self.request = FakeRequest(retries)
+        self.retries = retries or 0
         self.max_retries_exceeded = False
         self.celery_errors_on_retry = False
 
@@ -85,6 +86,8 @@ class RetryOnErrorTest(unittest.TestCase):
             self.retrying_fn(self.task.pk)
         self.assertIs(self.my_exception, self.celery_current_task.exception, "Should been called with our exception")
         self.assertEquals(5, self.celery_current_task.countdown, "Should retry in 5 seconds")
+        reloaded_task = Task.objects.get(pk=self.task.pk)
+        self.assertEquals(1, reloaded_task.retry_count, "Should have retry_count updated to 1 on Task %d" % self.task.retry_count)
 
     def test_retry_is_backing_off_on_subsequent_retries(self):
         self.setup_function_that_errors()
@@ -98,6 +101,15 @@ class RetryOnErrorTest(unittest.TestCase):
         self.assertEquals(3125, retry_delay_when_failed_with(retries=4))
         self.assertEquals(3125, retry_delay_when_failed_with(retries=5))
         self.assertEquals(3125, retry_delay_when_failed_with(retries=100))
+
+    def test_retry_is_updating_retry_count_on_subsequent_retries(self):
+        self.setup_function_that_errors()
+
+        retry_count_when_failed_with = self.retry_count_when_failed_with
+
+        self.assertEquals(   1, retry_count_when_failed_with(retries=0))
+        self.assertEquals(   2, retry_count_when_failed_with(retries=1))
+        self.assertEquals( 101, retry_count_when_failed_with(retries=100))
 
     def test_when_RetryPollingException_retry_delays_are_constant(self):
         self.setup_function_that_errors(exception=RetryPollingException())
@@ -181,6 +193,14 @@ class RetryOnErrorTest(unittest.TestCase):
         with self.assertRaises(celery.exceptions.RetryTaskError):
             self.retrying_fn(self.task.pk)
         return self.celery_current_task.countdown
+
+    def retry_count_when_failed_with(self, retries=None):
+        self.celery_current_task.retries = retries
+        self.celery_current_task.request.retries = retries
+        with self.assertRaises(celery.exceptions.RetryTaskError):
+            self.retrying_fn(self.task.pk)
+        reloaded_task = Task.objects.get(pk=self.task.pk)
+        return reloaded_task.retry_count
 
 
 class DeleteAllSyslogMessagesTest(unittest.TestCase):

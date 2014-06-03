@@ -246,15 +246,27 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
-def retry_current_celery_task(original_function_name, task_id, exc, countdown):
+def retry_current_celery_task(original_function_name, task_id, exc, countdown, polling_task=False):
     task_logger = create_task_logger(logger, task_id)
     task_logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
     try:
-        get_current_celery_task().retry(exc=exc, countdown=countdown)
+        current_task = get_current_celery_task()
+        current_task.retry(exc=exc, countdown=countdown)
     except celery.exceptions.RetryTaskError:
         # This is normal operation, Celery is signaling to the Worker
         # that this task should be retried by throwing an RetryTaskError
         # Just re-raise it
+        try:
+            if not polling_task:
+                task = Task.objects.get(pk=task_id)
+                task.retry_count = current_task.request.retries + 1
+                logger.debug("Retry is: %s", current_task.request.retries)
+                task.save()
+        except Exception as e:
+            # Never fail on saving this
+            logger.exception("Failed on saving retry_count for task %d", task_id)
+            transaction.rollback()
+
         raise
     except Exception as ex:
         if ex is exc:
@@ -282,7 +294,7 @@ def retry_on_error(original_function):
         except RetryPollingException as exc:
             # constant for polling
             countdown = 30
-            retry_celery_task(exc, countdown)
+            retry_celery_task(exc, countdown, polling_task=True)
 
         except Exception as exc:
             task_logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))

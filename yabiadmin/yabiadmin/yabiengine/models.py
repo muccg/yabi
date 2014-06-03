@@ -135,6 +135,7 @@ class Workflow(models.Model, Editable, Status):
 
         return self.status
 
+
     def get_status_colour(self):
         return Status.COLOURS.get(self.status, 'grey')
 
@@ -153,6 +154,10 @@ class Workflow(models.Model, Editable, Status):
     @property
     def is_retrying(self):
         return any([j.is_retrying for j in self.job_set.all()])
+
+    @property
+    def highest_retry_count(self):
+        return max([0] + [t.retry_count for t in Task.objects.filter(job__workflow__pk=self.pk)])
 
 
 class Tag(models.Model):
@@ -261,6 +266,7 @@ class Task(models.Model, Editable, Status):
     command = models.TextField(blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
     is_retrying = models.BooleanField(default=False)
+    retry_count = models.IntegerField(default=0)
     task_num = models.IntegerField(null=True, blank=True)
 
     # new status boolean like fields:
