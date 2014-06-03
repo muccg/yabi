@@ -369,7 +369,7 @@ installyabi() {
 
 
 startyabiadmin() {
-    if test -e yabiadmin-develop.pid; then
+    if is_running yabiadmin-develop.pid; then
         echo "pid file exists for yabiadmin"
         return
     fi
@@ -402,7 +402,7 @@ syncmigrate() {
 
 
 startceleryd() {
-    if test -e celeryd-develop.pid; then
+    if is_running celeryd-develop.pid; then
         echo "pid file exists for celeryd"
         return
     fi
@@ -463,6 +463,9 @@ startyabi() {
     esac
 }
 
+is_running() {
+    test -e $1 && test -x /proc/$(cat $1)
+}
 
 yabistatus() {
     set +e
