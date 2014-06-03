@@ -135,7 +135,6 @@ class Workflow(models.Model, Editable, Status):
 
         return self.status
 
-
     def get_status_colour(self):
         return Status.COLOURS.get(self.status, 'grey')
 

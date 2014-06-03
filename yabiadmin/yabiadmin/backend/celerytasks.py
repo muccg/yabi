@@ -262,7 +262,7 @@ def retry_current_celery_task(original_function_name, task_id, exc, countdown, p
                 task.retry_count = current_task.request.retries + 1
                 logger.debug("Retry is: %s", current_task.request.retries)
                 task.save()
-        except Exception as e:
+        except Exception:
             # Never fail on saving this
             logger.exception("Failed on saving retry_count for task %d", task_id)
             transaction.rollback()

@@ -107,9 +107,9 @@ class RetryOnErrorTest(unittest.TestCase):
 
         retry_count_when_failed_with = self.retry_count_when_failed_with
 
-        self.assertEquals(   1, retry_count_when_failed_with(retries=0))
-        self.assertEquals(   2, retry_count_when_failed_with(retries=1))
-        self.assertEquals( 101, retry_count_when_failed_with(retries=100))
+        self.assertEquals(1, retry_count_when_failed_with(retries=0))
+        self.assertEquals(2, retry_count_when_failed_with(retries=1))
+        self.assertEquals(101, retry_count_when_failed_with(retries=100))
 
     def test_when_RetryPollingException_retry_delays_are_constant(self):
         self.setup_function_that_errors(exception=RetryPollingException())
