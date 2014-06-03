@@ -441,6 +441,9 @@ LOGGING = {
         },
     },
     'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
         },
@@ -455,8 +458,9 @@ LOGGING = {
         },
         'console': {
             'level': 'DEBUG',
+            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
+            'formatter': 'verbose',
         },
         'file': {
             'level': 'DEBUG',
@@ -501,29 +505,28 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['file'] + ([] if PRODUCTION else ['console']),
-            'level': 'INFO' if PRODUCTION else 'DEBUG',
-            'propagate': True,
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
         },
         'django': {
-            'handlers': ['django_file'],
+            'handlers': ['console', 'django_file'],
             'level': 'WARNING',
-            'propagate': True,
+            'propagate': False,
         },
         'django.request': {
-            'handlers': ['django_file', 'mail_admins'],
+            'handlers': ['console', 'django_file', 'mail_admins'],
             'level': 'WARNING',
-            'propagate': not PRODUCTION,
+            'propagate': False,
         },
         'django.db.backends': {
-            'handlers': ['db_logfile', 'mail_admins'],
+            'handlers': ['console', 'db_logfile', 'mail_admins'],
             'level': 'WARNING',
-            'propagate': not PRODUCTION,
+            'propagate': False,
         },
         'yabiadmin': {
-            'handlers': ['file', 'yabi_db_handler'],
-            'level': 'INFO',
-            'propagate': not PRODUCTION,
+            'handlers': ['console', 'file', 'yabi_db_handler'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
         },
     }
 }
