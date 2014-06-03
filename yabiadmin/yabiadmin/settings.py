@@ -32,13 +32,15 @@ env = EnvConfig()
 
 WEBAPP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+PRODUCTION = env.get("production", False)
+
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
 # you SHOULD change the SSL_ENABLED to True when in production
-SSL_ENABLED = False
+SSL_ENABLED = PRODUCTION
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = True
+DEBUG = not PRODUCTION
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -84,9 +86,9 @@ SESSION_COOKIE_PATH = url('/')
 SESSION_COOKIE_NAME = 'yabi_sessionid'
 # SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = PRODUCTION
 CSRF_COOKIE_NAME = "csrftoken_yabi"
-
+CSRF_COOKIE_SECURE = PRODUCTION
 
 # Locale
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
@@ -499,8 +501,8 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['file'],
-            'level': 'INFO',
+            'handlers': ['file'] + ([] if PRODUCTION else ['console']),
+            'level': 'INFO' if PRODUCTION else 'DEBUG',
             'propagate': True,
         },
         'django': {
@@ -511,17 +513,17 @@ LOGGING = {
         'django.request': {
             'handlers': ['django_file', 'mail_admins'],
             'level': 'WARNING',
-            'propagate': False,
+            'propagate': not PRODUCTION,
         },
         'django.db.backends': {
             'handlers': ['db_logfile', 'mail_admins'],
             'level': 'WARNING',
-            'propagate': False,
+            'propagate': not PRODUCTION,
         },
         'yabiadmin': {
             'handlers': ['file', 'yabi_db_handler'],
-            'level': 'DEBUG',
-            'propagate': False,
+            'level': 'INFO',
+            'propagate': not PRODUCTION,
         },
     }
 }
