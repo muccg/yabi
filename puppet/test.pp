@@ -8,7 +8,7 @@ node default {
   include repo::ius
   include repo::pgrpms
   include repo::ccgtesting
-  include mysql::devel
+  include ccgdatabase::mysqldevel
 
   class {'postgresql':
     datadir              => '/var/lib/pgsql/9.3/data',
