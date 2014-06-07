@@ -114,7 +114,6 @@ ci_remote_test() {
 
     echo "Test plan ${TEST_PLAN}"
 
-    ccg ${AWS_TEST_INSTANCE} destroy || true
     time ccg ${AWS_TEST_INSTANCE} boot
     time ccg ${AWS_TEST_INSTANCE} puppet
     time ccg ${AWS_TEST_INSTANCE} shutdown:100
