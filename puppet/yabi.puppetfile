@@ -36,7 +36,7 @@ mod "muccg/ccgcommon",
 
 mod "muccg/ccgdatabase",
   :git => "git://github.com/muccg/puppet-ccgdatabase.git",
-  :ref => "3b45eb0f0a569634edff7eb78eca2b646b6c49d7"
+  :ref => "refs/heads/master"
 
 mod "muccg/repo",
   :git => "git://github.com/muccg/puppet-repo.git",
