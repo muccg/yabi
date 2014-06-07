@@ -26,9 +26,7 @@ node default {
   }
 
   # mysql databases
-  class { 'mysql::server':
-    config_hash => { root_password => '' }
-  }
+  include mysql::server
   mysql::db { 'dev_yabi':
     user     => 'yabiapp',
     password => 'yabiapp',
