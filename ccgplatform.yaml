@@ -75,3 +75,6 @@ instances:
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet
     puppet_manifest: staging.pp
+
+  aws_rpmbuild_centos6:
+    extends: centos_6_rpmbuild
