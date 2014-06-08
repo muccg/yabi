@@ -67,7 +67,6 @@ instances:
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet
     puppet_manifest: staging.pp
-    aws_instance_type: m3.medium
 
   local-staging:
     extends: centos_64_lxc
