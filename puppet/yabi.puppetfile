@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 #^syntax detection
 
-forge "http://forge.puppetlabs.com"
+forge "https://forge.puppetlabs.com"
 
 mod "puppetlabs/stdlib", "4.1.0"
 mod "puppetlabs/postgresql", "2.5.0"
@@ -36,7 +36,7 @@ mod "muccg/ccgcommon",
 
 mod "muccg/ccgdatabase",
   :git => "git://github.com/muccg/puppet-ccgdatabase.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.0"
 
 mod "muccg/repo",
   :git => "git://github.com/muccg/puppet-repo.git",
