@@ -77,7 +77,7 @@
             e.halt(true);
             
             if (!wf.isValid()) {
-                YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow is missing required inputs. Please correct before submitting.");
+                YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow isn't valid. Please correct errors before submitting.");
             } else {
 
                 var baseURL = appURL + "ws/workflows/submit/";

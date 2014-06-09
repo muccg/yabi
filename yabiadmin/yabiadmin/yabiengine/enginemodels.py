@@ -30,6 +30,7 @@ from django.db import transaction
 from django.db.transaction import is_managed
 from django.utils import simplejson as json
 from yabiadmin.yabi.models import BackendCredential, Tool
+from yabiadmin.exceptions import InvalidRequestError
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger
@@ -252,6 +253,8 @@ class EngineJob(Job):
 
         self.job_dict = job_dict
         self.tool = Tool.objects.get(name=job_dict["toolName"])
+        if not self.tool.enabled:
+            raise InvalidRequestError("Can't process workflow with disabled tool '%s'" % self.tool.name)
 
         # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.
         # that will be resolved later when the stagein is created during the walk

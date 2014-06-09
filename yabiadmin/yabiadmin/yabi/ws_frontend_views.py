@@ -66,7 +66,7 @@ def tool(request, toolname):
         return page
 
     try:
-        tool = Tool.objects.get(name=toolname, enabled=True)
+        tool = Tool.objects.get(name=toolname)
 
         response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
         cache.set(toolname_key, response, 30)
