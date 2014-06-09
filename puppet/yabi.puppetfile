@@ -20,19 +20,19 @@ mod "stahnma/epel",
 
 mod "muccg/profile",
   :git => "git://github.com/muccg/puppet-profile.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.0"
 
 mod "muccg/role",
   :git => "git://github.com/muccg/puppet-role.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.0"
 
 mod "muccg/python",
   :git => "git://github.com/muccg/puppet-python.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.0"
 
 mod "muccg/ccgcommon",
   :git => "git://github.com/muccg/puppet-ccgcommon.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.1"
 
 mod "muccg/ccgdatabase",
   :git => "git://github.com/muccg/puppet-ccgdatabase.git",
@@ -40,12 +40,12 @@ mod "muccg/ccgdatabase",
 
 mod "muccg/repo",
   :git => "git://github.com/muccg/puppet-repo.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.1"
 
 mod "muccg/ccgapache",
   :git => "git://github.com/muccg/puppet-ccgapache.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.0"
 
 mod "muccg/django",
   :git => "git://github.com/muccg/puppet-django.git",
-  :ref => "refs/heads/master"
+  :ref => "1.0.1"
