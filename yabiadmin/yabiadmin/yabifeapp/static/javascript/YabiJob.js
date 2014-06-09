@@ -684,9 +684,9 @@ YabiJob.prototype.solidify = function(obj) {
   Yabi.util.text(this.titleEl, this.payload.tool.display_name);
   this.displayName = this.payload.tool.display_name;
   if (!this.payload.tool.enabled) {
-      this.displayName = "Disabled Tool: " + this.displayName;
+      this.displayName = 'Disabled Tool: ' + this.displayName;
       this.valid = false;
-      this.jobEl.className = this.jobEl.className + " disabled";
+      this.jobEl.className = this.jobEl.className + ' disabled';
   }
 
   var label = document.createElement('label');
