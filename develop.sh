@@ -154,32 +154,12 @@ ci_staging() {
 
 # run tests on staging
 ci_staging_tests() {
-    # /tmp is used for test results because the apache user has
-    # permission to write there.
-    REMOTE_TEST_DIR=/tmp
-    REMOTE_TEST_RESULTS=${REMOTE_TEST_DIR}/tests.xml
+    # Try running syncdb -- if setup is wrong this won't work
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"yabiadmin syncdb --noinput"
 
-    # Grant permission to create a test database. Assume that database
-    # user is same as project name for now.
-    DATABASE_USER=${PROJECT_NAME}
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"su postgres -c \"psql -c 'ALTER ROLE ${DATABASE_USER} CREATEDB;'\""
-
-    # fixme: this config should be put in nose.cfg or settings.py or similar
-    EXCLUDES="--exclude\=yaphc --exclude\=esky --exclude\=httplib2"
-
-    # Start virtual X server here to work around a problem starting it
-    # from xvfbwrapper.
-    ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb \:0"
-
-    sleep 2
-
-    # firefox won't run without a profile directory, dbus and gconf
-    # also need to write in home directory.
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"chown apache:apache /var/www"
-
-    # Run tests, collect results
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd ${REMOTE_TEST_DIR} && env DISPLAY\=\:0 dbus-launch timeout -sHUP 30m ${PROJECT_NAME} test --verbosity\=2 --liveserver\=localhost\:8082\,8090-8100\,9000-9200\,7041 --noinput --with-xunit --xunit-file\=${REMOTE_TEST_RESULTS} ${TEST_LIST} ${EXCLUDES} || true"
-    ccg ${AWS_STAGING_INSTANCE} getfile:${REMOTE_TEST_RESULTS},./
+    # Get the login page -- will find major config problems with the rpm
+    STAGING_URL="https://staging.ccgapps.com.au/yabi/"
+    curl -f -o /dev/null -D /dev/stdout ${STAGING_URL}
 }
 
 
