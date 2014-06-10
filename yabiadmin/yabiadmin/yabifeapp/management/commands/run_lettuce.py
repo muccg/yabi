@@ -6,6 +6,7 @@ from lettuce import Runner
 
 from django.core.management.base import BaseCommand, CommandError
 
+
 class Command(BaseCommand):
     help = 'Runs lettuce features'
 
@@ -21,7 +22,7 @@ class Command(BaseCommand):
                     default='4',
                     type='choice',
                     choices=map(str, range(5)),
-                     help='Verbosity level; 0=no output, 1=only dots, 2=only scenario names, 3=colorless output, 4=normal output (colorful)'),
+                    help='Verbosity level; 0=no output, 1=only dots, 2=only scenario names, 3=colorless output, 4=normal output (colorful)'),
 
         make_option('--with-xunit',
                     action='store_true',

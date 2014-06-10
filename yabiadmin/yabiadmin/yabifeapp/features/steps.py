@@ -1,6 +1,4 @@
 from lettuce import *
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 import lettuce_webdriver.webdriver
 
 
@@ -28,6 +26,7 @@ def login_as_user(step, username, password):
     password_field.send_keys(password)
     password_field.submit()
 
+
 def get_site_url(app_name, default_url):
     """
     :return: http://example.com:8081
@@ -40,6 +39,3 @@ def get_site_url(app_name, default_url):
         with open(site_url_file) as f:
             site_url = f.read()
         return site_url
-
-
-
