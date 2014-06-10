@@ -411,9 +411,9 @@ class Submitworkflow(Action):
             wfjson = f.read()
         resp, json_response = self.yabi.post(self.url, {'workflowjson': wfjson})
         decoded_resp = self.decode_json(json_response)
-        if not decoded_resp['id']:
-            raise errors.RemoteError(decoded_resp.get('msg', 'Unknown error'))
-        wfid = decoded_resp['id']
+        if not decoded_resp['data']['workflow_id']:
+            raise errors.RemoteError(decoded_resp.get('message', 'Unknown error'))
+        wfid = decoded_resp['data']['workflow_id']
         print('Running your job on the server. Id: %s' % wfid)
         return wfid
 
