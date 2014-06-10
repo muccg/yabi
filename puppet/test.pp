@@ -21,10 +21,6 @@ node default {
 
   include postgresql::devel
 
-  class {'monit::packages':
-    packages => ['rsyslog', 'sshd'],
-  }
-
   # mysql databases
   include mysql::server
   mysql::db { 'dev_yabi':
