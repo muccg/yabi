@@ -23,13 +23,6 @@ node default {
     admin_email => $globals::system_email,
   }
 
-  $celery_settings = {
-    'configdir'  => '/etc/yabiadmin',
-  }
-
-  # celery config is the base django_config plus other settings
-  $celery_config = merge($django_config, $celery_settings)
-
   class {'postgresql':
     datadir              => '/var/lib/pgsql/9.3/data',
     bindir               => '/usr/pgsql-9.3/bin',
@@ -76,10 +69,6 @@ node default {
     config_hash => $django_config,
   }
 
-  django::config { 'yabicelery':
-    config_hash => $celery_config,
-  }
-
   django::syncdbmigrate{'yabiadmin':
     dbsync  => true,
     require => [
@@ -110,6 +99,6 @@ node default {
       Package[$packages],
       Ccgdatabase::Postgresql[$django_config['dbname']],
       Package['yabi-admin'],
-      Django::Config['yabicelery'] ]
+      Django::Config['yabiadmin'] ]
   }
 }

@@ -23,13 +23,6 @@ node default {
     admin_email => $globals::system_email,
   }
 
-  $celery_settings = {
-    'configdir'  => '/etc/yabiadmin',
-  }
-
-  # celery config is the base django_config plus other settings
-  $celery_config = merge($django_config, $celery_settings)
-
   $packages = ['python27-psycopg2', 'rabbitmq-server']
   package {$packages: ensure => installed}
 
@@ -40,10 +33,6 @@ node default {
 
   django::config { 'yabiadmin':
     config_hash => $django_config,
-  }
-
-  django::config { 'yabicelery':
-    config_hash => $celery_config,
   }
 
   # Disabled until releasing on this branch
@@ -77,7 +66,6 @@ node default {
   #    Service['rabbitmq-server'],
   #    Package[$packages],
   #    Ccgdatabase::Postgresql[$django_config['dbname']],
-  #    Package['yabi-admin'],
-  #    Django::Config['yabicelery'] ]
+  #    Package['yabi-admin'] ]
   #}
 }

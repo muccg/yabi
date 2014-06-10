@@ -148,15 +148,6 @@ TEMPLATE_DEBUG = DEBUG
 TEMPLATE_LOADERS = ('django.template.loaders.filesystem.Loader',
                     'django.template.loaders.app_directories.Loader')
 
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
-# TEMPLATE_DIRS = [
-#     os.path.join(WEBAPP_ROOT, "templates"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabifeapp", "templates", "mako"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabiengine", "templates", "mako"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates", "mako"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates"),
-# ]
-
 # mako compiled templates directory
 MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, 'templates')
 
@@ -530,3 +521,8 @@ LOGGING = {
         },
     }
 }
+
+# In the case of running in a Celery worker process, Celery will sort
+# out its own logging. So we don't need Django to configure anything.
+if os.environ.get("YABI_CELERY_WORKER", ""):
+    LOGGING = { "version": 1 }
