@@ -8,38 +8,16 @@ node default {
   include repo::ius
   include repo::pgrpms
   include repo::ccgtesting
-
-  class {'postgresql':
-    datadir              => '/var/lib/pgsql/9.3/data',
-    bindir               => '/usr/pgsql-9.3/bin',
-    client_package_name  => 'postgresql93',
-    server_package_name  => 'postgresql93-server',
-    devel_package_name   => 'postgresql93-devel',
-    service_name         => 'postgresql-9.3',
-  }
-
-  include postgresql::devel
+  include ccgdatabase::postgresql::devel
+  include ccgdatabase::mysql::devel
 
   # mysql databases
-  class { 'mysql::server':
-    #root_password    => 'test',
-  }
-  mysql::db { 'dev_yabi':
-    user     => 'yabiapp',
-    password => 'yabiapp'
-  }
-  mysql::db { 'test_yabi':
-    user     => 'yabiapp',
-    password => 'yabiapp'
-  }
+  ccgdatabase::mysql::db { 'dev_yabi': user => 'yabiapp', password => 'yabiapp' }
+  ccgdatabase::mysql::db { 'test_yabi': user => 'yabiapp', password => 'yabiapp' }
 
-  # postgresql databases/users
-  ccgdatabase::postgresql{'dev_yabi': user => 'yabiapp', password => 'yabiapp'}
-  postgresql::db { 'test_yabi':
-    user     => 'yabiapp',
-    password => 'yabiapp',
-    require  => Postgresql::Database_User['yabiapp'],
-  }
+  # postgresql databases
+  ccgdatabase::postgresql::db {'dev_yabi': user => 'yabiapp', password => 'yabiapp'}
+  ccgdatabase::postgresql::db {'test_yabi': user => 'yabiapp', password => 'yabiapp'}
 
   # Package deps for yabi
   case $::osfamily {

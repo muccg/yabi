@@ -8,6 +8,7 @@ node default {
   include repo::ius
   include repo::pgrpms
   include repo::ccgtesting
+  include ccgdatabase::postgresql::devel
   include globals
 
   # There are some leaked local secrets here we don't care about
@@ -22,17 +23,6 @@ node default {
     secret_key  => 'isbfiusbef)#$)(#)((@',
     admin_email => $globals::system_email,
   }
-
-  class {'postgresql':
-    datadir              => '/var/lib/pgsql/9.3/data',
-    bindir               => '/usr/pgsql-9.3/bin',
-    client_package_name  => 'postgresql93',
-    server_package_name  => 'postgresql93-server',
-    devel_package_name   => 'postgresql93-devel',
-    service_name         => 'postgresql-9.3',
-  }
-
-  include postgresql::devel
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
   package {$packages: ensure => installed}
@@ -58,7 +48,7 @@ node default {
   #  source => 'puppet:///modules/staging/yabi_staging_tests.conf'
   #}
 
-  ccgdatabase::postgresql { $django_config['dbname']:
+  ccgdatabase::postgresql:db { $django_config['dbname']:
     user     => $django_config['dbuser'],
     password => $django_config['dbpass'],
   }
