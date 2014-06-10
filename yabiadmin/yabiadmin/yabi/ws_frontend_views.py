@@ -44,7 +44,7 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
-from yabiadmin.utils import cache_keyname
+from yabiadmin.utils import cache_keyname, json_error_response, json_response
 from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
 
@@ -357,9 +357,9 @@ def submit_workflow(request):
     except Exception:
         transaction.rollback()
         logger.exception("Exception in submit_workflow()")
-        raise
+        return json_error_response("Workflow submission error")
 
-    return HttpResponse(json.dumps({"id": workflow.id}))
+    return json_response({"workflow_id": workflow.pk})
 
 
 def munge_name(user, workflow_name):

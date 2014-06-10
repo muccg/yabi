@@ -1323,20 +1323,28 @@ YUI().use(
         var json = o.responseText;
         var i;
         var obj;
+        var msg = 'Workflow submission error';
 
         try {
           obj = Y.JSON.parse(json);
+          resp_status = obj.status;
+        } catch (e) {
+          YAHOO.ccgyabi.widget.YabiMessage.fail(
+            'Submission error. Invalid response');
 
-          //we should have received an id
-          if (!Y.Lang.isUndefined(obj.id)) {
-            target.workflowId = obj.id;
-
-            target.saveTags(postRelocateCallback);
+          return;
+        }
+        if (obj.status !== 'success') {
+          if (Y.Lang.isString(obj.message) && Y.Lang.trim(obj.message) != '') {
+            msg = obj.message;
           }
 
-        } catch (e) {
-          YAHOO.ccgyabi.widget.YabiMessage.fail('Error loading workflow');
+          YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
+          return;
         }
-      };
+
+        target.workflowId = obj.data.workflow_id;
+        target.saveTags(postRelocateCallback);
+     };
 
     }); // end of YUI().use(...
