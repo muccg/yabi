@@ -12,16 +12,15 @@ node default {
 
   # There are some leaked local secrets here we don't care about
   $django_config = {
-    'deployment'  => 'staging',
-    'dbdriver'    => 'django.db.backends.postgresql_psycopg2',
-    'dbhost'      => '',
-    'dbname'      => 'yabi_staging',
-    'dbuser'      => 'yabi',
-    'dbpass'      => 'yabi',
-    'memcache'    => $globals::memcache_syd,
-    'secretkey'   => 'isbfiusbef)#$)(#)((@',
-    'admin_email' => $globals::system_email,
-    custom_installroot => '/usr/local/webapps/yabiadmin/lib/python2.7/site-packages',
+    deployment  => 'staging',
+    dbdriver    => 'django.db.backends.postgresql_psycopg2',
+    dbhost      => '',
+    dbname      => 'yabi_staging',
+    dbuser      => 'yabi',
+    dbpass      => 'yabi',
+    memcache    => $globals::memcache_syd,
+    secret_key  => 'isbfiusbef)#$)(#)((@',
+    admin_email => $globals::system_email,
   }
 
   $celery_settings = {

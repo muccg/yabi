@@ -11,17 +11,16 @@ node default {
   include repo::ccgcentos
 
   $django_config = {
-    'deployment'  => 'prod',
-    'release'     => '7.2.4-1',
-    'dbdriver'    => 'django.db.backends.postgresql_psycopg2',
-    'dbhost'      => $globals::dbhost_rds_syd_postgresql_prod,
-    'dbname'      => 'yabiadmin_prod',
-    'dbuser'      => $globals::dbuser_syd_prod,
-    'dbpass'      => $globals::dbpass_syd_prod,
-    'memcache'    => $globals::memcache_syd,
-    'secretkey'   => $globals::secretkey_yabi,
-    'admin_email' => $globals::system_email,
-    'installroot' => '/usr/local/webapps/yabiadmin/lib/python2.7/site-packages',
+    deployment  => 'prod',
+    release     => '7.2.4-1',
+    dbdriver    => 'django.db.backends.postgresql_psycopg2',
+    dbhost      => $globals::dbhost_rds_syd_postgresql_prod,
+    dbname      => 'yabiadmin_prod',
+    dbuser      => $globals::dbuser_syd_prod,
+    dbpass      => $globals::dbpass_syd_prod,
+    memcache    => $globals::memcache_syd,
+    secret_key  => $globals::secretkey_yabi,
+    admin_email => $globals::system_email,
   }
 
   $celery_settings = {
