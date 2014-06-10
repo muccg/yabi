@@ -18,6 +18,7 @@ AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
+TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
 PIP_OPTS="--download-cache ~/.pip/cache"
 PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
 
@@ -30,7 +31,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -163,6 +164,24 @@ ci_staging_tests() {
 }
 
 
+# staging selenium test
+function ci_staging_selenium() {
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"pip2.7 install ${PIP_OPTS} ${TESTING_MODULES}"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum --enablerepo\=ccg-testing clean all'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum install yabi-admin -y'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'killall httpd || true'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd start'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'echo http://localhost/yabi > /tmp/yabifeapp_site_url'
+    ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && env DISPLAY\=\:0 yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback|| true"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'rm /tmp/yabifeapp_site_url'
+    ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
+    #ccg ${AWS_STAGING_INSTANCE} dsudo:'yabiadmin run_lettuce --app-name yabifeapp --with-xunit --xunit-file\=/tmp/tests-yabifeapp.xml || true'
+}
+
 # we need authorized keys setup for ssh tests
 ci_authorized_keys() {
     cat tests/test_data/yabitests.pub >> ~/.ssh/authorized_keys
@@ -174,6 +193,8 @@ lint() {
     ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count
 }
 
+
+# lint js, assumes closure compiler
 jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
@@ -598,6 +619,10 @@ ci_staging)
 ci_staging_tests)
     ci_ssh_agent
     ci_staging_tests
+    ;;
+ci_staging_selenium)
+    ci_ssh_agent
+    ci_staging_selenium
     ;;
 clean)
     settings
