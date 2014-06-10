@@ -525,4 +525,4 @@ LOGGING = {
 # In the case of running in a Celery worker process, Celery will sort
 # out its own logging. So we don't need Django to configure anything.
 if os.environ.get("YABI_CELERY_WORKER", ""):
-    LOGGING = { "version": 1 }
+    LOGGING = {"version": 1}
