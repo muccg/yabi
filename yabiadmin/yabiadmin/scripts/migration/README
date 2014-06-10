@@ -1,0 +1,36 @@
+This scripts were written to migrate the AWS Yabi server's data from MySQL to Postgres.
+
+They probably won't be reused, but was trouble finding a good place for them so they will live here for now.
+
+Usage:
+
+- Copy the file dumpdata.sh to the server that is running MySQL.
+- Copy the files loaddata.sh, flushdb.sql, and flushyabidb.sql to the server that is running Postgresql.
+- Adjust the RUN_ADMIN variables value if needed in both dumpdata.sh and loaddata.sh to be the valid way you invoke django commands from the command line on your server.
+
+Exporting the data:
+------------------------
+
+The dumpdata.sh script will create a json_data directory and will export data from the MySQL DB into it grouped by Django apps.
+ - Announce that the migration is taking place and users shouldn't make modifications using Django Admin or they are risking to lose them.
+ - Stop Celery Workers, no Celery tasks should be running while we migrate the data as they do change the state of the DB.
+Run the script:
+
+./dumpdata.sh
+
+Loading the data:
+-----------------------
+
+Tarball the json_data dir if needed and copy it to the server with postgresql enabled.
+Untar it so that the json_data/ dir is in the same dir as your loaddata.sh script.
+
+Dependencies of the loaddata.sh script are:
+  - json_data/ dir with all the json files exported by dumpdata.sh
+  - flushdb.sql  and flushyabidb.sql in the same dir as loaddata.sh.
+
+Run the loaddata.sh to load your data:
+
+./loaddata.sh
+
+That's all.
+

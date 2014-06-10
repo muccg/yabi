@@ -1,0 +1,26 @@
+BEGIN;
+TRUNCATE "yabiengine_workflow", "yabi_credential", "yabi_user", "yabi_toolparameter", "yabi_hostkey", "yabi_tooloutputextension", "yabi_fileextension", "yabi_cache", "yabiengine_tag", "yabi_toolgrouping", "yabiengine_job", "yabi_backendcredential", "yabi_filetype", "yabi_toolgroup", "yabi_parameterswitchuse", "yabi_toolparameter_accepted_filetypes", "yabi_toolset", "yabiengine_queuedworkflow", "yabi_filetype_extensions", "yabi_user_toolsets", "yabiengine_task", "yabiengine_stagein", "yabiengine_workflowtag", "yabi_tool", "yabiengine_syslog", "yabi_backend";
+SELECT setval(pg_get_serial_sequence('"yabi_fileextension"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_filetype"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_tool"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_parameterswitchuse"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_toolparameter"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_tooloutputextension"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_toolgroup"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_toolgrouping"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_toolset"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_user"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_credential"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_backend"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_hostkey"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabi_backendcredential"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_workflow"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_tag"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_workflowtag"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_job"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_task"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_stagein"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_queuedworkflow"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"yabiengine_syslog"','id'), 1, false);
+
+COMMIT;

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 """project constants.
 
@@ -88,14 +84,10 @@ STATUS_MAP = (
 
 STATUS_PROGRESS_MAP = dict(STATUS_MAP)
 
-_statuses_order = [st[0] for st in STATUS_MAP if st[0] != '' and st[0] not in (JOB_STATUS_PROCESSING, JOB_STATUS_TASKS_SPAWNED)] + [STATUS_BLOCKED]
+_statuses_order = [st[0] for st in STATUS_MAP
+                   if st[0] != '' and st[0] not in (JOB_STATUS_PROCESSING, JOB_STATUS_TASKS_SPAWNED)] + [STATUS_BLOCKED]
 _statuses_order.reverse()
 STATUSES_REVERSE_ORDER = _statuses_order
-
-# validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'explode', 'null']
-FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 'sftp', 's3', 'localfs', 'file', 'null']
-VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
 # Celery Settings
 MAX_CELERY_TASK_RETRIES = 3

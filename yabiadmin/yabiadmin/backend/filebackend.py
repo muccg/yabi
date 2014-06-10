@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.utils import ls
 from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
@@ -31,8 +27,10 @@ from yabiadmin.yabiengine.urihelper import uriparse
 import os
 import shutil
 import logging
+import tarfile
 import traceback
-import threading
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -40,64 +38,60 @@ LS_PATH = '/bin/ls'
 LS_TIME_STYLE = r"+%b %d  %Y"
 
 
-class CopyThread(threading.Thread):
-
-    def __init__(self, src, dst, purge=None, queue=None):
-        threading.Thread.__init__(self)
-        self.src = src
-        self.dst = dst
-        self.purge = purge
-        self.queue = queue
-
-    def run(self):
-        status = -1
-        logger.debug('CopyThread {0} -> {1}'.format(self.src, self.dst))
-        try:
-            logger.debug('CopyThread start copy')
-            shutil.copyfileobj(open(self.src, 'r'), open(self.dst, 'w'))
-            #shutil.copyfileobj(open(self.src, os.O_RDONLY), open(self.dst, 'w+'))
-            #shutil.copyfileobj(os.open(self.src, os.O_RDONLY), os.open(self.dst, os.O_WRONLY|os.O_CREAT))
-            logger.debug('CopyThread end copy')
-            status = 0
-        except Exception as exc:
-            logger.error(traceback.format_exc())
-            logger.error(exc)
-        finally:
-            if self.queue is not None:
-                self.queue.put(status)
-            # I was using purge to optionally remove a fifi after a copy
-            if self.purge is not None and os.path.exists(self.purge):
-                #os.unlink(self.purge)
-                pass
-
-
 class FileBackend(FSBackend):
+    backend_desc = "File system"
+    backend_auth = {}
 
-    def fifo_to_remote(self, uri, fifo, queue=None):
-        """initiate a copy from local fifo to uri"""
+    def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)
-        assert os.path.exists(fifo)
-        # purge the fifo after we finish reading from it
-        thread = CopyThread(src=fifo, dst=parts.path, purge=fifo, queue=queue)
-        thread.start()
-        return thread
+        return self._copy_file(src, open(parts.path, "wb"))
 
-    def remote_to_fifo(self, uri, fifo, queue=None):
-        """initiate a copy from local file to fifo"""
+    def download_file(self, uri, dst):
         scheme, parts = uriparse(uri)
         if not os.path.exists(parts.path):
             raise FileNotFoundError(uri)
-        assert os.path.exists(fifo)
-        thread = CopyThread(src=parts.path, dst=fifo, queue=queue)
-        thread.start()
-        return thread
+        return self._copy_file(open(parts.path, "rb"), dst)
+
+    def download_dir(self, uri, dst):
+        scheme, parts = uriparse(uri)
+        if not os.path.exists(parts.path):
+            raise FileNotFoundError(uri)
+        return self._tar_and_copy_dir(parts.path, dst)
+
+    def _copy_file(self, src, dst):
+        success = False
+        logger.debug('CopyThread {0} -> {1}'.format(src, dst))
+        logger.debug('CopyThread start copy')
+        try:
+            shutil.copyfileobj(src, dst)
+        except Exception:
+            # fixme: just catch the shutil and ioerror exceptions
+            logger.exception("FileBackend _copy_file error")
+        else:
+            logger.debug('CopyThread end copy')
+            success = True
+        return success
+
+    def _tar_and_copy_dir(self, src, dst):
+        success = False
+        logger.debug('TarAndCopyThread {0} -> {1}'.format(src, dst))
+        logger.debug('TarAndCopyThread start tar')
+        try:
+            with tarfile.open(fileobj=dst, mode='w|gz') as f:
+                f.add(src, arcname=os.path.basename(src.rstrip('/')))
+        except Exception:
+            logger.exception("FileBackend _tar_and_copy_dir error")
+        else:
+            logger.debug('TarAndCopyThread end tar')
+            success = True
+        return success
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
         remote_path = parts.path
         stat = os.stat(remote_path)
 
-        return { 'atime': stat.st_atime, 'mtime': stat.st_mtime }
+        return {'atime': stat.st_atime, 'mtime': stat.st_mtime}
 
     def set_remote_uri_times(self, uri, atime, mtime):
         scheme, parts = uriparse(uri)
@@ -166,8 +160,11 @@ class FileBackend(FSBackend):
         logger.debug('symbolic_link {0} -> {1}'.format(link_uri, target_uri))
         target_scheme, target_parts = uriparse(target_uri)
         link_scheme, link_parts = uriparse(link_uri)
+        target = target_parts.path
         try:
-            os.symlink(target_parts.path, link_parts.path)
+            if not os.path.exists(target):
+                raise FileNotFoundError("Source of symbolic link '%s' doesn't exist" % target)
+            os.symlink(target, link_parts.path)
         except OSError as ose:
             raise RetryException(ose, traceback.format_exc())
 
@@ -188,4 +185,3 @@ class FileBackend(FSBackend):
                 shutil.rmtree(path)
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
-

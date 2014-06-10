@@ -265,10 +265,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
                 var schema = this.pathComponents[0].substring(0,
                     this.pathComponents[0].indexOf('://'));
-                // Disabled for now.
-                // See https://ccgmurdoch.atlassian.net/browse/YABI-452
-                //if (schema == 'scp' || schema == 'localfs')
-                if (false)
+                if (schema == 'scp' || schema == 'sftp' || schema == 'localfs')
                 {
                   downloadEl = document.createElement('div');
                   downloadEl.className = 'download';
@@ -687,6 +684,15 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
       };
 
 
+      YabiFileSelector.prototype.indexOfFile = function(file) {
+        for (var index in this.selectedFiles) {
+          if (this.selectedFiles[index].isEqual(file)) {
+            return index;
+          }
+        }
+        return -1;
+      };
+
       /**
        * selectFile
        *
@@ -694,11 +700,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        */
       YabiFileSelector.prototype.selectFile = function(file) {
         //duplicate detection
-        for (var index in this.selectedFiles) {
-          if (this.selectedFiles[index].isEqual(file)) {
-            return;
-          }
-        }
+        if (this.indexOfFile(file) >= 0) return;
 
         this.selectedFiles.push(file);
 
@@ -909,9 +911,6 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
       YabiFileSelector.prototype.downloadDirectoryCallback =
           function(e, invoker) {
         e.halt(true);
-        // Disabled for now.
-        // See https://ccgmurdoch.atlassian.net/browse/YABI-452
-        return;
         var target = invoker.target;
         target.downloadDirectory(invoker.object);
       };

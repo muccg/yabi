@@ -551,6 +551,14 @@ display:inline;
     width:298px;
 }
 
+.selectedJobContainer.disabled h1 {
+    color: #f66;
+}
+
+.jobContainer.disabled h1 {
+    color: #f66;
+}
+
 .jobInputs {
     text-shadow:none;
 }

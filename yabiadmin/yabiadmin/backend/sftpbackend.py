@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,22 +20,21 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.sshexec import SSHExec
 from yabiadmin.backend.backend import fs_credential
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.utils import sshclient
 from yabiadmin.constants import ENVVAR_FILENAME
+import paramiko
 import os
+import select
 import errno
 import stat
 import traceback
 import time
 import logging
-import threading
 from itertools import dropwhile
 from functools import reduce
 from pooling import get_ssh_pool_manager
@@ -46,99 +43,74 @@ logger = logging.getLogger(__name__)
 
 pool_manager = get_ssh_pool_manager()
 
-class SFTPCopyThread(threading.Thread):
+BLOCK_SIZE = 1024
 
-    def __init__(self, host=None, port=None, credential=None, localpath=None, remotepath=None, copy=None, hostkey=None, purge=None, queue=None, cwd=None):
-        threading.Thread.__init__(self)
-        self.hostname = host
-        self.port = port
-        self.credential = credential
-        self.localpath = localpath
-        self.remotepath = remotepath
-        self.copy = copy
-        self.hostkey = hostkey
-        self.purge = purge
-        self.queue = queue
-        self.cwd = cwd
+
+class SFTPBackend(FSBackend):
+    backend_desc = "SFTP remote file system"
+    backend_auth = FSBackend.SSH_AUTH
+
+    def _sftp_copy(self, host=None, port=None, credential=None,
+                   localfo=None, remotepath=None, copy=None,
+                   hostkey=None, cwd=None):
         assert copy == 'put' or copy == 'get'
 
-    def run(self):
-        status = -1
-        logger.debug('SFTPCopyThread {0} {1} {2}'.format(self.localpath, self.copy, self.remotepath))
+        status = False
+        logger.debug('SFTPCopyThread {0} {1} {2}'.format(localfo.name, copy, remotepath))
         ssh = None
         sftp = None
         try:
-            ssh = pool_manager.borrow(self.hostname, self.port, self.credential)
+            ssh = pool_manager.borrow(host, port, credential)
             sftp = ssh.open_sftp()
-            if self.copy == 'put':
-                sftp.put(self.localpath, self.remotepath, callback=None, confirm=True)
-            elif self.copy == 'get':
-                try:
-                    sftp.get(self.remotepath, self.localpath, callback=None)
-                # bogus error because stat of fifo returns 0
-                except IOError as ioerr:
-                    msg = str(ioerr)
-                    if msg.startswith("size mismatch in get!  0 !="):
-                        status = 0
-                    else:
-                        raise
-
-            status = 0
+            if copy == 'put':
+                sftp.putfo(localfo, remotepath, callback=None, confirm=True)
+            elif copy == 'get':
+                sftp.getfo(remotepath, localfo, callback=None)
+            status = True
 
         except Exception as exc:
             logger.error(traceback.format_exc())
             logger.error(exc)
         finally:
             if ssh is not None:
-                if sftp is not None: 
+                if sftp is not None:
                     sftp.close()
-                pool_manager.give_back(ssh, self.hostname, self.port, self.credential)
-            if self.queue is not None:
-                self.queue.put(status)
-            if self.purge is not None and os.path.exists(self.purge):
-                #os.unlink(self.purge)
-                # commented out above as it caused stage out to fail
-                pass
+                pool_manager.give_back(ssh, host, port, credential)
+        return status
 
-
-class SFTPBackend(FSBackend):
-
-    def fifo_to_remote(self, uri, fifo, queue=None):
-        """initiate a copy from local fifo to uri"""
+    def upload_file(self, uri, infile):
         scheme, parts = uriparse(uri)
-        assert os.path.exists(fifo)
-        thread = SFTPCopyThread(host=parts.hostname,
-                                port=parts.port,
-                                credential=self.cred.credential,
-                                localpath=fifo,
-                                remotepath=parts.path,
-                                copy='put',
-                                hostkey=None,
-                                purge=fifo,
-                                queue=queue)
-        thread.start()
-        return thread
+        return self._sftp_copy(host=parts.hostname,
+                               port=parts.port,
+                               credential=self.cred.credential,
+                               localfo=infile,
+                               remotepath=parts.path,
+                               copy='put',
+                               hostkey=None)
 
-    def remote_to_fifo(self, uri, fifo, queue=None):
-        """initiate a copy from remote file to fifo"""
+    def download_file(self, uri, outfile):
         scheme, parts = uriparse(uri)
-        assert os.path.exists(fifo)
-        # don't think we should purge fifo after writing, rather after reading completes
-        thread = SFTPCopyThread(host=parts.hostname,
-                                port=parts.port,
-                                credential=self.cred.credential,
-                                localpath=fifo,
-                                remotepath=parts.path,
-                                copy='get',
-                                hostkey=None,
-                                purge=None,
-                                queue=queue)
-        thread.start()
-        return thread
+        return self._sftp_copy(host=parts.hostname,
+                               port=parts.port,
+                               credential=self.cred.credential,
+                               localfo=outfile,
+                               remotepath=parts.path,
+                               copy='get',
+                               hostkey=None)
+
+    def download_dir(self, uri, outfile):
+        logger.debug("SFTPBackend.download_dir: %s => tarball => %s",
+                     uri, outfile)
+        scheme, parts = uriparse(uri)
+        executer = create_executer(self.yabiusername, uri)
+        try:
+            return executer.download_dir_as_tarball(parts.path, outfile)
+        except Exception as exc:
+            raise RetryException(exc, traceback.format_exc())
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
-        remotepath=parts.path
+        remotepath = parts.path
         ssh = None
         try:
             ssh = pool_manager.borrow(parts.hostname, parts.port, self.cred.credential)
@@ -146,9 +118,9 @@ class SFTPBackend(FSBackend):
 
             stat = sftp.stat(remotepath)
 
-            return { 'atime': stat.st_atime, 'mtime': stat.st_mtime }
+            return {'atime': stat.st_atime, 'mtime': stat.st_mtime}
 
-        except Exception as exc:
+        except Exception:
             logger.exception("Exception while stating '%s'", uri)
             raise
         finally:
@@ -158,15 +130,15 @@ class SFTPBackend(FSBackend):
 
     def set_remote_uri_times(self, uri, atime, mtime):
         scheme, parts = uriparse(uri)
-        remotepath=parts.path
+        remotepath = parts.path
         ssh = None
         try:
             ssh = pool_manager.borrow(parts.hostname, parts.port, self.cred.credential)
             sftp = ssh.open_sftp()
 
-            stat = sftp.utime(remotepath, (atime, mtime))
+            sftp.utime(remotepath, (atime, mtime))
 
-        except Exception as exc:
+        except Exception:
             logger.exception("Exception while setting times for '%s'", uri)
             raise
         finally:
@@ -174,14 +146,13 @@ class SFTPBackend(FSBackend):
                 sftp.close()
                 pool_manager.give_back(ssh, parts.hostname, parts.port, self.cred.credential)
 
-
     # http://stackoverflow.com/questions/6674862/recursive-directory-download-with-paramiko
     def isdir(self, sftp, path):
         """isdir at path using sftp client"""
         try:
             return stat.S_ISDIR(sftp.stat(path).st_mode)
         except IOError:
-            #Path does not exist, so by definition not a directory
+            # Path does not exist, so by definition not a directory
             return False
 
     def path_exists(self, sftp, path):
@@ -244,8 +215,10 @@ class SFTPBackend(FSBackend):
             output = {}
             output[parts.path] = results
             return output
+        except FileNotFoundError:
+            return {}
         except Exception as exc:
-            logger.error(exc)
+            logger.exception("ls: %s" % uri)
             raise RetryException(exc, traceback.format_exc())
         finally:
             try:
@@ -259,8 +232,12 @@ class SFTPBackend(FSBackend):
 
         def is_dir(path):
             import stat
-            sftp_stat_result = sftp.stat(path)
-            return stat.S_ISDIR(sftp_stat_result.st_mode)
+            try:
+                sftp_stat_result = sftp.stat(path)
+                return stat.S_ISDIR(sftp_stat_result.st_mode)
+            except IOError as e:
+                if e.errno == errno.ENOENT:
+                    raise FileNotFoundError()
 
         if is_dir(path):
             dirs, files = self._do_ls_dir(sftp, path)
@@ -375,10 +352,10 @@ class SFTPBackend(FSBackend):
 
 def create_executer(yabiusername, sftp_uri):
     cred = fs_credential(yabiusername, sftp_uri)
-    return SSHLocalCopyAndLinkExecuter(sftp_uri, cred.credential)
+    return SSHExecuter(sftp_uri, cred.credential)
 
 
-class SSHLocalCopyAndLinkExecuter(object):
+class SSHExecuter(object):
 
     COPY_COMMAND_TEMPLATE = """
 #!/bin/sh
@@ -416,5 +393,37 @@ ln -s "{0}" "{1}"
         exit_code, stdout, stderr = self.executer.exec_script(cmd)
         if exit_code > 0 or stderr:
             raise RuntimeError("Couldn't symlink %s to %s. Exit code: %s. STDERR:\n%s" % (
-                src, dest, exit_code, stderr()))
+                src, dest, exit_code, stderr))
         return True
+
+    def download_dir_as_tarball(self, remotepath, outfile):
+        parent_dir, target_dir = remotepath.rstrip('/').rsplit('/', 1)
+        command = 'tar -cz -C "%s" "%s"' % (parent_dir, target_dir)
+
+        logger.debug("execing command: %s" % command)
+
+        with self.executer.sshclient() as client:
+            try:
+                stdin, stdout, stderr = client.exec_command(command)
+
+                while not stdout.channel.exit_status_ready():
+                    rl, wl, xl = select.select([stdout.channel], [], [])
+                    if len(rl) > 0:
+                        while stdout.channel.recv_ready():
+                            data = stdout.channel.recv(BLOCK_SIZE)
+                            outfile.write(data)
+
+                    # Stdout might still have data, flush it all out
+                    data = stdout.channel.recv(BLOCK_SIZE)
+                    while data:
+                        outfile.write(data)
+                        data = stdout.channel.recv(BLOCK_SIZE)
+
+                exit_status = stdout.channel.exit_status
+                logger.debug("Exit status: %s", exit_status)
+                if exit_status != 0:
+                    raise RetryException("Exit status %s received why trying to tarball %s" % (exit_status, remotepath))
+            except paramiko.SSHException as sshe:
+                raise RetryException(sshe, traceback.format_exc())
+
+        return exit_status == 0

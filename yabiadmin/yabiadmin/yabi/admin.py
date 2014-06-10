@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,18 +21,15 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from yabiadmin.yabi.models import *
 from yabiadmin.yabi.forms import *
 from django.contrib import admin
 from ccg.webservices.ext import ExtJsonInterface
 from django.forms.models import BaseInlineFormSet
-from django.forms import ModelForm
-from django import forms
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
+from django.http import HttpResponseRedirect
 from ccg_django_utils import webhelpers
+
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     save_as = True
@@ -67,9 +62,11 @@ class AdminBase(ExtJsonInterface, admin.ModelAdmin):
         formset.save_m2m()
         return instances
 
+
 class ToolGroupingInline(admin.TabularInline):
     model = ToolGrouping
     extra = 1
+
 
 class ToolOutputExtensionInline(admin.TabularInline):
     model = ToolOutputExtension
@@ -86,6 +83,7 @@ class ToolParameterFormset(BaseInlineFormSet):
     def add_fields(self, form, index):
         super(ToolParameterFormset, self).add_fields(form, index)
 
+
 class ToolParameterInline(admin.StackedInline):
     form = ToolParameterForm
     model = ToolParameter
@@ -93,44 +91,64 @@ class ToolParameterInline(admin.StackedInline):
     extra = 3
     filter_horizontal = ['accepted_filetypes']
 
+
 class ToolAdmin(AdminBase):
     form = ToolForm
     list_display = ['name', 'display_name', 'path', 'enabled', 'backend', 'fs_backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
-    inlines = [ToolOutputExtensionInline, ToolParameterInline] # TODO need to add back in tool groupings and find out why it is not working with mango
+    inlines = [ToolOutputExtensionInline, ToolParameterInline]  # TODO need to add back in tool groupings and find out why it is not working with mango
     search_fields = ['name', 'display_name', 'path']
     save_as = False
 
     def get_form(self, request, obj=None, **kwargs):
         return ToolForm
 
+
 class ToolGroupAdmin(AdminBase):
     list_display = ['name', 'tools_str']
     inlines = [ToolGroupingInline]
     save_as = False
 
+
 class ToolSetAdmin(AdminBase):
     list_display = ['name', 'users_str']
     filter_horizontal = ['users']
+
 
 class FileTypeAdmin(AdminBase):
     list_display = ['name', 'file_extensions_text']
     search_fields = ['name']
     filter_horizontal = ['extensions']
 
+
 class FileExtensionAdmin(AdminBase):
     list_display = ['pattern']
     search_fields = ['pattern']
 
+
 class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
+
 
 class CredentialAdmin(AdminBase):
     form = CredentialForm
     list_display = ['description', 'user', 'username']
     list_filter = ['user']
-    actions = ['duplicate_credential','cache_credential','decache_credential']
+    actions = ['duplicate_credential', 'cache_credential', 'decache_credential']
     search_fields = ['description', 'username', 'user__user__username']
     readonly_fields = ['security_state']
+    fields = (("auth_class", "description"),
+              ("username", "password"), "key",
+              "user", "expires_on", "security_state", "caps")
+
+    class Media:
+        js = ("javascript/yabiadminfixer.js",)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(CredentialAdmin, self).get_form(request, obj, **kwargs)
+        from ..backend import BaseBackend
+        form.base_fields['auth_class'].choices = [("", "Any")] + BaseBackend.get_auth_class_choices()
+        form.base_fields['auth_class'].initial = obj.guess_backend_auth_class() if obj else ""
+        return form
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -143,7 +161,7 @@ class CredentialAdmin(AdminBase):
     cache_credential.short_description = "Cache selected credentials in memory."
 
     def decache_credential(self, request, queryset):
-        success,fail = 0,0
+        success, fail = 0, 0
         for credential in queryset:
             access = credential.get_credential_access()
             if access.in_cache:
@@ -152,24 +170,52 @@ class CredentialAdmin(AdminBase):
             else:
                 fail += 1
 
-        self.message_user(request, "%d credential%s successfully purged from cache." % (success,"s" if success!=1 else "") )
+        self.message_user(request, "%d credential%s successfully purged from cache." % (success, "s" if success != 1 else ""))
         if fail:
-            self.message_user(request, "%d credential%s failed purge." % (fail,"s" if fail!=1 else "") )
+            self.message_user(request, "%d credential%s failed purge." % (fail, "s" if fail != 1 else ""))
     decache_credential.short_description = "Purge selected credentials from cache."
+
 
 class BackendAdmin(AdminBase):
     form = BackendForm
-    list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
+    list_display = ['name', 'description', 'scheme', 'hostname',
+                    'port', 'path', 'uri', 'backend_summary_link']
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'description', 'scheme',
+                       'hostname', 'port', 'path', 'caps')
+        }),
+        ('Filesystem Backends', {
+            'classes': ('fsbackend-only',),
+            'fields': ('lcopy_supported', 'link_supported')
+        }),
+        ('Execution Backends', {
+            'classes': ('execbackend-only',),
+            'fields': ('submission', 'temporary_directory')
+        }),
+    )
+
+    class Media:
+        js = ("javascript/yabiadminfixer.js",)
+
+    def backend_summary_link(self, obj):
+        return '<a href="%s">View</a>' % obj.get_absolute_url()
+
+    backend_summary_link.short_description = 'Summary'
+    backend_summary_link.allow_tags = True
+
 
 class UserAdmin(AdminBase):
-    list_display = ['user', 'user_option_access','credential_access', 'toolsets_str', 'tools_link', 'backends_link']
+    list_display = ['user', 'user_option_access', 'credential_access', 'toolsets_str', 'tools_link', 'backends_link']
     list_editable = ['user_option_access', 'credential_access']
+
 
 class BackendCredentialAdmin(AdminBase):
     form = BackendCredentialForm
     list_display = ['backend', 'credential', 'homedir', 'visible', 'default_stageout']
     list_filter = ['credential__user']
     raw_id_fields = ['credential']
+
 
 class ParameterSwitchUseAdmin(AdminBase):
     list_display = ['display_text', 'formatstring', 'description']
@@ -178,16 +224,16 @@ class ParameterSwitchUseAdmin(AdminBase):
 
 class HostKeyAdmin(AdminBase):
     list_display = ['hostname', 'key_type', 'fingerprint', 'allowed']
-    search_fields = ['hostname','key_type','fingerprint']
+    search_fields = ['hostname', 'key_type', 'fingerprint']
     list_filter = ['hostname', 'key_type']
-    fields = ['hostname','allowed','key_type','data']
+    fields = ['hostname', 'allowed', 'key_type', 'data']
 
 
 def register(site):
     site.register(FileExtension, FileExtensionAdmin)
     site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
-    #site.register(QueuedWorkflow, QueueAdmin)
-    #site.register(InProgressWorkflow, QueueAdmin)
+    # site.register(QueuedWorkflow, QueueAdmin)
+    # site.register(InProgressWorkflow, QueueAdmin)
     site.register(FileType, FileTypeAdmin)
     site.register(Tool, ToolAdmin)
     site.register(ToolGroup, ToolGroupAdmin)
@@ -197,5 +243,3 @@ def register(site):
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)
     site.register(HostKey, HostKeyAdmin)
-
-

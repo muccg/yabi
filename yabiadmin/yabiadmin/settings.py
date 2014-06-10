@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,24 +21,26 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 
-import os, sys
+import os
 from ccg_django_utils.webhelpers import url
+from ccg_django_utils.conf import EnvConfig
+
 from kombu import Queue
-import logging
-import logging.handlers
+
+env = EnvConfig()
 
 WEBAPP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+PRODUCTION = env.get("production", False)
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
 # you SHOULD change the SSL_ENABLED to True when in production
-SSL_ENABLED = False
+SSL_ENABLED = PRODUCTION
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = True
+DEBUG = not PRODUCTION
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
-    'yabiadmin.uploader',
     'kombu.transport.django',
     'django_extensions',
     'south',
@@ -78,17 +77,6 @@ INSTALLED_APPS = [
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = 'yabiadmin.urls'
 
-# these determine which authentication method to use
-# yabi uses modelbackend by default, but can be overridden here
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend'
-]
-
-# code used for additional user related operations
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
-AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
-
 # cookies
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
@@ -96,11 +84,11 @@ AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 SESSION_COOKIE_AGE = 60 * 60
 SESSION_COOKIE_PATH = url('/')
 SESSION_COOKIE_NAME = 'yabi_sessionid'
-#SESSION_SAVE_EVERY_REQUEST = True
+# SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = PRODUCTION
 CSRF_COOKIE_NAME = "csrftoken_yabi"
-
+CSRF_COOKIE_SECURE = PRODUCTION
 
 # Locale
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
@@ -114,7 +102,7 @@ USE_I18N = True
 LOGIN_URL = url('/login/')
 LOGOUT_URL = url('/logout/')
 
-### static file management ###
+# ## static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
 # deployment uses an apache alias
 # STATICFILES_DIRS = [os.path.join(WEBAPP_ROOT,"static")]
@@ -140,14 +128,9 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
 
-# validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'null']
-FS_SCHEMES = ['scp', 'sftp', 's3', 'localfs', 'null']
-VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
-
-##
-## CAPTCHA settings
-##
+#
+# CAPTCHA settings
+#
 # the filesystem space to write the captchas into
 CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 
@@ -162,20 +145,8 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 TEMPLATE_DEBUG = DEBUG
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
-TEMPLATE_LOADERS = [
-    'django.template.loaders.app_directories.Loader',
-    #'ccg.template.loaders.makoloader.filesystem.Loader',
-    #'django.template.loaders.filesystem.Loader'
-]
-
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
-# TEMPLATE_DIRS = [
-#     os.path.join(WEBAPP_ROOT, "templates"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabifeapp", "templates", "mako"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabiengine", "templates", "mako"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates", "mako"),
-#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates"),
-# ]
+TEMPLATE_LOADERS = ('django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader')
 
 # mako compiled templates directory
 MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, 'templates')
@@ -183,70 +154,153 @@ MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, 'templates')
 # mako module name
 MAKO_MODULENAME_CALLABLE = ''
 
-### USER SPECIFIC SETUP ###
+# ## USER SPECIFIC SETUP ###
 # these are the settings you will most likely change to reflect your setup
 
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'USER': 'root',
-        'NAME': 'dev_yabi',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '',
-        'OPTIONS': {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'},
+        'ENGINE': env.get_db_engine("dbtype", "pgsql"),
+        'NAME': env.get("dbname", "dev_yabi"),
+        'USER': env.get("dbuser", "yabiapp"),
+        'PASSWORD': env.get("dbpass", "yabiapp"),
+        'HOST': env.get("dbserver", ""),
+        'PORT': env.get("dbport", ""),
     }
 }
 
+# Add special connection option for MySQL
+if env.get("dbtype", "") == "mysql":
+    DATABASES['default']['OPTIONS'] = \
+        {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'}
+
 # Make this unique, and don't share it with anybody.
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = 'set_this'
+SECRET_KEY = env.get("secret_key", "changeme")
 
 # email settings so yabi can send email error alerts etc
-# see https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-EMAIL_HOST = 'set_this'
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host
+EMAIL_HOST = env.get("email_host", "")
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-port
+EMAIL_PORT = env.get("email_port", 25)
+
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host-user
+EMAIL_HOST_USER = env.get("email_host_user", "")
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host-password
+EMAIL_HOST_PASSWORD = env.get("email_host_password", "")
+
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-use-tls
+EMAIL_USE_TLS = env.get("email_use_tls", False)
+
+# see: https://docs.djangoproject.com/en/1.6/ref/settings/#email-subject-prefix
 EMAIL_APP_NAME = "Yabi Admin "
-SERVER_EMAIL = "apache@set_this"                      # from address
-EMAIL_SUBJECT_PREFIX = "DEV "
+EMAIL_SUBJECT_PREFIX = env.get("email_subject_prefix", "DEV ")
+
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-backend
+if EMAIL_HOST:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+elif DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+    EMAIL_FILE_PATH = os.path.join(WRITABLE_DIRECTORY, "mail")
+    if not os.path.exists(EMAIL_FILE_PATH):
+        os.mkdir(EMAIL_FILE_PATH)
+
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#server-email
+SERVER_EMAIL = env.get("server_email", "noreply@ccg_yabiadmin_prod")
 
 # admins to email error reports to
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
-    ('alert', 'alerts@set_this.com')
+    ('alert', env.get("alert_email", "root@localhost"))
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
-# if you want to use ldap you'll need to uncomment and configure this section
-# you'll also need to change AUTHENTICATION_BACKENDS and AUTH_PROFILE_MODULE
-#AUTH_LDAP_SERVER = ['ldaps://set_this.localdomain']
-#AUTH_LDAP_USER_BASE = 'ou=People,dc=set_this,dc=edu,dc=au'
-#AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=set_this,dc=edu,dc=au'
-#AUTH_LDAP_GROUP = 'yabi'
-#AUTH_LDAP_DEFAULT_GROUP = 'baseuser'
-#AUTH_LDAP_GROUPOC = 'groupofuniquenames'
-#AUTH_LDAP_USEROC = 'inetorgperson'
-#AUTH_LDAP_MEMBERATTR = 'uniqueMember'
-#AUTH_LDAP_USERDN = 'ou=People'
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
-# set up caching. For production you should probably use memcached
-# see https://docs.djangoproject.com/en/dev/topics/cache/
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'yabi_cache',
-        'TIMEOUT': 3600,
-        'MAX_ENTRIES': 600
+# yabi uses modelbackend by default, but can be overridden here
+# code used for additional user related operations
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
+if env.get("auth_ldap_server", False):
+    AUTHENTICATION_BACKENDS = [
+        'ccg_django_utils.auth.backends.LDAPBackend',
+        'ccg_django_utils.auth.backends.NoAuthModelBackend',
+    ]
+    AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
+else:
+    AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+    AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
+
+AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", [])
+AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", 'ou=People,dc=set_this,dc=edu,dc=au')
+AUTH_LDAP_GROUP_BASE = env.get("auth_ldap_group_base", 'ou=Yabi,ou=Web Groups,dc=set_this,dc=edu,dc=au')
+AUTH_LDAP_GROUP = env.get("auth_ldap_group", 'yabi')
+AUTH_LDAP_DEFAULT_GROUP = env.get("auth_ldap_default_group", 'baseuser')
+AUTH_LDAP_GROUPOC = env.get("auth_ldap_groupoc", 'groupofuniquenames')
+AUTH_LDAP_USEROC = env.get("auth_ldap_useroc", 'inetorgperson')
+AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", 'uniqueMember')
+AUTH_LDAP_USERDN = env.get("auth_ldap_userdn", 'ou=People')
+LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+
+if env.get("memcache", False):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': env.getlist("memcache"),
+            'KEYSPACE': "%(project_name)s-prod" % env
+        }
     }
+
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'yabi_cache',
+            'TIMEOUT': 3600,
+            'MAX_ENTRIES': 600
+        }
+    }
+
+    SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+    SESSION_FILE_PATH = WRITABLE_DIRECTORY
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+
+# See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
+ALLOWED_HOSTS = env.get("allowed_hosts", "").split()
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+
+# Any settings that should be changed for just for testing runs
+if env.get("use_testing_settings", False):
+    SWIFT_BACKEND_SEGMENT_SIZE = 1234567  # approx 1MB segments
+    torque_path = "/opt/torque/2.3.13/bin"
+    sge_path = "/opt/sge6/bin/linux-x64"
+else:
+    torque_path = ""
+    sge_path = ""
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
+
+torque_path = env.get("torque_path", torque_path)
+sge_path = env.get("sge_path", sge_path)
+SCHEDULER_COMMAND_PATHS = {
+    "torque": {"qsub": os.path.join(torque_path, "qsub"),
+               "qstat": os.path.join(torque_path, "qstat"),
+               "qdel": os.path.join(torque_path, "qdel")},
+    "sge": {"qsub": os.path.join(sge_path, "qsub"),
+            "qstat": os.path.join(sge_path, "qstat"),
+            "qdel": os.path.join(sge_path, "qdel"),
+            "qacct": os.path.join(sge_path, "qacct")},
 }
 
-# see https://docs.djangoproject.com/en/dev/ref/settings/#session-engine
-# https://docs.djangoproject.com/en/1.3/ref/settings/#std:setting-SESSION_FILE_PATH
-# in production we would suggest using memcached for your session engine
-SESSION_ENGINE = 'django.contrib.sessions.backends.file'
-SESSION_FILE_PATH = WRITABLE_DIRECTORY
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
@@ -259,9 +313,9 @@ DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 DEFAULT_CRED_CACHE_TIME = 60 * 60 * 24                   # 1 day default
 
 
-### CELERY ###
+# ## CELERY ###
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
-#BROKER_URL = 'django://'
+# BROKER_URL = 'django://'
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 # http://celery.readthedocs.org/en/latest/whatsnew-3.1.html#last-version-to-enable-pickle-by-default
@@ -294,8 +348,8 @@ CELERY_QUEUES = (
 )
 
 FILE_OPERATIONS_ROUTE = {
-        'queue': FILE_OPERATIONS,
-        'routing_key': FILE_OPERATIONS,
+    'queue': FILE_OPERATIONS,
+    'routing_key': FILE_OPERATIONS,
 }
 
 CELERY_ROUTES = {
@@ -308,10 +362,12 @@ CELERY_ACKS_LATE = True
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
 # Set this to 1000 or even higher on LIVE
-CELERYD_MAX_TASKS_PER_CHILD = 100
+CELERYD_MAX_TASKS_PER_CHILD = env.get("celeryd_max_tasks_per_child", 100)
 CELERYD_FORCE_EXECV = True
 
-### PREVIEW SETTINGS
+CELERYD_LOG_FORMAT = "YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s"
+
+# ## PREVIEW SETTINGS
 
 # The truncate key controls whether the file may be previewed in truncated form
 # (ie the first "size" bytes returned). If set to false, files beyond the size
@@ -357,9 +413,10 @@ JAVASCRIPT_LIBRARIES = {
     },
 }
 
-### LOGGING SETUP ###
-# see https://docs.djangoproject.com/en/dev/topics/logging/
-
+# The logging settings here apply only to the Django WSGI process.
+# Celery is left to hijack the root logger. We add our custom handlers after
+# that in yabiadmin.backend.celerytasks.
+CCG_LOG_DIRECTORY = os.path.join(WEBAPP_ROOT, "log")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -367,13 +424,22 @@ LOGGING = {
         'verbose': {
             'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
         },
+        'db': {
+            'format': 'YABI [%(name)s:%(duration)s:%(sql)s:%(params)s] %(message)s'
+        },
         'simple': {
             'format': 'YABI %(levelname)s %(message)s'
         },
     },
     'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'yabi_context_exists': {
+            '()': 'yabiadmin.yabiengine.engine_logging.YabiContextFilter'
         }
     },
     'handlers': {
@@ -383,54 +449,80 @@ LOGGING = {
         },
         'console': {
             'level': 'DEBUG',
+            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
+            'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin.log'),
+            'when': 'midnight',
+            'formatter': 'verbose'
+        },
+        'django_file': {
+            'level': 'DEBUG',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
+            'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin_django.log'),
+            'when': 'midnight',
+            'formatter': 'verbose'
+        },
+        'db_logfile': {
+            'level': 'DEBUG',
+            'class': 'ccg_django_utils.loghandlers.ParentPathFileHandler',
+            'filename': os.path.join(CCG_LOG_DIRECTORY, 'yabiadmin_db.log'),
+            'when': 'midnight',
+            'formatter': 'db'
+        },
+        'syslog': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.SysLogHandler',
+            'address': '/dev/log',
+            'facility': 'local4',
             'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'include_html': True
+        },
+        'yabi_db_handler': {
+            'level': 'DEBUG',
+            'filters': ['yabi_context_exists'],
+            'class': 'yabiadmin.yabiengine.engine_logging.YabiDBHandler'
         }
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'ERROR',
-        },
-
-        'django': {
-            'handlers': ['console'],
-            'propagate': False,
+            'handlers': ['console', 'file'],
             'level': 'INFO',
         },
-
+        'django': {
+            'handlers': ['console', 'django_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console', 'django_file', 'mail_admins'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'db_logfile', 'mail_admins'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
         'yabiadmin': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+            'handlers': ['console', 'file', 'yabi_db_handler'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
     }
 }
 
-# qsub and qstat paths
-SCHEDULER_COMMAND_PATHS = {
-    "torque": {"qsub": "/opt/torque/2.3.13/bin/qsub",
-               "qstat": "/opt/torque/2.3.13/bin/qstat",
-               "qdel": "/opt/torque/2.3.13/bin/qdel"},
-    "sge": {"qsub": "/opt/sge6/bin/linux-x64/qsub",
-            "qstat": "/opt/sge6/bin/linux-x64/qstat",
-            "qdel": "/opt/sge6/bin/linux-x64/qdel",
-            "qacct": "/opt/sge6/bin/linux-x64/qacct"},
-}
-
-
-# Load instance settings.
-# These are installed locally to this project instance.
-# They will be loaded from appsettings.yabiadmin, which can exist anywhere
-# in the instance's pythonpath. This allows private and local settings to be kept out
-# of this file.
-try:
-    from appsettings.yabiadmin import *
-except ImportError as e:
-    pass
+# In the case of running in a Celery worker process, Celery will sort
+# out its own logging. So we don't need Django to configure anything.
+if os.environ.get("YABI_CELERY_WORKER", ""):
+    LOGGING = { "version": 1 }

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,9 +21,7 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 from django.conf.urls.defaults import *
 
 # frontend webservices
@@ -36,10 +32,12 @@ urlpatterns = patterns(
 
     url(r'^fs/ls[/]*$', 'ls', name='ls'),
     url(r'^fs/get[/]*$', 'get', name='get'),
+    url(r'^fs/zget[/]*$', 'zget', name='zget'),
     url(r'^fs/put[/]*$', 'put', name='put'),
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rcopy[/]*$', 'rcopy', name='rcopy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
+    url(r'^fs/mkdir/?$', 'mkdir', name='mkdir'),
 
     url(r'^workflows/submit[/]*$', 'submit_workflow'),
     url(r'^workflows/get/(?P<workflow_id>\d+)[/]*$', 'get_workflow'),

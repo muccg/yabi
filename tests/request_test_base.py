@@ -1,15 +1,7 @@
-import unittest
-from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
-from .fixture_helpers import admin
-import os
-import time
-import sys
-
-KB = 1024
-MB = 1024 * KB
-GB = 1024 * MB
-
 from urllib import quote
+import logging
+
+from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
 
 
 def remove_slash_if_has(u):
@@ -26,29 +18,35 @@ except ImportError as ioe:
 
 class RequestTest(YabiTestCase):
     """This baseclass logs in as the user to perform testing on the yabi frontend"""
+
+    # demo login session
+    creds = {'username':conf.yabiusername,'password':conf.yabipassword}
+
     def setUp(self):
         YabiTestCase.setUp(self)
-        
-        # demo login session
+
         self.session = requests.session()
 
-        r = self.session.post(remove_slash_if_has(conf.yabiurl) + "/login", data={'username':conf.yabiusername,'password':conf.yabipassword})
-        self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
+        r = self.session.post(self.yabiurl("login"), data=self.creds)
+        self.assertEqual(r.status_code, 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
-    def tearDown(self):
-        YabiTestCase.tearDown(self)
-        
-        
+        logging.info("Logged in with: %(username)s/%(password)s" % self.creds)
+
+    @staticmethod
+    def yabiurl(path=""):
+        "Returns the configured yabi url with `path' appended to it."
+        return "%s/%s" % (remove_slash_if_has(conf.yabiurl), path)
+
+    @classmethod
+    def fscmd(cls, cmd, uri=None):
+        """
+        Returns the yabi API url for a fs command, optionally with `uri'
+        param in the query string.
+        """
+        q = "?uri=%s" % quote(uri) if uri is not None else ""
+        return cls.yabiurl("ws/fs/%s%s" % (cmd, q))
+
+
 class RequestTestWithAdmin(RequestTest):
     """This baseclass logs in as the user to perform testing on the yabi frontend"""
-    def setUp(self):
-        RequestTest.setUp(self)
-        
-        # demo login session
-        self.adminsession = requests.session()
-        r = self.adminsession.post(remove_slash_if_has(conf.yabiurl) +"/login", data={'username':conf.yabiadminusername,'password':conf.yabiadminpassword})
-        self.assertTrue(r.status_code == 200, "Could not login as admin to frontend. Frontend returned: %d"%(r.status_code))
-
-    def tearDown(self):
-        RequestTest.tearDown(self)
-
+    creds = {'username':conf.yabiadminusername,'password':conf.yabiadminpassword}

@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from bs4 import BeautifulSoup, NavigableString, Tag
 
 from . import css
@@ -592,7 +588,7 @@ default_ruleset = Ruleset(DEFAULT_ALLOWED_ELEMENTS)
 default_ruleset.add_sanitiser("css", css.sanitise)
 default_ruleset.add_sanitiser("inline_css", css.sanitise_inline)
 
-# The stripped sanitiser strips all content 
+# The stripped sanitiser strips all content
 default_ruleset.add_sanitiser("stripped", lambda stripped: None)
 
 
@@ -603,7 +599,7 @@ def url_sanitise(content):
     val = URLValidator()
     try:
         val(content)
-    except ValidationError, e:
+    except ValidationError:
         return None
 
     return content

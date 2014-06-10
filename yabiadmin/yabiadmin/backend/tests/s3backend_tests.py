@@ -5,9 +5,9 @@ import logging
 from mockito import *
 
 from yabiadmin.backend.s3backend import S3Backend
-from yabiadmin.yabi import models as m
 
 logger = logging.getLogger(__name__)
+
 
 class S3BotoMockedOutTest(unittest.TestCase):
 
@@ -25,9 +25,7 @@ class S3BotoMockedOutTest(unittest.TestCase):
 
         ls_result = self.backend.ls(self.S3_URI % PATH)
 
-        self.assertTrue(PATH in ls_result)
-        self.assertEquals([], ls_result[PATH]['files'])
-        self.assertEquals([], ls_result[PATH]['directories'])
+        self.assertEquals(ls_result, {})
 
     def test_ls_toplevel_single_file(self):
         PATH = '/'
@@ -76,13 +74,13 @@ class S3BotoMockedOutTest(unittest.TestCase):
         ls_result = self.backend.ls(self.S3_URI % PATH)
 
         expected_files = [
-                ('file1', 1, 'Thu, 21 Dec 1989 17:23:00', False),
-                ('file2', 2, 'Fri, 22 Dec 1989 17:23:00', False),
-                ('file3', 3, 'Sat, 23 Dec 1989 17:23:00', False),
+            ('file1', 1, 'Thu, 21 Dec 1989 17:23:00', False),
+            ('file2', 2, 'Fri, 22 Dec 1989 17:23:00', False),
+            ('file3', 3, 'Sat, 23 Dec 1989 17:23:00', False),
         ]
         expected_dirs = [
-                ('dir', 0, None, False),
-                ('dir2', 0, None, False),
+            ('dir', 0, None, False),
+            ('dir2', 0, None, False),
         ]
 
         self.assertEquals(expected_files, ls_result[PATH]['files'])
@@ -104,12 +102,11 @@ class S3BotoMockedOutTest(unittest.TestCase):
         ls_result = self.backend.ls(self.S3_URI % PATH)
 
         expected_files = [
-                ('file1', 1, 'Thu, 21 Dec 1989 17:23:00', False),
+            ('file1', 1, 'Thu, 21 Dec 1989 17:23:00', False),
         ]
 
         self.assertEquals(expected_files, ls_result[PATH]['files'])
         self.assertEquals(0, len(ls_result[PATH]['directories']))
-
 
     def test_ls_a_dir_without_slash_at_the_end(self):
         # If we send a get_all_keys to boto on a dir without ending it in the
@@ -196,6 +193,7 @@ class S3BotoMockedOutTest(unittest.TestCase):
 class FakeMultiDeleteResult(object):
     def __init__(self, errors=None):
         self.errors = errors
+
 
 def drop_starting_slash(path):
     return path.lstrip('/')

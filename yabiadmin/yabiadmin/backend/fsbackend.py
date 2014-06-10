@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,20 +20,21 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import os
 from django.utils import simplejson as json
-from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError, NotSupportedError
 from yabiadmin.backend.utils import create_fifo
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
 from yabiadmin.backend.pooling import get_ssh_pool_manager
 from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
+from yabiadmin.yabiengine.engine_logging import create_task_logger
 from yabiadmin.constants import ENVVAR_FILENAME
+import dateutil.parser
 import logging
 import traceback
 import shutil
+import threading
 import Queue
 from six.moves import map
 logger = logging.getLogger(__name__)
@@ -58,28 +57,8 @@ def stream_watcher(identifier, stream):
 
 
 class FSBackend(BaseBackend):
-
-    @staticmethod
-    def create_backend_for_scheme(fsscheme):
-        backend = None
-
-        if fsscheme == 'sftp' or fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif fsscheme == 'file' or fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif fsscheme == 'select' or fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        elif fsscheme == 's3':
-            from yabiadmin.backend.s3backend import S3Backend
-            backend = S3Backend()
-
-        return backend
+    lcopy_supported = True
+    link_supported = True
 
     @staticmethod
     def factory(task):
@@ -174,19 +153,21 @@ class FSBackend(BaseBackend):
 
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_copy_' + yabiusername + '_' + src_parts.hostname + '_' + dst_parts.hostname)
-            src_queue = Queue.Queue()
-            dst_queue = Queue.Queue()
-            src_cmd = src_backend.remote_to_fifo(src_uri, fifo, src_queue)
-            dst_cmd = dst_backend.fifo_to_remote(dst_file_uri, fifo, dst_queue)
+            src_cmd, src_queue = src_backend.remote_to_fifo(src_uri, fifo)
+            dst_cmd, dst_queue = dst_backend.fifo_to_remote(dst_file_uri, fifo)
             src_cmd.join()
             dst_cmd.join()
-            src_status = src_queue.get()
-            dst_status = dst_queue.get()
+            try:
+                os.unlink(fifo)
+            except OSError:
+                pass
+            src_success = src_queue.get()
+            dst_success = dst_queue.get()
 
             # check exit status
-            if src_status != 0:
+            if not src_success:
                 raise RetryException('remote_file_copy remote_to_fifo failed')
-            if dst_status != 0:
+            if not dst_success:
                 raise RetryException('remote_file_copy fifo_to_remote failed')
 
             if src_stat:
@@ -197,8 +178,46 @@ class FSBackend(BaseBackend):
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
+    def _fifo_thread(self, method, uri, fifo_name, open_mode):
+        queue = Queue.Queue()
+
+        def run():
+            success = False
+            try:
+                with open(fifo_name, open_mode) as fifo:
+                    success = method(uri, fifo)
+            except Exception:
+                logger.exception("fifo thread operation %s failed." % method.__name__)
+            finally:
+                queue.put(success)
+
+        thread = threading.Thread(target=run)
+        thread.start()
+        return thread, queue
+
+    def fifo_to_remote(self, uri, fifo_name):
+        logger.debug("upload_file %s -> %s", fifo_name, uri)
+        return self._fifo_thread(self.upload_file, uri, fifo_name, "rb")
+
+    def remote_dir_to_fifo(self, uri, fifo_name):
+        logger.debug("download dir %s <- %s", fifo_name, uri)
+        return self._fifo_thread(self.download_dir, uri, fifo_name, "wb")
+
+    def remote_to_fifo(self, uri, fifo_name):
+        logger.debug("download_file %s <- %s", fifo_name, uri)
+        return self._fifo_thread(self.download_file, uri, fifo_name, "wb")
+
+    def upload_file(self, uri, fifo):
+        raise NotImplementedError()
+
+    def download_file(self, uri, fifo):
+        raise NotImplementedError()
+
+    def download_dir(self, uri, fifo):
+        raise NotImplementedError()
+
     @staticmethod
-    def remote_file_download(yabiusername, uri):
+    def remote_file_download(yabiusername, uri, is_dir=False):
         """Use a local fifo to download a remote file"""
         logger.debug('{0} -> local fifo'.format(uri))
 
@@ -208,11 +227,18 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_download_' + yabiusername + '_' + parts.hostname)
-            thread = backend.remote_to_fifo(uri, fifo)
+            if is_dir:
+                thread, queue = backend.remote_dir_to_fifo(uri, fifo)
+            else:
+                thread, queue = backend.remote_to_fifo(uri, fifo)
 
-            # TODO some check on the copy thread
+            infile = open(fifo, "rb")
+            try:
+                os.unlink(fifo)
+            except OSError:
+                logger.exception("Couldn't delete remote file download fifo")
+            return infile, queue
 
-            return fifo
         except FileNotFoundError:
             raise
         except Exception as exc:
@@ -237,20 +263,21 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_upload_' + yabiusername + '_' + parts.hostname)
-            thread = backend.fifo_to_remote(uri, fifo)
+            thread, queue = backend.fifo_to_remote(uri, fifo)
 
-            # TODO some check on the copy thread
-
-            return fifo
+            outfile = open(fifo, "wb")
+            try:
+                os.unlink(fifo)
+            except OSError:
+                logger.exception("Couldn't delete remote file upload fifo")
+            return outfile, queue
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def save_envvars(self, task, envvars_uri):
         try:
-            fifo = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
-            with open(fifo) as f:
-                content = f.read()
-            envvars = json.loads(content)
+            fifo, queue = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
+            envvars = json.load(fifo)
         except:
             logger.exception("Could not read contents of envvars file '%s' for task %s", envvars_uri, task.pk)
         else:
@@ -258,12 +285,14 @@ class FSBackend(BaseBackend):
             task.save()
 
     def stage_in_files(self):
+        task_logger = create_task_logger(logger, self.task.pk)
         self.mkdir(self.working_dir_uri())
         self.mkdir(self.working_input_dir_uri())
         self.mkdir(self.working_output_dir_uri())
         self.create_local_remnants_dir()
 
         stageins = self.task.get_stageins()
+        task_logger.info("About to stagein %d stageins", len(stageins))
         for stagein in stageins:
             self.stage_in(stagein)
             if stagein.matches_filename(ENVVAR_FILENAME):
@@ -271,7 +300,8 @@ class FSBackend(BaseBackend):
 
     def stage_in(self, stagein):
         """Perform a single stage in."""
-        logger.debug(stagein.method)
+        task_logger = create_task_logger(logger, self.task.pk)
+        task_logger.info("Stagein: %sing '%s' to '%s'", stagein.method, stagein.src, stagein.dst)
 
         if stagein.method == 'copy':
             if stagein.src.endswith('/'):
@@ -293,24 +323,29 @@ class FSBackend(BaseBackend):
         Stage out files from fs backend to stageout area.
         Also upload any local remnants of the task to the stageout area
         """
+        task_logger = create_task_logger(logger, self.task.pk)
         # first we need a stage out directory
+        task_logger.info("Stageout to %s", self.task.stageout)
         backend_for_stageout = FSBackend.urifactory(self.yabiusername, self.task.stageout)
         backend_for_stageout.mkdir(self.task.stageout)
 
-        # deal with any remanants from local commands
+        # deal with any remnants from local commands
         self.stage_out_local_remnants()
 
         # now the stageout proper
         method = self.task.job.preferred_stageout_method
-        logger.debug('stage out method is {0}'.format(method))
+        src = self.working_output_dir_uri()
+        dst = self.task.stageout
+
+        if method == 'lcopy' and not is_same_location(src, dst):
+            method = 'copy'
+
+        task_logger.info("Stageout: %sing '%s' to '%s'", method, src, dst)
         if method == 'lcopy':
-            if is_same_location(self.working_output_dir_uri(), self.task.stageout):
-                return self.local_copy_recursive(self.working_output_dir_uri(), self.task.stageout)
-            else:
-                method = 'copy'
+            return self.local_copy_recursive(src, dst)
 
         if method == 'copy':
-            return FSBackend.remote_copy(self.yabiusername, self.working_output_dir_uri(), self.task.stageout)
+            return FSBackend.remote_copy(self.yabiusername, src, dst)
 
         raise RuntimeError("Invalid stageout method %s for task %s" % (method, self.task.pk))
 
@@ -329,28 +364,20 @@ class FSBackend(BaseBackend):
                 # get a fifo to remote file
                 uri = url_join(self.task.stageout, dirpath[len(remnants_dir):])
                 logger.debug('uploading {0} to {1}'.format(filename, uri))
-                upload_as_fifo = FSBackend.remote_file_upload(self.yabiusername, filename, uri)
-                # write our remnant to the fifo
-                remnant = os.path.join(dirpath, filename)
-                #process = execute([CP_PATH, remnant, upload_as_fifo])
-                #status = process.wait()
-
+                upload_as_fifo, queue = FSBackend.remote_file_upload(self.yabiusername, filename, uri)
                 try:
-                    #shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w+'))
-                    shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w'))
+                    # write our remnant to the fifo
+                    with open(os.path.join(dirpath, filename), "rb") as remnant:
+                        shutil.copyfileobj(remnant, upload_as_fifo)
                 except Exception as exc:
                     logger.error('copy to upload fifo failed')
                     raise RetryException(exc, traceback.format_exc())
+                finally:
+                    upload_as_fifo.close()
 
-                # check exit status
-                #if status != 0:
-                #    # TODO logger.error will fail with unicode errors
-                #    logger.debug(str(process.stdout.read()))
-                #    logger.debug(str(process.stderr.read()))
-                #    raise RetryException('copy to upload fifo failed')
-
-                #if os.path.exists(upload_as_fifo):
-                #    os.unlink(upload_as_fifo)
+                # check exit status at other end of pipe
+                if not queue.get():
+                    raise RetryException('copy to upload fifo failed')
 
             for dirname in dirnames:
                 # any directories we encounter we create in the stageout area
@@ -387,12 +414,6 @@ class FSBackend(BaseBackend):
     def basename(self, path):
         return os.path.basename(path)
 
-    def remote_to_fifo(self, uri, fifo):
-        raise NotImplementedError("")
-
-    def fifo_to_remote(self, uri, fifo):
-        raise NotImplementedError("")
-
     def remote_uri_stat(self, uri):
         return {}
 
@@ -409,10 +430,15 @@ class FSBackend(BaseBackend):
         raise NotImplementedError("")
 
     def local_copy(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def local_copy_recursive(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def symbolic_link(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
+
+    @staticmethod
+    def format_iso8601_date(iso8601_date):
+        date = dateutil.parser.parse(iso8601_date)
+        return date.strftime("%a, %d %b %Y %H:%M:%S")

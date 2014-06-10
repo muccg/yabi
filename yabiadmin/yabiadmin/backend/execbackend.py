@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from yabiadmin.backend.backend import exec_credential
 from yabiadmin.backend.basebackend import BaseBackend
 import logging
@@ -33,36 +29,14 @@ logger = logging.getLogger(__name__)
 
 class ExecBackend(BaseBackend):
 
-    @staticmethod
-    def factory(task):
+    @classmethod
+    def factory(cls, task):
         assert(task)
         assert(task.execscheme)
 
-        if task.execscheme == 'ssh':
-            from yabiadmin.backend.sshbackend import SSHBackend
-            backend = SSHBackend()
+        backend = cls.create_backend_for_scheme(task.execscheme)
 
-        elif task.execscheme == 'localex':
-            from yabiadmin.backend.localexecbackend import LocalExecBackend
-            backend = LocalExecBackend()
-
-        elif task.execscheme == 'selectfile' or task.execscheme == 'null':
-            from yabiadmin.backend.selectfileexecbackend import SelectFileExecBackend
-            backend = SelectFileExecBackend()
-
-        elif task.execscheme == 'ssh+sge':
-            from yabiadmin.backend.sshsgeexecbackend import SSHSGEExecBackend
-            backend = SSHSGEExecBackend()
-
-        elif task.execscheme == 'ssh+torque':
-            from yabiadmin.backend.sshtorquebackend import SSHTorqueExecBackend
-            backend = SSHTorqueExecBackend()
-
-        elif task.execscheme == "ssh+pbspro":
-            from yabiadmin.backend.sshpbsprobackend import SSHPBSProExecBackend
-            backend = SSHPBSProExecBackend()
-
-        else:
+        if not backend:
             raise Exception('No valid scheme is defined for task {0}'.format(task.id))
 
         backend.yabiusername = task.job.workflow.user.name

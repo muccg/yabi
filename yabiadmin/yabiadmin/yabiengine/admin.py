@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,15 +21,13 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
+from django.contrib import admin, messages
+from django.core import urlresolvers
+
 from yabiadmin.yabi.models import User
 from yabiadmin.yabiengine.models import *
 from yabiadmin.yabiengine.enginemodels import *
-
-from django.contrib import admin
-from django.contrib import messages
 from yabiadmin.backend.celerytasks import request_workflow_abort
 
 
@@ -85,7 +81,7 @@ class BaseModelAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link', 'is_aborting']
+    list_display = ['summary_link', 'status', 'stageout', 'change_link', link_to_jobs, link_to_tasks, link_to_stageins, 'is_aborting', 'highest_retry_count']
     list_filter = ['status', 'user']
     search_fields = ['name']
     actions = ['abort_workflow']
@@ -94,6 +90,17 @@ class WorkflowAdmin(admin.ModelAdmin):
             'fields': ('name', 'user', 'start_time', 'end_time', 'status', 'stageout')
         }),
     )
+
+    def summary_link(self, workflow):
+        return '<a href="%s">%s</a>' % (workflow.summary_url(), workflow.name)
+    summary_link.short_description = 'Summary'
+    summary_link.allow_tags = True
+
+    def change_link(self, workflow):
+        change_url = urlresolvers.reverse('admin:yabiengine_engineworkflow_change', args=(workflow.id,))
+        return '<a href="%s">Change</a>' % change_url
+    change_link.short_description = 'Change'
+    change_link.allow_tags = True
 
     def abort_workflow(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -145,13 +152,13 @@ class TaskAdmin(BaseModelAdmin):
         return '<a href="/admin-pane/yabiengine/engineworkflow/%s">%s</a>' % (workflow.pk, workflow.name)
     workflow.allow_tags = True
 
-    list_display = ['id', workflow, 'start_time', 'end_time', 'job_identifier', 'error_msg', 'command', link_to_stageins_from_task, link_to_syslog_from_task]
+    list_display = ['id', workflow, 'start_time', 'end_time', 'job_identifier', 'error_msg', 'command', link_to_stageins_from_task, link_to_syslog_from_task, 'retry_count']
     list_filter = ['job__workflow__user']
     search_fields = ['id']
     raw_id_fields = ['job']
     fieldsets = (
         (None, {
-            'fields': ('job', 'start_time', 'end_time', 'job_identifier', 'command', 'task_num', 'error_msg')
+            'fields': ('job', 'start_time', 'end_time', 'job_identifier', 'command', 'task_num', 'error_msg', 'retry_count')
         }),
         ('Remote Information', {
             'classes': ('collapse',),

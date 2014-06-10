@@ -18,13 +18,12 @@ AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
-CLOSURE="/usr/local/closure/compiler.jar"
 TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
-PIP_OPTS='--download-cache ~/.pip/cache --process-dependency-links'
-
+PIP_OPTS="--download-cache ~/.pip/cache"
+PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
 
 if [ "${YABI_CONFIG}" = "" ]; then
-    YABI_CONFIG="dev_mysql"
+    YABI_CONFIG="dev_postgresql"
 fi
 
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
@@ -32,7 +31,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -44,20 +43,35 @@ project_needed() {
     fi
 }
 
-
 settings() {
+    export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+
     case ${YABI_CONFIG} in
     test_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.testmysqlsettings"
+        export DBTYPE=mysql
+        export DBNAME=test_yabi
+        export DBUSER=root
+        export DBPASS=""
+        export USE_TESTING_SETTINGS=1
         ;;
     test_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.testpostgresqlsettings"
+        export DBTYPE=pgsql
+        export DBNAME=test_yabi
+        export DBUSER=yabiapp
+        export DBPASS=yabiapp
+        export USE_TESTING_SETTINGS=1
         ;;
     dev_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+        export DBTYPE=mysql
+        export DBNAME=dev_yabi
+        export DBUSER=root
+        export DBPASS=""
         ;;
     dev_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
+        export DBTYPE=pgsql
+        export DBNAME=dev_yabi
+        export DBUSER=yabiapp
+        export DBPASS=yabiapp
         ;;
     *)
         echo "No YABI_CONFIG set, exiting"
@@ -96,7 +110,7 @@ ci_remote_build() {
 ci_remote_test() {
     TEST_PLAN=$1
     if [ "${TEST_PLAN}" = "" ]; then
-        TEST_PLAN="test_mysql"
+        TEST_PLAN="test_postgresql"
     fi
 
     echo "Test plan ${TEST_PLAN}"
@@ -105,12 +119,16 @@ ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} puppet
     time ccg ${AWS_TEST_INSTANCE} shutdown:100
 
+    EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs'\, '*.pyc')"
     SSH_OPTS="-o StrictHostKeyChecking\=no"
-    RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
-    time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",delete=True
+    RSYNC_OPTS="-l"
+    time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN}"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh lint"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh jslint"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN} || true"
+    time ccg ${AWS_TEST_INSTANCE} getfile:"${TARGET_DIR}/tests.xml,tests.xml"
     time ccg ${AWS_TEST_INSTANCE} shutdown:10
 }
 
@@ -137,32 +155,12 @@ ci_staging() {
 
 # run tests on staging
 ci_staging_tests() {
-    # /tmp is used for test results because the apache user has
-    # permission to write there.
-    REMOTE_TEST_DIR=/tmp
-    REMOTE_TEST_RESULTS=${REMOTE_TEST_DIR}/tests.xml
+    # Try running syncdb -- if setup is wrong this won't work
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"yabiadmin syncdb --noinput"
 
-    # Grant permission to create a test database. Assume that database
-    # user is same as project name for now.
-    DATABASE_USER=${PROJECT_NAME}
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"su postgres -c \"psql -c 'ALTER ROLE ${DATABASE_USER} CREATEDB;'\""
-
-    # fixme: this config should be put in nose.cfg or settings.py or similar
-    EXCLUDES="--exclude\=yaphc --exclude\=esky --exclude\=httplib2"
-
-    # Start virtual X server here to work around a problem starting it
-    # from xvfbwrapper.
-    ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb \:0"
-
-    sleep 2
-
-    # firefox won't run without a profile directory, dbus and gconf
-    # also need to write in home directory.
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"chown apache:apache /var/www"
-
-    # Run tests, collect results
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd ${REMOTE_TEST_DIR} && env DISPLAY\=\:0 dbus-launch timeout -sHUP 30m ${PROJECT_NAME} test --verbosity\=2 --liveserver\=localhost\:8082\,8090-8100\,9000-9200\,7041 --noinput --with-xunit --xunit-file\=${REMOTE_TEST_RESULTS} ${TEST_LIST} ${EXCLUDES} || true"
-    ccg ${AWS_STAGING_INSTANCE} getfile:${REMOTE_TEST_RESULTS},./
+    # Get the login page -- will find major config problems with the rpm
+    STAGING_URL="https://staging.ccgapps.com.au/yabi/"
+    curl -f -o /dev/null -D /dev/stdout ${STAGING_URL}
 }
 
 
@@ -192,8 +190,7 @@ ci_authorized_keys() {
 
 # lint using flake8
 lint() {
-    project_needed
-    ${VIRTUALENV}/bin/flake8 ${PROJECT} --ignore=E501 --count
+    ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count
 }
 
 
@@ -202,51 +199,46 @@ jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
-        java -jar ${CLOSURE} --js $JS --js_output_file output.js --warning_level DEFAULT --summary_detail_level 3
+        ${VIRTUALENV}/bin/gjslint --nojsdoc $JS
     done
 }
 
 
-nosetests() {
+do_nosetests() {
     source ${VIRTUALENV}/bin/activate
+
+    XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
+    COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
+    NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
+    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    TEST_CASES="tests yabiadmin/yabiadmin"
+    TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
+
+    # Some tests access external services defined in a config file.
+    if [ -f "${TEST_CONFIG_FILE}" ]; then
+        export TEST_CONFIG_FILE
+    else
+        IGNORES="${IGNORES} -a !external_service"
+    fi
 
     # Runs the end-to-end tests in the Yabitests project
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v --logging-clear-handlers tests yabiadmin/yabiadmin
-    #{VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests:LocalExecutionRedirectTest
-    #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.s3_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.sshpbspro_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.sshtorque_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.backend_execution_restriction_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.localfs_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.rewalk_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.file_transfer_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.idempotency_tests
-}
+    echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+    ${NOSETESTS} ${IGNORES} ${TEST_CASES}
 
-
-noseidempotency() {
-    source ${VIRTUALENV}/bin/activate
-    ${VIRTUALENV}/bin/nosetests --nocapture --with-xunit --xunit-file=tests.xml -w tests tests.idempotency_tests -v
-}
-
-nosestatuschange() {
-    source ${VIRTUALENV}/bin/activate
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -w tests tests.status_tests -v 
-}
-
-noseyabiadmin() {
-    source ${VIRTUALENV}/bin/activate
-    # Runs the unit tests in the Yabiadmin project
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=yabiadmin.xml -v -w yabiadmin/yabiadmin 
-}
-
-
-nose_collect() {
-    source ${VIRTUALENV}/bin/activate
-    ${VIRTUALENV}/bin/nosetests -v -w tests --collect-only
+    # ${NOSETESTS} tests.file_transfer_tests
+    # ${NOSETESTS} tests.fsbackend_tests
+    # ${NOSETESTS} tests.idempotency_tests
+    # ${NOSETESTS} tests.localfs_connection_tests
+    # ${NOSETESTS} tests.ls_tests
+    # ${NOSETESTS} tests.no_setup_tests
+    # ${NOSETESTS} tests.qbaseexec_command_tests
+    # ${NOSETESTS} tests.rewalk_tests
+    # ${NOSETESTS} tests.s3_connection_tests
+    # ${NOSETESTS} tests.simple_tool_tests
+    # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
+    # ${NOSETESTS} tests.sshpbspro_tests
+    # ${NOSETESTS} tests.ssh_tests
+    # ${NOSETESTS} tests.sshtorque_tests
 }
 
 
@@ -255,19 +247,19 @@ dropdb() {
     case ${YABI_CONFIG} in
     test_mysql)
         mysql -v -uroot -e "drop database test_yabi;" || true
-        mysql -v -uroot -e "create database test_yabi default charset=UTF8;" || true
+        mysql -v -uroot -e "create database test_yabi default charset=UTF8 default collate utf8_bin;" || true
         ;;
     test_postgresql)
-        psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
+        psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
         ;;
     dev_mysql)
 	echo "Drop the dev database manually:"
-        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi default charset=UTF8;\""
+        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi default charset=UTF8 default collate utf8_bin;\""
         exit 1
         ;;
     dev_postgresql)
 	echo "Drop the dev database manually:"
-        echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabiapp createdb;\" template1 && psql -aeE -U yabiapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabiapp -c \"create database dev_yabi;\" template1"
+        echo "psql -aeE -U postgres -c \"alter user yabiapp createdb;\" template1 && psql -aeE -U yabiapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabiapp -c \"create database dev_yabi;\" template1"
         exit 1
         ;;
     *)
@@ -288,14 +280,14 @@ stopprocess() {
     if test "kill_process_group" == "$2"; then
         pgrpid=$(ps -o pgrp= --pid $pid | tr -d ' ')
     fi
-    
+
     if test -z $pgrpid; then
         kill $pid
     else
         kill -- -$pgrpid
     fi
-    
-    for I in {1..30} 
+
+    for I in {1..30}
     do
         if ps --pid $pid > /dev/null; then
             sleep 1
@@ -359,22 +351,25 @@ installyabi() {
     which virtualenv-2.7 > /dev/null
 
     echo "Install yabiadmin"
+    if test -e /usr/pgsql-9.3/bin; then
+        export PATH=/usr/pgsql-9.3/bin:$PATH
+        echo $PATH
+    fi
     virtualenv-2.7 ${VIRTUALENV}
-    ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
-    ${VIRTUALENV}/bin/pip --version
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
     pushd yabiadmin
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .[dev,mysql,postgresql,tests]
+    ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .[dev,mysql,postgresql,tests]
     popd
 
     echo "Install yabish"
     pushd yabish
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .
+    ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .
     popd
 }
 
 
 startyabiadmin() {
-    if test -e yabiadmin-develop.pid; then
+    if is_running yabiadmin-develop.pid; then
         echo "pid file exists for yabiadmin"
         return
     fi
@@ -407,7 +402,7 @@ syncmigrate() {
 
 
 startceleryd() {
-    if test -e celeryd-develop.pid; then
+    if is_running celeryd-develop.pid; then
         echo "pid file exists for celeryd"
         return
     fi
@@ -468,17 +463,20 @@ startyabi() {
     esac
 }
 
+is_running() {
+    test -e $1 && test -x /proc/$(cat $1)
+}
 
 yabistatus() {
     set +e
     if test -e yabiadmin-develop.pid; then
         ps -f -p `cat yabiadmin-develop.pid`
-    else 
+    else
         echo "No pid file for yabiadmin"
     fi
     if test -e celeryd-develop.pid; then
         ps -f -p `cat celeryd-develop.pid`
-    else 
+    else
         echo "No pid file for celeryd"
     fi
     set -e
@@ -518,22 +516,8 @@ dbtest() {
     stopyabi
     dropdb
     startyabi
-    nosetests
-    noseretval=$?
-    #noseidempotency
-    #nosestatuschange
-    stopyabi
-    exit $noseretval
-}
-
-
-yabiadmintest() {
-    stopyabi
-    yabiclean
-    dropdb
-    startyabi
-    noseyabiadmin
-    stopyabi
+    trap stopyabi EXIT
+    do_nosetests
 }
 
 

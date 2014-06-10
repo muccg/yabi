@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+#^syntax detection
+
+forge "https://forge.puppetlabs.com"
+
+mod "puppetlabs/stdlib", "4.1.0"
+mod "puppetlabs/postgresql", "2.5.0"
+mod "puppetlabs/mysql", "2.2.3"
+
+mod "saz/timezone",
+  :git => "git://github.com/saz/puppet-timezone.git"
+
+mod "ripienaar/concat",
+  :git => "git://github.com/ripienaar/puppet-concat.git",
+  :ref => "0.2.0"
+
+mod "stahnma/epel",
+  :git => "git://github.com/stahnma/puppet-module-epel.git",
+  :ref => "0.0.5"
+
+mod "muccg/profile",
+  :git => "git://github.com/muccg/puppet-profile.git",
+  :ref => "1.0.0"
+
+mod "muccg/role",
+  :git => "git://github.com/muccg/puppet-role.git",
+  :ref => "1.0.0"
+
+mod "muccg/python",
+  :git => "git://github.com/muccg/puppet-python.git",
+  :ref => "1.0.0"
+
+mod "muccg/ccgcommon",
+  :git => "git://github.com/muccg/puppet-ccgcommon.git",
+  :ref => "1.0.1"
+
+mod "muccg/ccgdatabase",
+  :git => "git://github.com/muccg/puppet-ccgdatabase.git",
+  :ref => "1.0.0"
+
+mod "muccg/repo",
+  :git => "git://github.com/muccg/puppet-repo.git",
+  :ref => "1.0.1"
+
+mod "muccg/ccgapache",
+  :git => "git://github.com/muccg/puppet-ccgapache.git",
+  :ref => "1.0.0"
+
+mod "muccg/django",
+  :git => "git://github.com/muccg/puppet-django.git",
+  :ref => "1.0.1"

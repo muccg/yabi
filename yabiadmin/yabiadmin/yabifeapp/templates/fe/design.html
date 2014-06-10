@@ -15,15 +15,20 @@
         var tools;
 
         function initWorkflow() {
+            var reusing = false;
+            {% if reuseId %}
+                reusing = true;
+            {% endif %}
             tools = new YabiToolCollection();
             
             document.getElementById("toolContainer").appendChild(tools.containerEl);
             
-            workflow = new YabiWorkflow(true);
-            {% if reuseId %}
-            workflow.hydrate({{reuseId}});
-            workflow.workflowId = undefined;
-            {% endif %}
+            workflow = new YabiWorkflow(true, reusing);
+
+            if (reusing) {
+              workflow.hydrate({{reuseId}});
+              workflow.workflowId = undefined;
+            }
             
             var updateFilter = function(job) {
                 if (!tools.autofilter) {
@@ -72,7 +77,7 @@
             e.halt(true);
             
             if (!wf.isValid()) {
-                YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow is missing required inputs. Please correct before submitting.");
+                YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow isn't valid. Please correct errors before submitting.");
             } else {
 
                 var baseURL = appURL + "ws/workflows/submit/";

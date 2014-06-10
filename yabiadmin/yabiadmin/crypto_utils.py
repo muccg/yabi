@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from . import aes_ctr
 import math
@@ -49,6 +45,7 @@ annotate = lambda tag, ciphertext: "$%s$%s$" % (tag, ciphertext)
 #
 joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
 
+
 #
 # notify callers of failure to decrypt if validity is being checked (not just blind decrypt)
 #
@@ -62,7 +59,7 @@ class LegacyAESWrapper(object):
     #
     # this is a chunking lambda generator
     #
-    chunkify = staticmethod(lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l))))))
+    chunkify = staticmethod(lambda v, l: (v[i * l:(i + 1) * l] for i in range(int(math.ceil(len(v) / float(l))))))
 
     @classmethod
     def aes_dec(cls, data, key):
@@ -77,33 +74,34 @@ class LegacyAESWrapper(object):
 
         if not data:
             return data                     # decrypt nothing, get nothing
-         
+
         key_hash = SHA256.new(key)
         aes = AES.new(key_hash.digest())
-        
+
         # take chunks of 16
         output = ""
-        for chunk in LegacyAESWrapper.chunkify(data,16):
+        for chunk in LegacyAESWrapper.chunkify(data, 16):
             output += aes.decrypt(chunk)
-            
+
         # depad the plaintext
         while output.endswith('\0'):
             output = output[:-1]
-        
+
         if contains_binary(output):
             raise DecryptException("AES decrypt failed. Decrypted data contains binary")
-        
+
         return output
 
     @classmethod
     def aes_dec_hex(cls, ciphertext, key):
         """decrypt a base64 encoded encrypted block"""
         try:
-            ciphertext = binascii.unhexlify( ciphertext )
-        except TypeError as te:
+            ciphertext = binascii.unhexlify(ciphertext)
+        except TypeError:
             # the credential binary block cannot be decoded
             raise DecryptException("Credential does not seem to contain binary encrypted data")
         return LegacyAESWrapper.aes_dec(ciphertext, key)
+
 
 def nounicode(fn):
     "decorator function, converts any unicode arguments to utf-8 bytestrings"
@@ -117,12 +115,14 @@ def nounicode(fn):
         return fn(*new_args, **kwargs)
     return inner
 
+
 def encrypted_block_is_legacy(data):
     "check if an annotated block is using legacy crypto"
     if data == '':
         return False
     tag, _ = deannotate(data)
     return tag == AESHEXTAG or tag == AESTEMP
+
 
 @nounicode
 def decrypt_annotated_block(data, key):
@@ -140,6 +140,7 @@ def decrypt_annotated_block(data, key):
     except aes_ctr.DecryptionFailure:
         raise DecryptException("Invalid key for AES-CTR encrypted data (%s / %s)" % (data, key))
 
+
 @nounicode
 def encrypt_to_annotated_block(data, key, nonce=None):
     "returns base64 encoded data, annotated appropriately and encrypted with `key`; nonce argument should only be specified in testing, other use is insecure"
@@ -150,16 +151,18 @@ def encrypt_to_annotated_block(data, key, nonce=None):
     encrypted = wrapper.encrypt(data, nonce)
     return annotate(AESCTRTAG, encrypted)
 
+
 def deannotate(data):
     "deannotate annotated data"
     data = joiner(data)
     try:
-        dummy,tag,cipher,dummy2 = data.split('$')
-    except ValueError as ve:
+        dummy, tag, cipher, dummy2 = data.split('$')
+    except ValueError:
         raise DecryptException("Invalid input string to deannotate")
     if dummy or dummy2:
         raise DecryptException("Invalid input string to deannotate")
     return tag, cipher
+
 
 def looks_like_annotated_block(data):
     """Looks for the $tag$ciphertext$ format.
@@ -174,9 +177,11 @@ def looks_like_annotated_block(data):
             return False
     return False
 
+
 def any_unencrypted(*args):
     "returns True if any of the `args' is unencrypted. empty values are ignored"
     return any(t != '' and (not looks_like_annotated_block(t)) for t in args)
+
 
 def any_annotated_block(*args):
     "returns True if any of the `args' is an annotated block. empty values are ignored"

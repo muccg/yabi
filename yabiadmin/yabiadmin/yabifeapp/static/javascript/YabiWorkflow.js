@@ -8,7 +8,11 @@ YUI().use(
        * as ordering/sequencing and ensuring that file inputs are
        * managed in a sequential, logical manner
        */
-      YabiWorkflow = function(editable) {
+      YabiWorkflow = function(editable, reusing) {
+        if (typeof reusing === 'undefined') reusing = false;
+
+        this.reusing = reusing;
+        this.workflowLoaded = false;
         this.payload = {};
         this.isPropagating = false; //recursion protection
         this.tags = [];
@@ -228,7 +232,9 @@ YUI().use(
         }
 
         var loadImg;
-        if (this.status !== 'complete' && this.status != 'aborted' && this.status !== 'error') {
+        if (this.status !== 'complete' &&
+            this.status != 'aborted' &&
+            this.status !== 'error') {
           if (!Y.Lang.isValue(this.loadingEl)) {
             this.loadingEl = document.createElement('div');
             this.loadingEl.className = 'workflowLoading';
@@ -527,10 +533,11 @@ YUI().use(
           if (!this.editable) {
               var dirToDisplay = [];
               var loadContents = false;
-              if (!Y.Lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
-                  dirToDisplay = this.payload.jobs[selectedIndex].stageout;
+              var selectedJob = this.payload.jobs[selectedIndex];
+              if (!Y.Lang.isUndefined(selectedJob.stageout)) {
+                  dirToDisplay = selectedJob.stageout;
               }
-              if (this.payload.jobs[selectedIndex].status === 'complete') {
+              if (selectedJob.status === 'complete') {
                 loadContents = true;
               }
               this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue(
@@ -556,6 +563,28 @@ YUI().use(
         this.afterSelectJob(job);
       };
 
+
+      YabiWorkflow.prototype.onJobLoaded = function(job) {
+        if (this.workflowLoaded) return;
+        var i;
+        var allJobsLoaded = true;
+        for (i = 0; i < this.jobs.length; i++) {
+            if (!this.jobs[i].loaded) {
+                allJobsLoaded = false;
+                break;
+            }
+        }
+        if (allJobsLoaded) {
+          this.onWorkflowLoaded();
+        }
+      };
+
+      YabiWorkflow.prototype.onWorkflowLoaded = function(value) {
+        this.workflowLoaded = true;
+        if (this.reusing) {
+          this.onReuseAfterLoad();
+        }
+      };
 
       /**
        * updateName
@@ -747,6 +776,129 @@ YUI().use(
         var baseURL = appURL + 'design/reuse/' + this.workflowId;
 
         window.location = baseURL;
+      };
+
+
+      /**
+       * Called when workflow reused, after new workflow has been loaded with
+       * data from template workflow.
+       */
+      YabiWorkflow.prototype.onReuseAfterLoad = function() {
+
+        function collectAllInputFileParams(workflow) {
+          var result = [];
+          var i, j, job, jobParam;
+          for (i = 0; i < workflow.jobs.length; i++) {
+            job = workflow.jobs[i];
+            for (j = 0; j < job.params.length; j++) {
+              jobParam = job.params[j];
+              if (jobParam.isInputFile) {
+                result.push(jobParam);
+              }
+            }
+          }
+          return result;
+        }
+
+        function orderParams(params) {
+          // Currently we just make sure fileselector params come before
+          // other params. Should be enough.
+          var fileSelectors = [];
+          var rest = [];
+          var i, param;
+
+          for (i = 0; i < params.length; i++) {
+            param = params[i];
+            if (param.renderMode === 'fileselector') {
+              fileSelectors.push(param);
+            } else {
+              rest.push(param);
+            }
+          }
+
+          return fileSelectors.concat(rest);
+        }
+
+        function setPreviousDropDownValues(param) {
+          var value, jobId, fileName;
+          if (param.value.length === 0) return;
+
+          value = param.value[0];
+
+          if (value['type'] === 'jobfile') {
+            jobId = value.jobId;
+            fileName = value.filename;
+
+            consumableFile = null;
+            for (var i = 0; i < param.consumableFiles.length; i++) {
+              if (param.consumableFiles[i].hasOwnProperty('job') &&
+                       param.consumableFiles[i].job.jobId === jobId &&
+                       param.consumableFiles[i].filename === fileName) {
+                consumableFile = param.consumableFiles[i];
+                break;
+              }
+            }
+
+            if (consumableFile !== null) {
+              param.inputEl.selectedIndex = i;
+              param.userValidate();
+            }
+          }
+        }
+
+        function unselectFileIfInvalid(param, fileObj) {
+          var lsURL = appURL + 'ws/fs/ls?uri=' + escape(fileObj.toString());
+
+          function onSuccess(transId, response) {
+            var json = null;
+            var fileIdx;
+            try {
+              json = Y.JSON.parse(response.responseText);
+            } catch (e) {}
+
+            if (json == null || Y.JSON.stringify(json) === '{}') {
+              fileIdx = param.fileSelector.indexOfFile(fileObj);
+              if (fileIdx >= 0) {
+                param.fileSelector.deleteFileAtIndex(fileIdx);
+              }
+            }
+          }
+
+          var cfg = {
+            on: {
+              success: onSuccess
+            }
+          };
+          Y.io(lsURL, cfg);
+        }
+
+        function setPreviousFileSelectorValues(param) {
+          var value, fileObj;
+
+          for (var i = 0; i < param.value.length; i++) {
+            value = param.value[i];
+            fileObj = new YabiSimpleFileValue(value.root, value.filename);
+
+            param.fileSelector.selectFile(fileObj);
+            unselectFileIfInvalid(param, fileObj);
+          }
+        }
+
+        function setPreviousValues(param) {
+          if (param.renderMode === 'fileselector') {
+            setPreviousFileSelectorValues(param);
+          }
+          if (param.renderMode === 'select') {
+            setPreviousDropDownValues(param);
+          }
+        }
+
+        var allParams = orderParams(collectAllInputFileParams(this));
+
+        for (var i = 0; i < allParams.length; i++) {
+          setPreviousValues(allParams[i]);
+        }
+
       };
 
 

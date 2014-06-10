@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import os
 from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
 from yabiadmin.backend.sshparsers import SSHParser
@@ -58,6 +54,8 @@ ps -o pid= -p {0}
 #!/bin/sh
 kill {1} -- -$( ps opgid= {0} | tr -d ' ')
 """
+
+    backend_desc = "SSH remote execution"
 
     def __init__(self, *args, **kwargs):
         super(SSHBackend, self).__init__(*args, **kwargs)

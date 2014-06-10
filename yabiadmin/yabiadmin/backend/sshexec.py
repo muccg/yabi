@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,12 +20,11 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import os
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.utils import sshclient
+from contextlib import contextmanager
 import uuid
 import traceback
 import paramiko
@@ -51,31 +48,49 @@ class SSHExec(object):
     def tmp_dir(self, value):
         self._tmp_dir = value
 
+    @contextmanager
+    def sshclient(self):
+        exec_scheme, exec_parts = uriparse(self.uri)
+        ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
+        try:
+            yield ssh
+        finally:
+            try:
+                ssh.close()
+            except:
+                pass
+
     def exec_script(self, script):
         logger.debug("SSHExex.exec_script...")
         logger.debug('script content = {0}'.format(script))
         exec_scheme, exec_parts = uriparse(self.uri)
         ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
+        sftp = None
         try:
-            script_name = self.upload_script(ssh, script)
+            sftp = ssh.open_sftp()
+
+            script_name = self.upload_script(sftp, script)
             stdin, stdout, stderr = ssh.exec_command(script_name, bufsize=-1, timeout=None, get_pty=False)
             stdin.close()
             exit_code = stdout.channel.recv_exit_status()
             logger.debug("sshclient exec'd script OK")
+
+            self.remove_script(sftp, script_name)
 
             return exit_code, stdout.readlines(), stderr.readlines()
         except paramiko.SSHException as sshe:
             raise RetryException(sshe, traceback.format_exc())
         finally:
             try:
+                if sftp is not None:
+                    sftp.close()
                 if ssh is not None:
                     ssh.close()
             except:
                 pass
 
-    def upload_script(self, ssh, script_body):
+    def upload_script(self, sftp, script_body):
         try:
-            sftp = ssh.open_sftp()
             remote_path = self.generate_remote_script_name()
             create_remote_file(sftp, remote_path, script_body)
             make_user_executable(sftp, remote_path)
@@ -83,11 +98,13 @@ class SSHExec(object):
         except:
             logger.exception("Error while trying to upload script")
             raise
-        finally:
-            try:
-                sftp.close()
-            except:
-                pass
+
+    def remove_script(self, sftp, script_name):
+        try:
+            sftp.remove(script_name)
+        except:
+            # Don't fail, just log the error
+            logger.exception("Error while trying to delete script '%s'", script_name)
 
     def generate_remote_script_name(self):
         name = os.path.join(self.tmp_dir, "yabi-" + str(uuid.uuid4()) + ".sh")

@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 _pool_manager = None
 
+
 def get_ssh_pool_manager():
     global _pool_manager
     if _pool_manager is None:
@@ -43,18 +44,18 @@ class SSHPoolManager(object):
 
     def release(self):
         """Releases the manager itself, closing all objects"""
+        global _pool_manager
 
         all_connections = sum(self.connections.values(), [])
         for connection in all_connections:
             self.connector.close(connection)
 
-        connections = {}
+        self.connections = {}
         _pool_manager = None
-
 
     def _make_key(self, hostname, port, credential):
         return "%s:%s,%s" % (hostname, port, credential.pk)
- 
+
     def _get_next_active_connection(self, connections):
         while len(connections) > 0:
             connection = connections.pop()
@@ -64,7 +65,7 @@ class SSHPoolManager(object):
                 self.connector.close(connection)
         return None
 
- 
+
 class ConnectionManager(object):
     def connect(self, host, port, credential):
         return sshclient(host, port, credential)
@@ -75,4 +76,3 @@ class ConnectionManager(object):
     def is_active(self, connection):
         transport = connection.get_transport()
         return transport is not None and transport.is_active()
-

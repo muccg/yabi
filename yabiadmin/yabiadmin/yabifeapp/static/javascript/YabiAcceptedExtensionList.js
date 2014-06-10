@@ -133,17 +133,7 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
       return false;
     }
 
-    //if there is no extension on the filename, allow it implicitly
-    // this will match * also but doesn't matter as so will next call
-    //  to validForExtension
-    if (value.length < 1 || value.indexOf('.') == -1) {
-      return true;
-    }
-
-    if (this.validForExtension(value)) {
-      return true;
-    }
-
+    return this.validForExtension(value);
   }
 
   return false;

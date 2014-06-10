@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,17 +20,22 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import hashlib
 import base64
 import logging
-from ldap import LDAPError, MOD_REPLACE
-from yabiadmin.ldapclient import LDAPClient
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger(__name__)
+
+try:
+    from ldap import LDAPError, MOD_REPLACE
+    from yabiadmin.ldapclient import LDAPClient
+    settings.LDAP_IN_USE = True
+except ImportError as e:
+    settings.LDAP_IN_USE = False
+    if settings.AUTH_LDAP_SERVER:
+        logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
 class LdapUser:

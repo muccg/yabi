@@ -1,19 +1,18 @@
 from __future__ import print_function
 import subprocess, os, shutil, glob, time
+import sys
 from . import config
 import unittest
 from collections import namedtuple
+from contextlib import contextmanager, nested
 from six.moves import filter
+import logging
+from StringIO import StringIO
 
-DEBUG = False
-CONFIG_SECTION = os.environ.get('YABI_CONFIG')
-if CONFIG_SECTION:
-    conf = config.Configuration(section=CONFIG_SECTION)
-else:
-    conf = config.Configuration()
+conf = config.Configuration(os.environ.get("TEST_CONFIG_FILE") or None,
+                            os.environ.get("YABI_CONFIG") or None)
 
-def yabipath(relpath):
-    return os.path.join(conf.yabidir, relpath)
+logger = logging.getLogger(__name__)
 
 def json_path(name):
     return os.path.join(conf.jsondir, name + '.json')
@@ -32,8 +31,7 @@ class Result(object):
         self.yabi = runner
         self._id = None
 
-        if DEBUG:
-            print("Result (%s)(%s)(%s)"%(self.status, self.stdout, self.stderr))
+        logging.debug("Result (%s)(%s)(%s)"%(self.status, self.stdout, self.stderr))
 
     @property
     def id(self):
@@ -107,11 +105,7 @@ class YabiTimeoutException(Exception):
 class Yabi(object):
 
     def __init__(self):
-        yabish = yabipath(conf.yabish) 
-
-        self.command = [yabish] 
-        if conf.yabiurl:
-            self.command.append('--yabi-url=%s' % conf.yabiurl)
+        self.shargs = ['--yabi-url', conf.yabiurl] if conf.yabiurl else []
         self.setup_data_dir()
 
     def setup_data_dir(self):
@@ -121,13 +115,18 @@ class Yabi(object):
             assert False, "Test data directory does not exist: %s" % self.test_data_dir
 
     def run(self, args=[]):
-        args = self.command + args
-        if DEBUG:
-            print(args)
-        cmd = subprocess.Popen(args, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        stdoutdata, stderrdata = cmd.communicate()
-
-        return Result(cmd.returncode, stdoutdata, stderrdata, runner=self)
+        args = ["yabish"] + self.shargs + args
+        logger.debug(" ".join(args))
+        patches = (sys_patch("argv", args), sys_patch("stdout", StringIO()),
+                   sys_patch("stderr", StringIO()),
+                   sys_patch("stdin", open("/dev/null")))
+        from yabishell.yabish import main
+        with nested(*patches):
+            try:
+                status = main()
+            except SystemExit as e:
+                status = e.code
+            return Result(status or 0, sys.stdout.getvalue(), sys.stderr.getvalue(), runner=self)
 
     def login(self, username=conf.yabiusername, password=conf.yabipassword):
         result = self.run(['login', username, password])
@@ -139,17 +138,14 @@ class Yabi(object):
     def purge(self):
         result = self.run(['purge'])
 
-def shell_command(command):
-    print(command)
-    cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    out, err = cmd.communicate()
-    status = cmd.returncode
-    print(out)
-    if status != 0 or err:
-        print('Command was: ' + command)
-        print('STATUS was: %d' % status)
-        print('STDERR was: \n' + err)
-        raise Exception('shell_command failed (%s)'%command)
+@contextmanager
+def sys_patch(attr, patch):
+    orig_attr = getattr(sys, attr)
+    setattr(sys, attr, patch)
+    try:
+        yield
+    finally:
+        setattr(sys, attr, orig_attr)
 
 class YabiTestCase(unittest.TestCase):
 

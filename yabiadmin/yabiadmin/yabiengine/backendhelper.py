@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,16 +21,16 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 from django.utils import simplejson as json
 import os
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabi.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.constants import EXEC_SCHEMES, FS_SCHEMES
 import logging
+from functools import partial
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,7 +64,8 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     schema, rest = uriparse(uri)
 
     # enforce Exec scehmas only
-    if schema not in EXEC_SCHEMES:
+    from ..backend import ExecBackend
+    if not ExecBackend.get_backend_cls_for_scheme(schema):
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s" % schema)
 
@@ -88,6 +87,39 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     raise ObjectDoesNotExist("Could not find backendcredential")
 
 
+def _enforce_FS_schema_only(schema):
+    from ..backend import FSBackend
+    if not FSBackend.get_backend_cls_for_scheme(schema):
+        logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
+        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s" % schema)
+
+
+def _normalise_path(path):
+    new_path = os.path.normpath(path)  # normalise path to get rid of ../../ style exploits
+    new_path = path.rstrip('/')  # and ignore trailing slashes
+    return new_path
+
+
+def _get_credential_candidates(yabiusername, schema, username, hostname):
+    return BackendCredential.objects.filter(credential__user__name=yabiusername,
+                                            backend__scheme=schema,
+                                            credential__username=username,
+                                            backend__hostname=hostname)
+
+
+def _be_cred_path(be_cred):
+    return os.path.join(be_cred.backend.path, be_cred.homedir).rstrip('/')
+
+
+def _does_path_match_be_cred(path, be_cred):
+    return path.startswith(_be_cred_path(be_cred))
+
+
+def _find_be_cred_with_longest_path(be_creds):
+    if len(be_creds) > 0:
+        return sorted(be_creds, key=lambda x: -len(_be_cred_path(x)))[0]
+
+
 def get_fs_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
@@ -95,49 +127,23 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     """
     logger.debug('yabiusername: %s uri: %s' % (yabiusername, uri))
 
-    # parse the URI into chunks
     schema, rest = uriparse(uri)
 
-    # enforce FS scehmas only
-    if schema not in FS_SCHEMES:
-        logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s" % schema)
+    _enforce_FS_schema_only(schema)
+    path = _normalise_path(rest.path)
 
-    path = os.path.normpath(rest.path)                      # normalise path to get rid of ../../ style exploits
+    bc_candidates = _get_credential_candidates(yabiusername, schema, rest.username, rest.hostname)
+    logger.debug("credentials candidates [%s]" % (",".join([str(x) for x in bc_candidates])))
 
-    # get our set of credential candidates
-    bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
-                                           backend__scheme=schema,
-                                           credential__username=rest.username,
-                                           backend__hostname=rest.hostname)
-
-    logger.debug("potential credentials [%s]" % (",".join([str(x) for x in bcs])))
-
-    # lets look at the paths for these to find candidates
-    cred = None
-    for bc in bcs:
-        checkpath = os.path.join(bc.backend.path, bc.homedir)
-
-        # ignore trailing slash for sake of comparison
-        if checkpath.endswith('/'):
-            checkpath = checkpath.rstrip('/')
-        if path.endswith('/'):
-            path = path.rstrip('/')
-
-        if path.startswith(checkpath):
-            # valid credentail
-            # If homedir path is longer than the present stored one, replace the stored one with this one to user
-            if cred is None:
-                logger.debug("cred {0} {1} {2}".format(bc.id, bc.backend.path, bc.homedir))
-                cred = bc
-            elif len(checkpath) > len(os.path.join(cred.backend.path, cred.homedir)):
-                logger.debug("cred {0} {1} {2}".format(bc.id, bc.backend.path, bc.homedir))
-                cred = bc
-
-    if not cred:
+    matches_path = partial(_does_path_match_be_cred, path)
+    matching_bcs = filter(matches_path, bc_candidates)
+    if len(matching_bcs) == 0:
         raise ObjectDoesNotExist("Could not find backendcredential")
 
+    cred = _find_be_cred_with_longest_path(matching_bcs)
+
     logger.info("chose cred {0} {1} {2}".format(cred.id, cred.backend.path, cred.homedir))
+
     return cred
 
 

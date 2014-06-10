@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import os
 import stat
 import shlex
@@ -34,7 +30,6 @@ import time
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.yabiengine.enginemodels import EngineTask
 from yabiadmin.backend.utils import blocking_execute
 
 logger = logging.getLogger(__name__)
@@ -44,7 +39,10 @@ WAIT_TO_TERMINATE_SECS = 3
 EXEC_SCRIPT_PREFIX = 'yabi_lexec_'
 DEFAULT_TEMP_DIRECTORY = '/tmp'
 
+
 class LocalExecBackend(ExecBackend):
+    backend_desc = "Local execution"
+    backend_auth = {}
 
     def __init__(self, *args, **kwargs):
         ExecBackend.__init__(self, *args, **kwargs)
@@ -114,7 +112,7 @@ class LocalExecBackend(ExecBackend):
 
     def create_script(self, script_contents):
         script_name = os.path.join(self.temp_directory,
-                            '%s%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
+                                   '%s%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
         with open(script_name, 'w') as f:
             f.write(script_contents)
         st = os.stat(script_name)
@@ -139,6 +137,7 @@ class LocalExecBackend(ExecBackend):
         kill_process(pid, with_SIGKILL=True)
 
     def is_aborting(self):
+        from ..yabiengine.enginemodels import EngineTask
         task = EngineTask.objects.get(pk=self.task.pk)
         return task.is_workflow_aborting
 

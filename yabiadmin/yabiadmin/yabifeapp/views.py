@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,9 +21,7 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 import os
 from django.conf.urls.defaults import *
 from django.conf import settings
@@ -44,7 +40,7 @@ from yabiadmin.yabi.models import Credential
 from yabiadmin.decorators import profile_required
 from yabiadmin.crypto_utils import DecryptException
 from yabiadmin.yabi.ws_frontend_views import ls, get
-from .utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
+from .utils import preview_key, logout, using_dev_settings  # NOQA
 
 import logging
 logger = logging.getLogger(__name__)
@@ -124,12 +120,12 @@ def login(request):
 
     def render_form(form, error='Invalid login credentials'):
         return render_to_response('fe/login.html', {
-                 'request': request,
-                 'h': webhelpers,
-                 'base_site_url': webhelpers.url("").rstrip("/"),
-                 'form': form,
-                 'error': error,
-                 'show_dev_warning': show_dev_warning})
+            'request': request,
+            'h': webhelpers,
+            'base_site_url': webhelpers.url("").rstrip("/"),
+            'form': form,
+            'error': error,
+            'show_dev_warning': show_dev_warning})
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -154,7 +150,7 @@ def login(request):
                     for cred in creds:
                         try:
                             cred.on_login(username, password)
-                        except DecryptException as e:
+                        except DecryptException:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
                     next_page = request.GET.get('next', webhelpers.url("/"))
                     return HttpResponseRedirect(next_page)
@@ -278,7 +274,7 @@ def preview(request):
         return unavailable()
 
     size = result.values()[0]["files"][0][1]
-    resp = get(request, bytes=min(size, settings.PREVIEW_SIZE_LIMIT))
+    resp = get(request)
 
     if resp.status_code != 200:
         logger.warning("Attempted to preview inaccessible URI '%s'", uri)
@@ -298,20 +294,29 @@ def preview(request):
     type_settings = settings.PREVIEW_SETTINGS[content_type]
     content_type = type_settings.get("override_mime_type", content_type)
 
-    # now work with the resulting file
-    content = resp.content
-
+    # Now work with the resulting file.
     # If the file is beyond the size limit, we'll need to check whether to
     # truncate it or not.
     truncated = False
-    if size > settings.PREVIEW_SIZE_LIMIT:
-        if type_settings.get("truncate", False):
-            logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            content = content[0:settings.PREVIEW_SIZE_LIMIT]
-            truncated = True
-        else:
-            logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            return unavailable("This file is too large to be previewed.")
+    contents = []
+    size = 0
+    try:
+        for chunk in resp.streaming_content:
+            contents.append(chunk)
+            size += len(chunk)
+            if size > settings.PREVIEW_SIZE_LIMIT:
+                if type_settings.get("truncate", False):
+                    logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                    contents[-1] = contents[-1][:settings.PREVIEW_SIZE_LIMIT - size]
+                    truncated = True
+                    break
+                else:
+                    logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                    return unavailable("This file is too large to be previewed.")
+        content = "".join(contents)
+    except Exception:
+        logger.exception("Problem when streaming response")
+        return unavailable("The file could not be accessed.")
 
     # Cache some metadata about the preview so we can retrieve it later.
     key = preview_key(uri)
