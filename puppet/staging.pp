@@ -9,17 +9,7 @@ node default {
   include repo::pgrpms
   include repo::ccgtesting
   include globals
-
-  class {'postgresql':
-    datadir              => '/var/lib/pgsql/9.3/data',
-    bindir               => '/usr/pgsql-9.3/bin',
-    client_package_name  => 'postgresql93',
-    server_package_name  => 'postgresql93-server',
-    devel_package_name   => 'postgresql93-devel',
-    service_name         => 'postgresql-9.3',
-  }
-
-  include postgresql::devel
+  include ccgdatabase::postgresql::devel
 
   # There are some leaked local secrets here we don't care about
   $django_config = {
@@ -59,7 +49,7 @@ node default {
   #  source => 'puppet:///modules/staging/yabi_staging_tests.conf'
   #}
 
-  ccgdatabase::postgresql { $django_config['dbname']:
+  ccgdatabase::postgresql::db { $django_config['dbname']:
     user     => $django_config['dbuser'],
     password => $django_config['dbpass'],
   }
@@ -73,7 +63,7 @@ node default {
   django::syncdbmigrate{'yabiadmin':
     dbsync  => true,
     require => [
-      Ccgdatabase::Postgresql[$django_config['dbname']],
+      Ccgdatabase::Postgresql::Db[$django_config['dbname']],
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }
@@ -98,7 +88,7 @@ node default {
     require    => [
       Service['rabbitmq-server'],
       Package[$packages],
-      Ccgdatabase::Postgresql[$django_config['dbname']],
+      Ccgdatabase::Postgresql::Db[$django_config['dbname']],
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }

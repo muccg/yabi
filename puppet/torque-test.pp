@@ -4,14 +4,13 @@ node default {
   include ccgcommon::source
   include python
   include ccgapache
-  include postgresql::devel
-  include mysql::devel
+  include repo::epel
+  include repo::ius
+  include repo::pgrpms
+  include repo::ccgtesting
+  include ccgdatabase::postgresql::devel
+  include ccgdatabase::mysql::devel
   include environmentmodules
-
-  class {'repo':
-    enable_epel        => true,
-    enable_ccgtesting  => true
-  }
 
   class {'torque':
     user => 'ec2-user'

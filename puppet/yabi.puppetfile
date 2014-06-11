@@ -4,7 +4,7 @@
 forge "https://forge.puppetlabs.com"
 
 mod "puppetlabs/stdlib", "4.1.0"
-mod "puppetlabs/postgresql", "2.5.0"
+mod "puppetlabs/postgresql", "3.3.3"
 mod "puppetlabs/mysql", "2.2.3"
 
 mod "saz/timezone",
@@ -32,11 +32,11 @@ mod "muccg/python",
 
 mod "muccg/ccgcommon",
   :git => "git://github.com/muccg/puppet-ccgcommon.git",
-  :ref => "1.0.1"
+  :ref => "1.0.2"
 
 mod "muccg/ccgdatabase",
   :git => "git://github.com/muccg/puppet-ccgdatabase.git",
-  :ref => "1.0.0"
+  :ref => "1.1.0"
 
 mod "muccg/repo",
   :git => "git://github.com/muccg/puppet-repo.git",
