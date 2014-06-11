@@ -48,7 +48,7 @@ node default {
   #  source => 'puppet:///modules/staging/yabi_staging_tests.conf'
   #}
 
-  ccgdatabase::postgresql:db { $django_config['dbname']:
+  ccgdatabase::postgresql::db { $django_config['dbname']:
     user     => $django_config['dbuser'],
     password => $django_config['dbpass'],
   }
@@ -62,7 +62,7 @@ node default {
   django::syncdbmigrate{'yabiadmin':
     dbsync  => true,
     require => [
-      Ccgdatabase::Postgresql[$django_config['dbname']],
+      Ccgdatabase::Postgresql::Db[$django_config['dbname']],
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }
@@ -87,7 +87,7 @@ node default {
     require    => [
       Service['rabbitmq-server'],
       Package[$packages],
-      Ccgdatabase::Postgresql[$django_config['dbname']],
+      Ccgdatabase::Postgresql::Db[$django_config['dbname']],
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }
