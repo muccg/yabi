@@ -31,7 +31,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|ci_lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -125,8 +125,6 @@ ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh lint"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh jslint"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN} || true"
     time ccg ${AWS_TEST_INSTANCE} getfile:"${TARGET_DIR}/tests.xml,tests.xml"
     time ccg ${AWS_TEST_INSTANCE} shutdown:10
@@ -190,12 +188,14 @@ ci_authorized_keys() {
 
 # lint using flake8
 lint() {
-    ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count
+    ${VIRTUALENV}/bin/pip install flake8
+    ${VIRTUALENV}/bin/flake8 --ignore=E501 yabiadmin/yabiadmin yabish/yabishell --count || true
 }
 
 
 # lint js, assumes closure compiler
 jslint() {
+    ${VIRTUALENV}/bin/pip install closure-linter==2.3.13
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
@@ -345,18 +345,19 @@ stopyabi() {
     esac
 }
 
-
-installyabi() {
+make_virtualenv() {
     # check requirements
     which virtualenv-2.7 > /dev/null
+    virtualenv-2.7 ${VIRTUALENV}
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
+}
 
+installyabi() {
     echo "Install yabiadmin"
     if test -e /usr/pgsql-9.3/bin; then
         export PATH=/usr/pgsql-9.3/bin:$PATH
         echo $PATH
     fi
-    virtualenv-2.7 ${VIRTUALENV}
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
     pushd yabiadmin
     ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .[dev,mysql,postgresql,tests]
     popd
@@ -547,10 +548,12 @@ test_postgresql)
     settings
     dbtest
     ;;
-lint)
+ci_lint)
+    make_virtualenv
     lint
     ;;
 jslint)
+    make_virtualenv
     jslint
     ;;
 dropdb)
@@ -575,6 +578,7 @@ status)
 install)
     settings
     stopyabi
+    make_virtualenv
     time installyabi
     ;;
 celeryevents)
