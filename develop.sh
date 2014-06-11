@@ -160,7 +160,7 @@ ci_staging_tests() {
 
     # Get the login page -- will find major config problems with the rpm
     STAGING_URL="https://localhost/yabi/"
-    curl -f -o /dev/null -D /dev/stdout ${STAGING_URL}
+    ccg ${AWS_STAGING_INSTANCE} drun:"curl --insecure -f -o /dev/null -D /dev/stdout ${STAGING_URL}"
 }
 
 
