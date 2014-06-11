@@ -159,7 +159,7 @@ ci_staging_tests() {
     ccg ${AWS_STAGING_INSTANCE} dsudo:"yabiadmin syncdb --noinput"
 
     # Get the login page -- will find major config problems with the rpm
-    STAGING_URL="https://staging.ccgapps.com.au/yabi/"
+    STAGING_URL="https://localhost/yabi/"
     curl -f -o /dev/null -D /dev/stdout ${STAGING_URL}
 }
 
