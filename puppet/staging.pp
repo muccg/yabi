@@ -21,14 +21,6 @@ node default {
 
   include postgresql::devel
 
-  # postgresql databases/users
-  ccgdatabase::postgresql{'dev_yabi': user => 'yabiapp', password => 'yabiapp'}
-  postgresql::db { 'test_yabi':
-    user     => 'yabiapp',
-    password => 'yabiapp',
-    require  => Postgresql::Database_User['yabiapp'],
-  }
-
   # There are some leaked local secrets here we don't care about
   $django_config = {
     deployment  => 'staging',
@@ -40,6 +32,7 @@ node default {
     memcache    => $globals::memcache_syd,
     secret_key  => 'isbfiusbef)#$)(#)((@',
     admin_email => $globals::system_email,
+    allowed_hosts => 'localhost',
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
@@ -66,7 +59,7 @@ node default {
   #  source => 'puppet:///modules/staging/yabi_staging_tests.conf'
   #}
 
-  ccgdatabase::postgresql::db { $django_config['dbname']:
+  ccgdatabase::postgresql { $django_config['dbname']:
     user     => $django_config['dbuser'],
     password => $django_config['dbpass'],
   }
@@ -80,7 +73,7 @@ node default {
   django::syncdbmigrate{'yabiadmin':
     dbsync  => true,
     require => [
-      Ccgdatabase::Postgresql::Db[$django_config['dbname']],
+      Ccgdatabase::Postgresql[$django_config['dbname']],
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }
@@ -105,7 +98,7 @@ node default {
     require    => [
       Service['rabbitmq-server'],
       Package[$packages],
-      Ccgdatabase::Postgresql::Db[$django_config['dbname']],
+      Ccgdatabase::Postgresql[$django_config['dbname']],
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }
