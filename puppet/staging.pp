@@ -8,8 +8,26 @@ node default {
   include repo::ius
   include repo::pgrpms
   include repo::ccgtesting
-  include ccgdatabase::postgresql::devel
   include globals
+
+  class {'postgresql':
+    datadir              => '/var/lib/pgsql/9.3/data',
+    bindir               => '/usr/pgsql-9.3/bin',
+    client_package_name  => 'postgresql93',
+    server_package_name  => 'postgresql93-server',
+    devel_package_name   => 'postgresql93-devel',
+    service_name         => 'postgresql-9.3',
+  }
+
+  include postgresql::devel
+
+  # postgresql databases/users
+  ccgdatabase::postgresql{'dev_yabi': user => 'yabiapp', password => 'yabiapp'}
+  postgresql::db { 'test_yabi':
+    user     => 'yabiapp',
+    password => 'yabiapp',
+    require  => Postgresql::Database_User['yabiapp'],
+  }
 
   # There are some leaked local secrets here we don't care about
   $django_config = {
