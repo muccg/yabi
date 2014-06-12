@@ -18,6 +18,7 @@ AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
+STAGING_PIP="/usr/local/webapps/yabiadmin/bin/pip2.7"
 TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
 PIP_OPTS="--download-cache ~/.pip/cache"
 PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
@@ -164,12 +165,13 @@ ci_staging_tests() {
 
 # staging selenium test
 function ci_staging_selenium() {
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"pip install ${PIP_OPTS} ${TESTING_MODULES}"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"${STAGING_PIP} install ${PIP_OPTS} ${TESTING_MODULES}"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
     ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd restart'
     ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && env DISPLAY\=\:0 YABIURL\=http\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && DISPLAY\=\:0 YABIURL\=http\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
     ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
 }
 
