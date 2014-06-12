@@ -35,6 +35,17 @@ node default {
     allowed_hosts => 'localhost',
   }
 
+  class {'postgresql':
+    datadir              => '/var/lib/pgsql/9.3/data',
+    bindir               => '/usr/pgsql-9.3/bin',
+    client_package_name  => 'postgresql93',
+    server_package_name  => 'postgresql93-server',
+    devel_package_name   => 'postgresql93-devel',
+    service_name         => 'postgresql-9.3',
+  }
+
+  include postgresql::devel
+
   $packages = ['python27-psycopg2', 'rabbitmq-server']
   package {$packages: ensure => installed}
 
