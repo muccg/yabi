@@ -41,7 +41,8 @@ def delete_cookies(scenario):
     world.browser.delete_all_cookies()
 
 
-@after.each_step
+# Enable this only when you're running headless and need to debug things
+# @after.each_step
 def photo(step):
     name = str(step).replace("<", "").replace("<", "").replace('"', "") + ".png"
     world.browser.save_screenshot("after" + name)

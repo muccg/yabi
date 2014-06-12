@@ -99,7 +99,8 @@ setup(name='yabiadmin',
       package_data={
           '': ["%s/%s" % (dirglob, fileglob)
               for dirglob in (["."] + ['/'.join(['*'] * num) for num in range(1, 15)])                         # yui is deeply nested
-              for fileglob in ['*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg', '*.feature']]
+              for fileglob in ['*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg', '*.feature']] +
+              ['*/features/*.py'] # step definitions and terrain files for lettuce tests
       },
       zip_safe=False,
       scripts=["yabiadmin/yabiadmin-manage.py", "yabiadmin/yabicelery.py"],

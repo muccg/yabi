@@ -164,20 +164,13 @@ ci_staging_tests() {
 
 # staging selenium test
 function ci_staging_selenium() {
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"pip2.7 install ${PIP_OPTS} ${TESTING_MODULES}"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"pip install ${PIP_OPTS} ${TESTING_MODULES}"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum --enablerepo\=ccg-testing clean all'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum install yabi-admin -y'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'killall httpd || true'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd start'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'echo http://localhost/yabi > /tmp/yabifeapp_site_url'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd restart'
     ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && env DISPLAY\=\:0 yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback|| true"
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'rm /tmp/yabifeapp_site_url'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && env DISPLAY\=\:0 YABIURL\=http\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
     ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
-    #ccg ${AWS_STAGING_INSTANCE} dsudo:'yabiadmin run_lettuce --app-name yabifeapp --with-xunit --xunit-file\=/tmp/tests-yabifeapp.xml || true'
 }
 
 # we need authorized keys setup for ssh tests
