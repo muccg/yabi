@@ -1,3 +1,4 @@
+import os
 from lettuce import *
 import lettuce_webdriver.webdriver
 
@@ -8,7 +9,7 @@ def our_goto(step, relative_url):
     NB. This allows tests to run in different contexts ( locally, staging.)
     We delegate to the library supplied version of the step with the same pattern after fixing the path
     """
-    absolute_url = world.site_url + relative_url
+    absolute_url = os.path.join(world.site_url, relative_url)
     lettuce_webdriver.webdriver.goto(step, absolute_url)
 
 
@@ -31,11 +32,4 @@ def get_site_url(app_name, default_url):
     """
     :return: http://example.com:8081
     """
-    import os
-    site_url_file = "/tmp/%s_site_url" % app_name
-    if not os.path.exists(site_url_file):
-        return default_url
-    else:
-        with open(site_url_file) as f:
-            site_url = f.read()
-        return site_url
+    return os.environ.get('YABIURL', default_url)
