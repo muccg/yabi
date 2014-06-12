@@ -62,6 +62,7 @@ node default {
 
   django::syncdbmigrate{'yabiadmin':
     dbsync  => true,
+    notify  => Service[$ccgapache::params::service_name],
     require => [
       Ccgdatabase::Postgresql::Db[$django_config['dbname']],
       Package['yabi-admin'],
