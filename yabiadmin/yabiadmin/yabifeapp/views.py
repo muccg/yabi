@@ -40,7 +40,7 @@ from yabiadmin.yabi.models import Credential
 from yabiadmin.decorators import profile_required
 from yabiadmin.crypto_utils import DecryptException
 from yabiadmin.yabi.ws_frontend_views import ls, get
-from yabiadmin.yabifeapp.utils import preview_key, using_dev_settings
+from yabiadmin.yabifeapp.utils import preview_key, logout, using_dev_settings  # NOQA
 
 import logging
 logger = logging.getLogger(__name__)
