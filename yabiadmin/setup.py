@@ -13,11 +13,11 @@ install_requires = [
     'ccg-django-utils==0.2.1',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
-    'celery==3.1.9',
-    'amqp==1.4.4',
+    'celery==3.1.12',
+    'amqp==1.4.5',
     'amqplib==1.0.2',
-    'kombu==3.0.13',
-    'billiard==3.3.0.16',
+    'kombu==3.0.19',
+    'billiard==3.3.0.17',
     'django-templatetag-sugar==0.1',
     'ordereddict==1.1',
     'python-memcached>=1.53,<2.0',
@@ -35,7 +35,7 @@ install_requires = [
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'six>=1.5,<1.6',
-    'flower>=0.5',
+    'flower>=0.7.0',
 ]
 
 # Compiled python modules which are usually provided by system packages
