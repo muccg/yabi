@@ -74,10 +74,10 @@
               {% endif %}
             >
               <div class="control-group">
-              <input type="text" name="username" class="span2" placeholder="Username" />
+              <input type="text" name="username" class="span2" placeholder="Username" id="id_username" />
               </div>
               <div class="control-group">
-              <input type="password" name="password" class="span2" placeholder="Password" />
+              <input type="password" name="password" class="span2" placeholder="Password" id="id_password" />
               </div>
 
               <p>
@@ -263,6 +263,8 @@
 
       var textArray = [t1, t2, t3];
       $('#testimonial').randomTestimonial( textArray, 10000 ); // ( array, interval, ["reload text or html"] )
+
+      $('#id_username').focus();
       });
     </script>
 
