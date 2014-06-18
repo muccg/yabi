@@ -24,11 +24,9 @@ instances:
     pre_puppet: 
       - sudo apt-get -q update
       - which git || sudo apt-get -y install git
-      - sudo apt-get -y -q install ruby-dev
-      - sudo apt-get -y -q install build-essential
-      - which librarian-puppet || (sudo gem install --no-rdoc --no-ri librarian-puppet && --no-rdoc --no-ri sudo gem install bundler)
+      - which librarian-puppet || sudo apt-get install -y -q librarian-puppet
       - which puppet || sudo apt-get -y install puppet
-    puppet_manifest: dev.pp
+    puppet_manifest: dev-ubuntu.pp
     post_puppet: 
       - ./develop.sh install
       - ./develop.sh syncmigrate
