@@ -19,11 +19,14 @@ instances:
       - ./develop.sh install
       - ./develop.sh syncmigrate
 
-  yabi_raring:
-    extends: raring_lxc
+  yabi_trusty:
+    extends: trusty_lxc
     pre_puppet: 
+      - sudo apt-get -q update
       - which git || sudo apt-get -y install git
-      - which librarian-puppet || sudo gem install librarian-puppet
+      - sudo apt-get -y -q install ruby-dev
+      - sudo apt-get -y -q install build-essential
+      - which librarian-puppet || (sudo gem install --no-rdoc --no-ri librarian-puppet && --no-rdoc --no-ri sudo gem install bundler)
       - which puppet || sudo apt-get -y install puppet
     puppet_manifest: dev.pp
     post_puppet: 
