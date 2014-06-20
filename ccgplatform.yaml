@@ -47,21 +47,6 @@ instances:
     puppet_manifest: torque-test.pp
     aws_instance_type: m3.medium
 
-  aws_syd_yabi_prod_ah:
-    extends: aws_syd_yabi_prod_ah_2
-
-  aws_syd_yabi_prod_ah_2:
-    extends: aws_syd_yabi_prod
-    aws_ondemand: True
-
-  aws_syd_yabi_prod:
-    extends: centos_prod_aws_syd
-    pre_puppet: 
-      - which git || sudo yum install -y -q git
-      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
-    puppet_manifest: prod.pp
-    aws_instance_type: c3.large
-
   aws_syd_yabi_staging:
     extends: centos_65_aws_syd
     pre_puppet: 
@@ -78,3 +63,17 @@ instances:
 
   aws_rpmbuild_centos6:
     extends: centos_6_rpmbuild
+
+  ccg_murdoch_yabi_prod:
+    instance_class: fixed
+    puppet_manifest: prod-ccg.pp
+    ssh_user: root
+    fixed_ip_address: yabi6
+
+  aws_syd_yabi_prod:
+    extends: centos_prod_aws_syd
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
+    puppet_manifest: prod-aws.pp
+    aws_instance_type: c3.large
