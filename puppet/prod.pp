@@ -21,7 +21,7 @@ node default {
     dbuser      => $globals::dbuser_syd_prod,
     dbpass      => $globals::dbpass_syd_prod,
     memcache    => $globals::memcache_syd,
-    secret_key  => $globals::secretkey_yabi,
+    secret_key  => $globals::secretkey_aws_yabi,
     admin_email => $globals::system_email,
     allowed_hosts => 'www.ccgapps.com.au ccgapps.com.au localhost'
   }
