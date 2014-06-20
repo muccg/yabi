@@ -12,18 +12,19 @@ node default {
   include globals
 
   $django_config = {
-    deployment  => 'prod',
-    release     => '7.2.5-1',
-    dbdriver    => 'django.db.backends.postgresql_psycopg2',
-    dbserver    => $globals::dbhost_postgresql_ccg_prod,
-    dbhost      => $globals::dbhost_postgresql_ccg_prod,
-    dbname      => 'live_yabi',
-    dbuser      => $globals::dbuser_syd_prod,
-    dbpass      => $globals::dbpass_syd_prod,
-    memcache    => $globals::memcache_syd,
-    secret_key  => $globals::secretkey_ccg_yabi,
-    admin_email => $globals::system_email,
-    allowed_hosts => 'ccg.murdoch.edu.au localhost'
+    deployment       => 'prod',
+    release          => '7.2.5-1',
+    dbdriver         => 'django.db.backends.postgresql_psycopg2',
+    dbserver         => $globals::dbhost_postgresql_ccg_prod,
+    dbhost           => $globals::dbhost_postgresql_ccg_prod,
+    dbname           => 'live_yabi',
+    dbuser           => $globals::dbuser_postgresql_ccg_prod,
+    dbpass           => $globals::dbpass_postgresql_ccg_prod,
+    memcache         => $globals::memcache_ccg_prod,
+    auth_ldap_server => $globals::ldap_ccg_prod,
+    secret_key       => $globals::secretkey_ccg_yabi,
+    admin_email      => $globals::system_email,
+    allowed_hosts    => 'ccg.murdoch.edu.au localhost'
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
