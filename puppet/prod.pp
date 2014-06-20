@@ -9,11 +9,13 @@ node default {
   include repo::ius
   include repo::pgrpms
   include repo::ccgcentos
+  include globals
 
   $django_config = {
     deployment  => 'prod',
-    release     => '7.2.4-1',
+    release     => '7.2.5-1',
     dbdriver    => 'django.db.backends.postgresql_psycopg2',
+    dbserver    => $globals::dbhost_rds_syd_postgresql_prod,
     dbhost      => $globals::dbhost_rds_syd_postgresql_prod,
     dbname      => 'yabiadmin_prod',
     dbuser      => $globals::dbuser_syd_prod,
@@ -21,6 +23,7 @@ node default {
     memcache    => $globals::memcache_syd,
     secret_key  => $globals::secretkey_yabi,
     admin_email => $globals::system_email,
+    allowed_hosts => 'www.ccgapps.com.au ccgapps.com.au localhost'
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
@@ -36,13 +39,12 @@ node default {
   }
 
   # Disabled until releasing on this branch
-  #django::syncdbmigrate{'yabiadmin':
-  #  dbsync  => true,
-  #  require => [
-  #    Ccgdatabase::Postgresql[$django_config['dbname']],
-  #    Package['yabi-admin'],
-  #    Django::Config['yabiadmin'] ]
-  #}
+  django::syncdbmigrate{'yabiadmin':
+    dbsync  => true,
+    require => [
+      Package['yabi-admin'],
+      Django::Config['yabiadmin'] ]
+  }
 
   package {'yabi-shell': provider => yum_nogpgcheck}
 
