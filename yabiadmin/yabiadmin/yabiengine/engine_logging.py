@@ -19,10 +19,10 @@ from functools import partial
 
 
 def create_logger(context_type, logger, pk):
-    return logging.LoggerAdapter(logger,
-                {'yabi_context': {
-                    'type': context_type,
-                    'id': pk}})
+    return logging.LoggerAdapter(logger, {
+        'yabi_context': {
+            'type': context_type,
+            'id': pk}})
 
 
 create_workflow_logger = partial(create_logger, 'workflow')
@@ -38,9 +38,9 @@ class YabiDBHandler(logging.Handler):
             table_name = record.yabi_context.get('type')
             table_id = record.yabi_context.get('id')
             m.Syslog.objects.create(
-                    message=self.format_message(record),
-                    table_name=table_name,
-                    table_id=table_id)
+                message=self.format_message(record),
+                table_name=table_name,
+                table_id=table_id)
 
     def format_message(self, record):
         msg = record.getMessage()
@@ -57,5 +57,3 @@ class YabiContextFilter(logging.Filter):
 
     def filter(self, record):
         return hasattr(record, 'yabi_context')
-
-

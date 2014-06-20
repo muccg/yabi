@@ -1,9 +1,9 @@
 # Re-import all backend classes and register their schemes
 
-from .basebackend import BaseBackend
+from .basebackend import BaseBackend  # NOQA
 
 # file system backends
-from .fsbackend import FSBackend
+from .fsbackend import FSBackend  # NOQA
 from .selectfilebackend import SelectFileBackend
 from .filebackend import FileBackend
 from .sftpbackend import SFTPBackend
@@ -11,7 +11,7 @@ from .s3backend import S3Backend
 from .swiftbackend import SwiftBackend
 
 # execution backends
-from .execbackend import ExecBackend
+from .execbackend import ExecBackend  # NOQA
 from .selectfileexecbackend import SelectFileExecBackend
 from .localexecbackend import LocalExecBackend
 from .sshbackend import SSHBackend

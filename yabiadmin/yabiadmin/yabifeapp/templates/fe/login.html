@@ -32,6 +32,7 @@
     <div class="container">
 
       <div class="row">
+        <!-- title and citation -->
         <div class="span8">
           <div style="text-align:center">
 
@@ -58,7 +59,46 @@
                 <strong>YABI requires JavaScript to be enabled. Please check your browser
                 settings and <a href="{% static "/login" %}">try logging in again</a>.</strong>
           </noscript>
+        </div>
 
+        <div class="span1">
+          &nbsp;
+        </div>
+
+        <!-- login area -->
+        <div class="span3">
+            <form class="well form-inline" enctype="multipart/form-data" method="post" action="{{base_site_url}}/login/?next={% if request.GET.next %}{{ request.GET.next }}{% else %}{{ base_site_url }}/{% endif %}">
+            <fieldset
+              {% if error %}
+                 class="control-group error"
+              {% endif %}
+            >
+              <div class="control-group">
+              <input type="text" name="username" class="span2" placeholder="Username" id="id_username" />
+              </div>
+              <div class="control-group">
+              <input type="password" name="password" class="span2" placeholder="Password" id="id_password" />
+              </div>
+
+              <p>
+              {% if error %}
+                <span class="help-inline">{{error}}</span><br/>
+              {% endif %}
+              </p>
+
+              </fieldset>
+              <input type="submit" value=" Log In " />
+          </form>
+
+          <p>
+            Want to try Yabi? Use <strong>yabidemo</strong> as username and password.
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- testimonials and screenshots -->
+        <div class="span8">
           <hr class="soften">
        
           <p>
@@ -139,31 +179,8 @@
           &nbsp;
         </div>
 
-        <!-- login area -->
+        <!-- links and badges area -->
         <div class="span3">
-            <form class="well form-inline" enctype="multipart/form-data" method="post" action="{{base_site_url}}/login/?next={% if request.GET.next %}{{ request.GET.next }}{% else %}{{ base_site_url }}/{% endif %}">
-            <fieldset
-              {% if error %}
-                 class="control-group error"
-              {% endif %}
-            >
-              <input type="text" name="username" class="input-small" placeholder="Username" />
-              <input type="password" name="password" class="input-small" placeholder="Password" />
-
-              <p>
-              {% if error %}
-                <span class="help-inline">{{error}}</span><br/>
-              {% endif %}
-              </p>
-
-              </fieldset>
-              <input type="submit" value=" Log In " />
-          </form>
-
-          <p>
-            Want to try Yabi? Use <strong>yabidemo</strong> as username and password.
-          </p>
-
           <p>
             Would you like a full trial account?<br>
             <a href="mailto:yabi@ccg.murdoch.edu.au">yabi@ccg.murdoch.edu.au</a>
@@ -246,6 +263,8 @@
 
       var textArray = [t1, t2, t3];
       $('#testimonial').randomTestimonial( textArray, 10000 ); // ( array, interval, ["reload text or html"] )
+
+      $('#id_username').focus();
       });
     </script>
 

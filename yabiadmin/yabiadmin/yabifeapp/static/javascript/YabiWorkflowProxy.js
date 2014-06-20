@@ -67,7 +67,7 @@ YabiWorkflowProxy.prototype.renderStatus = function() {
   }
 
   image = Yabi.util.Status.getStatusImage(status);
-  title = "Worflow " + Yabi.util.Status.getStatusDescription(status);
+  title = 'Worflow ' + Yabi.util.Status.getStatusDescription(status);
 
   this.badgeEl.title = title;
   this.badgeEl.src = imagesURL + image;

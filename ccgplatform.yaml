@@ -1,0 +1,79 @@
+project:
+  name: yabi
+
+ccgplatform:
+  version: "1.10"
+
+ccgpuppet:
+  version: "1.10"
+
+instances:
+
+  yabi:
+    extends: centos_64_lxc
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
+    puppet_manifest: dev.pp
+    post_puppet: 
+      - ./develop.sh install
+      - ./develop.sh syncmigrate
+
+  yabi_trusty:
+    extends: trusty_lxc
+    pre_puppet: 
+      - sudo apt-get -q update
+      - which git || sudo apt-get -y install git
+      - which librarian-puppet || sudo apt-get install -y -q librarian-puppet
+      - which puppet || sudo apt-get -y install puppet
+    puppet_manifest: dev-ubuntu.pp
+    post_puppet: 
+      - ./develop.sh install
+      - ./develop.sh syncmigrate
+
+  aws_yabi_test:
+    extends: centos_65_aws_oregon
+    pre_puppet:
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
+    puppet_manifest: test.pp
+    aws_instance_type: m3.large
+
+  aws_yabi_torque_test:
+    extends: centos_65_aws_oregon
+    pre_puppet:
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
+    puppet_manifest: torque-test.pp
+    aws_instance_type: m3.medium
+
+  aws_syd_yabi_staging:
+    extends: centos_65_aws_syd
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
+    puppet_manifest: staging.pp
+
+  local-staging:
+    extends: centos_64_lxc
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
+    puppet_manifest: staging.pp
+
+  aws_rpmbuild_centos6:
+    extends: centos_6_rpmbuild
+
+  ccg_murdoch_yabi_prod:
+    instance_class: fixed
+    puppet_manifest: prod-ccg.pp
+    ssh_user: root
+    fixed_ip_address: yabi6
+
+  aws_syd_yabi_prod:
+    extends: centos_prod_aws_syd
+    pre_puppet: 
+      - which git || sudo yum install -y -q git
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.3
+    puppet_manifest: prod-aws.pp
+    aws_instance_type: c3.large

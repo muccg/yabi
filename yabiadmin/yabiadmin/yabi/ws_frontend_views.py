@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import mimetypes
 import os
@@ -37,7 +33,7 @@ from urlparse import urlparse, urlunparse
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, ToolSet, BackendCredential
+from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, BackendCredential
 from django.utils import simplejson as json
 from django.conf import settings
 from django.views.decorators.cache import cache_page
@@ -48,7 +44,7 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
-from yabiadmin.utils import cache_keyname
+from yabiadmin.utils import cache_keyname, json_error_response, json_response
 from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
 
@@ -70,7 +66,7 @@ def tool(request, toolname):
         return page
 
     try:
-        tool = Tool.objects.get(name=toolname, enabled=True)
+        tool = Tool.objects.get(name=toolname)
 
         response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
         cache.set(toolname_key, response, 30)
@@ -195,7 +191,7 @@ def rcopy(request):
     dst = os.path.join(dst, srcfile)
 
     # src must be directory
-    #assert src[-1]=='/', "src malformed. Not directory."
+    # assert src[-1]=='/', "src malformed. Not directory."
     # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
     if dst[-1] != '/':
         dst += '/'
@@ -214,10 +210,12 @@ def rm(request):
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
 
+
 @authentication_required
 def mkdir(request):
     backend.mkdir(request.user.username, request.GET['uri'])
     return HttpResponse("OK")
+
 
 def backend_get_file(yabiusername, uri, is_dir=False):
     if is_dir:
@@ -236,12 +234,14 @@ def backend_get_file(yabiusername, uri, is_dir=False):
     if not success:
         raise Exception("Backend file download was not successful")
 
+
 def filename_from_uri(uri, default='default.txt'):
     try:
         return uri.rstrip('/').rsplit('/', 1)[1]
     except IndexError:
         logger.critical('Unable to get filename from uri: %s' % uri)
         return default
+
 
 @authentication_required
 def get(request):
@@ -266,6 +266,7 @@ def get(request):
         response['content-disposition'] = 'attachment; filename="%s"' % filename
 
     return response
+
 
 @authentication_required
 def zget(request):
@@ -356,9 +357,9 @@ def submit_workflow(request):
     except Exception:
         transaction.rollback()
         logger.exception("Exception in submit_workflow()")
-        raise
+        return json_error_response("Workflow submission error")
 
-    return HttpResponse(json.dumps({"id": workflow.id}))
+    return json_response({"workflow_id": workflow.pk})
 
 
 def munge_name(user, workflow_name):

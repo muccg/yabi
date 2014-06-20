@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,8 +20,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.utils import ls
 from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
@@ -33,16 +29,18 @@ import shutil
 import logging
 import tarfile
 import traceback
-import threading
+
+
 logger = logging.getLogger(__name__)
 
 
 LS_PATH = '/bin/ls'
 LS_TIME_STYLE = r"+%b %d  %Y"
 
+
 class FileBackend(FSBackend):
     backend_desc = "File system"
-    backend_auth = { }
+    backend_auth = {}
 
     def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)
@@ -66,7 +64,7 @@ class FileBackend(FSBackend):
         logger.debug('CopyThread start copy')
         try:
             shutil.copyfileobj(src, dst)
-        except Exception as exc:
+        except Exception:
             # fixme: just catch the shutil and ioerror exceptions
             logger.exception("FileBackend _copy_file error")
         else:
@@ -81,7 +79,7 @@ class FileBackend(FSBackend):
         try:
             with tarfile.open(fileobj=dst, mode='w|gz') as f:
                 f.add(src, arcname=os.path.basename(src.rstrip('/')))
-        except Exception as exc:
+        except Exception:
             logger.exception("FileBackend _tar_and_copy_dir error")
         else:
             logger.debug('TarAndCopyThread end tar')
@@ -93,7 +91,7 @@ class FileBackend(FSBackend):
         remote_path = parts.path
         stat = os.stat(remote_path)
 
-        return { 'atime': stat.st_atime, 'mtime': stat.st_mtime }
+        return {'atime': stat.st_atime, 'mtime': stat.st_mtime}
 
     def set_remote_uri_times(self, uri, atime, mtime):
         scheme, parts = uriparse(uri)

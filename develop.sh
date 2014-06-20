@@ -18,7 +18,8 @@ AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
-CLOSURE="/usr/local/closure/compiler.jar"
+STAGING_PIP="/usr/local/webapps/yabiadmin/bin/pip2.7"
+TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
 PIP_OPTS="--download-cache ~/.pip/cache"
 PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
 
@@ -31,7 +32,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|ci_lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -153,34 +154,26 @@ ci_staging() {
 
 # run tests on staging
 ci_staging_tests() {
-    # /tmp is used for test results because the apache user has
-    # permission to write there.
-    REMOTE_TEST_DIR=/tmp
-    REMOTE_TEST_RESULTS=${REMOTE_TEST_DIR}/tests.xml
+    # Try running syncdb -- if setup is wrong this won't work
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"yabiadmin syncdb --noinput"
 
-    # Grant permission to create a test database. Assume that database
-    # user is same as project name for now.
-    DATABASE_USER=${PROJECT_NAME}
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"su postgres -c \"psql -c 'ALTER ROLE ${DATABASE_USER} CREATEDB;'\""
-
-    # fixme: this config should be put in nose.cfg or settings.py or similar
-    EXCLUDES="--exclude\=yaphc --exclude\=esky --exclude\=httplib2"
-
-    # Start virtual X server here to work around a problem starting it
-    # from xvfbwrapper.
-    ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb \:0"
-
-    sleep 2
-
-    # firefox won't run without a profile directory, dbus and gconf
-    # also need to write in home directory.
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"chown apache:apache /var/www"
-
-    # Run tests, collect results
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd ${REMOTE_TEST_DIR} && env DISPLAY\=\:0 dbus-launch timeout -sHUP 30m ${PROJECT_NAME} test --verbosity\=2 --liveserver\=localhost\:8082\,8090-8100\,9000-9200\,7041 --noinput --with-xunit --xunit-file\=${REMOTE_TEST_RESULTS} ${TEST_LIST} ${EXCLUDES} || true"
-    ccg ${AWS_STAGING_INSTANCE} getfile:${REMOTE_TEST_RESULTS},./
+    # Get the login page -- will find major config problems with the rpm
+    STAGING_URL="https://localhost/yabi/"
+    ccg ${AWS_STAGING_INSTANCE} drun:"curl --insecure -f -o /dev/null -D /dev/stdout ${STAGING_URL}"
 }
 
+
+# staging selenium test
+function ci_staging_selenium() {
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"${STAGING_PIP} install ${PIP_OPTS} ${TESTING_MODULES}"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd restart'
+    ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && DISPLAY\=\:0 YABIURL\=http\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
+    ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
+}
 
 # we need authorized keys setup for ssh tests
 ci_authorized_keys() {
@@ -190,17 +183,18 @@ ci_authorized_keys() {
 
 # lint using flake8
 lint() {
-    project_needed
-    ${VIRTUALENV}/bin/flake8 ${PROJECT} --ignore=E501 --count
+    ${VIRTUALENV}/bin/pip install flake8
+    ${VIRTUALENV}/bin/flake8 --ignore=E501 yabiadmin/yabiadmin yabish/yabishell --count || true
 }
 
 
 # lint js, assumes closure compiler
 jslint() {
+    ${VIRTUALENV}/bin/pip install closure-linter==2.3.13
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
-        java -jar ${CLOSURE} --js $JS --js_output_file output.js --warning_level DEFAULT --summary_detail_level 3
+        ${VIRTUALENV}/bin/gjslint --nojsdoc $JS
     done
 }
 
@@ -346,18 +340,19 @@ stopyabi() {
     esac
 }
 
-
-installyabi() {
+make_virtualenv() {
     # check requirements
     which virtualenv-2.7 > /dev/null
+    virtualenv-2.7 ${VIRTUALENV}
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
+}
 
+installyabi() {
     echo "Install yabiadmin"
     if test -e /usr/pgsql-9.3/bin; then
         export PATH=/usr/pgsql-9.3/bin:$PATH
         echo $PATH
     fi
-    virtualenv-2.7 ${VIRTUALENV}
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
     pushd yabiadmin
     ${VIRTUALENV}/bin/pip install ${PIP5_OPTS} -e .[dev,mysql,postgresql,tests]
     popd
@@ -370,7 +365,7 @@ installyabi() {
 
 
 startyabiadmin() {
-    if test -e yabiadmin-develop.pid; then
+    if is_running yabiadmin-develop.pid; then
         echo "pid file exists for yabiadmin"
         return
     fi
@@ -403,7 +398,7 @@ syncmigrate() {
 
 
 startceleryd() {
-    if test -e celeryd-develop.pid; then
+    if is_running celeryd-develop.pid; then
         echo "pid file exists for celeryd"
         return
     fi
@@ -464,6 +459,9 @@ startyabi() {
     esac
 }
 
+is_running() {
+    test -e $1 && test -x /proc/$(cat $1)
+}
 
 yabistatus() {
     set +e
@@ -545,10 +543,12 @@ test_postgresql)
     settings
     dbtest
     ;;
-lint)
+ci_lint)
+    make_virtualenv
     lint
     ;;
 jslint)
+    make_virtualenv
     jslint
     ;;
 dropdb)
@@ -573,6 +573,7 @@ status)
 install)
     settings
     stopyabi
+    make_virtualenv
     time installyabi
     ;;
 celeryevents)
@@ -617,6 +618,10 @@ ci_staging)
 ci_staging_tests)
     ci_ssh_agent
     ci_staging_tests
+    ;;
+ci_staging_selenium)
+    ci_ssh_agent
+    ci_staging_selenium
     ;;
 clean)
     settings

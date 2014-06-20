@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,9 +20,9 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 from django.utils.encoding import smart_str
+from django.utils import simplejson as json
+from django.http import HttpResponse
 
 
 def cache_keyname(key):
@@ -32,3 +30,17 @@ def cache_keyname(key):
     # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
     # memcache also doesn't like spaces
     return smart_str(key).replace(' ', '_').encode('string_escape')
+
+
+def json_response(data):
+    return HttpResponse(json.dumps({
+        'status': 'success',
+        'data': data,
+    }))
+
+
+def json_error_response(message):
+    return HttpResponse(json.dumps({
+        'status': 'error',
+        'message': message,
+    }))

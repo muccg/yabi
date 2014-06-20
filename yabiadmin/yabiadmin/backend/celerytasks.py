@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from functools import wraps
@@ -34,16 +30,15 @@ from functools import partial
 from celery import chain
 from celery.utils.log import get_task_logger
 from six.moves import filter
-from yabiadmin.backend.exceptions import RetryException, RetryPollingException, JobNotFoundException
+from yabiadmin.backend.exceptions import RetryPollingException, JobNotFoundException
 from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_COMPLETE, STATUS_EXEC, STATUS_STAGEOUT, STATUS_STAGEIN, STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-from yabiadmin.yabiengine.models import Workflow, Job, Task, Syslog
+from yabiadmin.yabiengine.models import Job, Task, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, create_logger, YabiDBHandler, YabiContextFilter
 import celery
-import os
 from django.conf import settings
 from django.db.models import Q
 from celery.signals import after_setup_task_logger
@@ -54,6 +49,7 @@ logger = get_task_logger(__name__)
 app = celery.Celery('yabiadmin.backend.celerytasks')
 
 app.config_from_object('django.conf:settings')
+
 
 # Celery uses its own logging setup. All our custom logging setup has to be
 # done in this callback
@@ -69,6 +65,7 @@ def setup_logging(*args, **kwargs):
     yabiadminLogger.propagate = 1
 
 after_setup_task_logger.connect(setup_logging)
+
 
 # Use this function instead of direct access, to allow testing
 def get_current_celery_task():
@@ -249,15 +246,27 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
-def retry_current_celery_task(original_function_name, task_id, exc, countdown):
+def retry_current_celery_task(original_function_name, task_id, exc, countdown, polling_task=False):
     task_logger = create_task_logger(logger, task_id)
     task_logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
     try:
-        get_current_celery_task().retry(exc=exc, countdown=countdown)
+        current_task = get_current_celery_task()
+        current_task.retry(exc=exc, countdown=countdown)
     except celery.exceptions.RetryTaskError:
         # This is normal operation, Celery is signaling to the Worker
         # that this task should be retried by throwing an RetryTaskError
         # Just re-raise it
+        try:
+            if not polling_task:
+                task = Task.objects.get(pk=task_id)
+                task.retry_count = current_task.request.retries + 1
+                logger.debug("Retry is: %s", current_task.request.retries)
+                task.save()
+        except Exception:
+            # Never fail on saving this
+            logger.exception("Failed on saving retry_count for task %d", task_id)
+            transaction.rollback()
+
         raise
     except Exception as ex:
         if ex is exc:
@@ -285,7 +294,7 @@ def retry_on_error(original_function):
         except RetryPollingException as exc:
             # constant for polling
             countdown = 30
-            retry_celery_task(exc, countdown)
+            retry_celery_task(exc, countdown, polling_task=True)
 
         except Exception as exc:
             task_logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
@@ -508,9 +517,7 @@ def delete_all_syslog_messages(workflow_id):
     task_ids = [t.pk for t in Task.objects.filter(job__workflow__pk=workflow_id)]
 
     Syslog.objects.filter(
-            Q(table_name='workflow') & Q(table_id=workflow_id)  |
-            Q(table_name='job')      & Q(table_id__in=job_ids)  |
-            Q(table_name='task')     & Q(table_id__in=task_ids)
+        Q(table_name='workflow') & Q(table_id=workflow_id) |
+        Q(table_name='job') & Q(table_id__in=job_ids) |
+        Q(table_name='task') & Q(table_id__in=task_ids)
     ).delete()
-
-

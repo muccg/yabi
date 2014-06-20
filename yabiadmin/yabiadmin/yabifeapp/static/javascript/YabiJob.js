@@ -226,6 +226,9 @@ YabiJob.prototype.checkValid = function(propagate) {
   if (propagate) {
     this.propagateFiles();
   }
+  if (this.valid) {
+    this.valid = this.payload.tool.enabled;
+  }
 };
 
 
@@ -266,6 +269,9 @@ YabiJob.prototype.selectJob = function() {
   var child;
   var newEl = document.createElement('div');
   newEl.className = 'selectedJobContainer';
+  if (!Y.Lang.isUndefined(this.payload.tool) && !this.payload.tool.enabled) {
+      newEl.className += (' disabled');
+  }
 
   var count = this.jobEl.childNodes.length;
   for (var i = 0; i < count; i++) {
@@ -311,6 +317,9 @@ YabiJob.prototype.deselectJob = function() {
   var child;
   var newEl = document.createElement('div');
   newEl.className = 'jobContainer';
+  if (!Y.Lang.isUndefined(this.payload.tool) && !this.payload.tool.enabled) {
+      newEl.className += (' disabled');
+  }
 
   var count = this.jobEl.childNodes.length;
   for (var i = 0; i < count; i++) {
@@ -563,7 +572,8 @@ YabiJob.prototype.renderJobStatusResponse = function(obj) {
  *
  * render progress bar/badges
  */
-YabiJob.prototype.renderProgress = function(status, is_retrying, completed, total, message) {
+YabiJob.prototype.renderProgress = function(status, is_retrying, completed,
+                                            total, message) {
   if (Y.Lang.isUndefined(status)) {
     return;
   }
@@ -651,11 +661,11 @@ YabiJob.prototype.renderProgress = function(status, is_retrying, completed, tota
  */
 YabiJob.prototype.renderStatusBadge = function(status, is_retrying) {
   if (is_retrying) {
-      status = "retrying";
+      status = 'retrying';
   }
   this.badgeEl = document.createElement('img');
   this.badgeEl.className = 'badge';
-  this.badgeEl.title = "Job " + Yabi.util.Status.getStatusDescription(status);
+  this.badgeEl.title = 'Job ' + Yabi.util.Status.getStatusDescription(status);
   this.badgeEl.src = imagesURL + Yabi.util.Status.getStatusImage(status);
   this.jobEl.appendChild(this.badgeEl);
 };
@@ -673,6 +683,11 @@ YabiJob.prototype.solidify = function(obj) {
 
   Yabi.util.text(this.titleEl, this.payload.tool.display_name);
   this.displayName = this.payload.tool.display_name;
+  if (!this.payload.tool.enabled) {
+      this.displayName = 'Disabled Tool: ' + this.displayName;
+      this.valid = false;
+      this.jobEl.className = this.jobEl.className + ' disabled';
+  }
 
   var label = document.createElement('label');
   Yabi.util.text(label, 'accepts: ');

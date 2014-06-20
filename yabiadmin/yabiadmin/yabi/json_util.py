@@ -1,5 +1,3 @@
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -22,35 +20,31 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 import datetime
 
 import logging
 logger = logging.getLogger(__name__)
 
+
 def makeJsonFriendly(data):
-  '''Will traverse a dict or list compound data struct and
-     make any datetime.datetime fields json friendly
-  '''
+    '''Will traverse a dict or list compound data struct and
+    make any datetime.datetime fields json friendly
+    '''
 
-  try:
-      if isinstance(data, list):
-          for e in data:
-              e = makeJsonFriendly(e)
+    try:
+        if isinstance(data, list):
+            for e in data:
+                e = makeJsonFriendly(e)
 
-      elif isinstance(data, dict):
-          for key in data.keys():
-              data[key] = makeJsonFriendly(data[key])
+        elif isinstance(data, dict):
+            for key in data.keys():
+                data[key] = makeJsonFriendly(data[key])
 
-      elif isinstance(data, datetime.datetime):
-          return str(data)
+        elif isinstance(data, datetime.datetime):
+            return str(data)
 
-      else:
-          pass # do nothing
+    except Exception as e:
+        logger.critical("makeJsonFriendly encountered an error: %s" % str(e))
+        raise
 
-  except Exception as e:
-      logger.critical("makeJsonFriendly encountered an error: %s" % str(e))
-      raise
-
-  return data
+    return data

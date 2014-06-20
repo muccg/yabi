@@ -3,8 +3,6 @@ import time
 import json
 import os
 import sys
-import uuid
-import urlparse
 import re
 import itertools
 from functools import partial
@@ -16,30 +14,32 @@ from six.moves import filter
 from six.moves import map
 import six
 
-STDOUT_PATTERNS = [ r'STDOUT.txt$', 
-        r""" # examples: Y123.o4567, Y123.o456.1, Y123.o456-2
-        Y\d+        # Y for YABI, followed by some digits (task pk)
-        \.          # separated by a dot ...
-        o           # from o for stdout
-        \d+         # followed by some digits (remote id)
-        ([-.]\d+)?  # and optionally the job array index (separated by - or .)
-        $"""
-        ]   
+STDOUT_PATTERNS = [
+    r'STDOUT.txt$',
+    r""" # examples: Y123.o4567, Y123.o456.1, Y123.o456-2
+    Y\d+        # Y for YABI, followed by some digits (task pk)
+    \.          # separated by a dot ...
+    o           # from o for stdout
+    \d+         # followed by some digits (remote id)
+    ([-.]\d+)?  # and optionally the job array index (separated by - or .)
+    $"""
+]
 
-STDERR_PATTERNS = [ r'STDERR.txt$', 
-        r""" # examples: Y123.e4567 Y123.e456-1
-        Y\d+
-        \.
-        e           # The only difference is this: e for stderr
-        \d+
-        ([-.]\d+)?
-        $"""
-        ]   
+STDERR_PATTERNS = [
+    r'STDERR.txt$',
+    r""" # examples: Y123.e4567 Y123.e456-1
+    Y\d+
+    \.
+    e           # The only difference is this: e for stderr
+    \d+
+    ([-.]\d+)?
+    $"""
+]
 
 
 def filename_matches(patterns, filename):
     return any([re.match(p, filename, flags=re.IGNORECASE | re.VERBOSE)
-                    for p in patterns])
+               for p in patterns])
 is_stdout_file = partial(filename_matches, STDOUT_PATTERNS)
 is_stderr_file = partial(filename_matches, STDERR_PATTERNS)
 
@@ -57,10 +57,11 @@ class Action(object):
         return self.process_response(self.decode_json(json_response))
 
     def decode_json(self, resp):
-        return json.loads(resp)        
+        return json.loads(resp)
 
     def stagein_required(self):
         return False
+
 
 class FileDownload(object):
     '''Mix into an Action that requires downloading files'''
@@ -78,11 +79,12 @@ class FileDownload(object):
         except errors.CommunicationError as e:
             if e.status_code == 404:
                 if ignore_404:
-                   return
+                    return
                 else:
-                   raise errors.RemoteError("File %s doesn't exist." % uri)
+                    raise errors.RemoteError("File %s doesn't exist." % uri)
             else:
                 raise
+
 
 class RemoteAction(Action):
     def __init__(self, *args, **kwargs):
@@ -91,7 +93,7 @@ class RemoteAction(Action):
 
     def process(self, args):
         params = {'name': self.name}
-        for i,arg in enumerate(args):
+        for i, arg in enumerate(args):
             params['arg' + str(i)] = arg
 
         resp, json_response = self.yabi.post(self.url, params)
@@ -104,6 +106,7 @@ class RemoteAction(Action):
 
     def stagein_required(self):
         return True
+
 
 class Attach(Action, FileDownload):
     def __init__(self, *args, **kwargs):
@@ -147,7 +150,7 @@ class Attach(Action, FileDownload):
         stageout_dir_uri = resp['json']['jobs'][-1]['stageout']
         if not stageout_dir_uri.endswith('/'):
             stageout_dir_uri += '/'
- 
+
         dirs, stdout_files, stderr_files, other_files = self.get_listing(stageout_dir_uri)
         self.download_stageout_files(stageout_dir_uri, dirs, stdout_files, stderr_files, other_files)
 
@@ -167,7 +170,7 @@ class Attach(Action, FileDownload):
         base_path = rest.path
         dirs = map(lambda x: x[len(base_path):], response)
         dirs = filter(lambda x: x != '', dirs)
-        files = [[os.path.join(d[len(base_path):], f[0]) for f in listing['files']] for d,listing in response.items()]
+        files = [[os.path.join(d[len(base_path):], f[0]) for f in listing['files']] for d, listing in response.items()]
 
         # flatten the file list
         files = [f for f in itertools.chain.from_iterable(files)]
@@ -184,20 +187,19 @@ class Attach(Action, FileDownload):
 
         def download_files(files):
             for f in files:
-                self.download_file(uri+f, f)
+                self.download_file(uri + f, f)
 
         create_dirs(dirs)
         if (len(stdout_files) == 1 and (len(stderr_files) == 1)):
             # if there is just one stdout and one stderr file we print them to
             # stdout and stderr
             download_files(other_files)
-            self.download_file(uri+stdout_files[0], sys.stdout)
-            self.download_file(uri+stderr_files[0], sys.stderr)
+            self.download_file(uri + stdout_files[0], sys.stdout)
+            self.download_file(uri + stderr_files[0], sys.stderr)
         else:
             # if we have more than one stdout and stderr file we download them
             # (0 stdout and stderr also handled here)
             download_files(other_files + stdout_files + stderr_files)
-
 
 
 class ForegroundRemoteAction(object):
@@ -212,6 +214,7 @@ class ForegroundRemoteAction(object):
     def stagein_required(self):
         return self.action.stagein_required()
 
+
 class BackgroundRemoteAction(object):
     def __init__(self, *args, **kwargs):
         self.action = RemoteAction(*args, **kwargs)
@@ -222,6 +225,7 @@ class BackgroundRemoteAction(object):
 
     def stagein_required(self):
         return self.action.stagein_required()
+
 
 class Logout(Action):
     def __init__(self, *args, **kwargs):
@@ -238,6 +242,7 @@ class Logout(Action):
         else:
             print('Logout unsuccessful', file=sys.stderr)
             return False
+
 
 class Login(Action):
     def __init__(self, *args, **kwargs):
@@ -258,6 +263,7 @@ class Login(Action):
         else:
             print('Login unsuccessful', file=sys.stderr)
             return False
+
 
 class Ls(Action):
     def __init__(self, *args, **kwargs):
@@ -282,6 +288,7 @@ class Ls(Action):
         for f in files:
             print(f[0])
 
+
 class Jobs(Action):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
@@ -291,13 +298,14 @@ class Jobs(Action):
         if args and args[0]:
             start = args[0]
         else:
-            start = time.strftime('%Y-%m-%d') 
-        
+            start = time.strftime('%Y-%m-%d')
+
         return {'start': start}
 
     def process_response(self, response):
         for job in response:
             print('%7d  %s  %10s  %s' % (job['id'], job['created_on'], job['status'].upper(), job['name']))
+
 
 class Status(Action):
     def __init__(self, *args, **kwargs):
@@ -321,15 +329,14 @@ class Status(Action):
             print("=" * 80)
             for job in response['json']['jobs']:
                 tool_name = job['toolName']
-                if len(tool_name) > 50: 
+                if len(tool_name) > 50:
                     tool_name = tool_name[:47] + '...'
-                print("%4s %20s   %s" % (job['jobId'], job['status'], tool_name)) 
+                print("%4s %20s   %s" % (job['jobId'], job['status'], tool_name))
 
         except Exception as e:
             print("Unable to load job status: %s" % e)
 
 
-            
 class Cp(Action, FileDownload):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
@@ -353,6 +360,7 @@ class Cp(Action, FileDownload):
         else:
             params = {'src': src, 'dst': dst}
             self.yabi.get(self.url, params)
+
 
 class Rm(Action):
     def __init__(self, *args, **kwargs):
@@ -389,7 +397,8 @@ class Purge(Action):
             shutil.rmtree(what)
         if shutil.os.path.isfile(what):
             shutil.os.unlink(what)
-        
+
+
 class Submitworkflow(Action):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
@@ -400,13 +409,13 @@ class Submitworkflow(Action):
         json_file = args[0]
         with open(json_file) as f:
             wfjson = f.read()
-        resp, json_response = self.yabi.post(self.url, {'workflowjson':wfjson})
+        resp, json_response = self.yabi.post(self.url, {'workflowjson': wfjson})
         decoded_resp = self.decode_json(json_response)
-        if not decoded_resp['id']:
-            raise errors.RemoteError(decoded_resp.get('msg', 'Unknown error'))
-        wfid = decoded_resp['id']
+        if not decoded_resp['data']['workflow_id']:
+            raise errors.RemoteError(decoded_resp.get('message', 'Unknown error'))
+        wfid = decoded_resp['data']['workflow_id']
         print('Running your job on the server. Id: %s' % wfid)
-        return wfid 
+        return wfid
 
     def process(self, args):
         wfid = self.submit_json(args)
@@ -414,4 +423,3 @@ class Submitworkflow(Action):
 
     def stagein_required(self):
         return False
-

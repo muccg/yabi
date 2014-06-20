@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from django.db import models
 from yabiadmin.yabi.models import User, BackendCredential, Tool
@@ -139,7 +135,6 @@ class Workflow(models.Model, Editable, Status):
 
         return self.status
 
-
     def get_status_colour(self):
         return Status.COLOURS.get(self.status, 'grey')
 
@@ -158,6 +153,11 @@ class Workflow(models.Model, Editable, Status):
     @property
     def is_retrying(self):
         return any([j.is_retrying for j in self.job_set.all()])
+
+    @property
+    def highest_retry_count(self):
+        return max([0] + [t.retry_count for t in Task.objects.filter(job__workflow__pk=self.pk)])
+
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)
@@ -189,9 +189,9 @@ class Job(models.Model, Editable, Status):
     command_template = models.TextField(null=True, blank=True)               # store here the serialised version of the template
 
     # TODO: delete these columns from the DB table
-    #batch_files = models.TextField(blank=True, null=True)
-    #parameter_files = models.TextField(blank=True, null=True)
-    #other_files = models.TextField(blank=True, null=True)
+    # batch_files = models.TextField(blank=True, null=True)
+    # parameter_files = models.TextField(blank=True, null=True)
+    # other_files = models.TextField(blank=True, null=True)
 
     stageout = models.CharField(max_length=1000, null=True)
     preferred_stagein_method = models.CharField(max_length=5, null=False, choices=STAGING_COPY_CHOICES)
@@ -265,6 +265,7 @@ class Task(models.Model, Editable, Status):
     command = models.TextField(blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
     is_retrying = models.BooleanField(default=False)
+    retry_count = models.IntegerField(default=0)
     task_num = models.IntegerField(null=True, blank=True)
 
     # new status boolean like fields:

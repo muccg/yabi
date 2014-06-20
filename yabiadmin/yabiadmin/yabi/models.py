@@ -1,6 +1,4 @@
-#-*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
+# -*- coding: utf-8 -*-
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import traceback
 from django.db import models
@@ -38,19 +34,14 @@ from urlparse import urlunparse
 from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, \
     encrypted_block_is_legacy, any_unencrypted, any_annotated_block, DecryptException
 from yabiadmin.utils import cache_keyname
+from yabiadmin import ldaputils
+
 from collections import namedtuple
 
 import logging
 from functools import reduce
 import six
 logger = logging.getLogger(__name__)
-
-try:
-    from yabiadmin import ldaputils
-    LDAP_IN_USE = True
-except ImportError as e:
-    LDAP_IN_USE = False
-    logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
 class DecryptedCredentialNotAvailable(Exception):
@@ -198,9 +189,10 @@ class Tool(Base):
             'job_type': self.job_type,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
-            'parameter_list': list(self.toolparameter_set.order_by('fe_rank', 'id').values("id", "rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
-                                                                                "switch", "switch_use__display_text", "switch_use__formatstring", "switch_use__description",
-                                                                                "possible_values", "default_value", "helptext", "batch_bundle_files", "use_output_filename__switch"))
+            'parameter_list': list(self.toolparameter_set.order_by('fe_rank', 'id').values(
+                "id", "rank", "fe_rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
+                "switch", "switch_use__display_text", "switch_use__formatstring", "switch_use__description",
+                "possible_values", "default_value", "helptext", "batch_bundle_files", "use_output_filename__switch"))
         }
 
         for p in tool_dict["parameter_list"]:
@@ -334,11 +326,11 @@ class ToolGroup(Base):
     def tools_str(self):
         tools_by_toolset = {}
         for tg in self.toolgrouping_set.all():
-            tools = tools_by_toolset.setdefault(tg.tool_set, [])
-            tools.append(tg.tool)
+            tools_in_tset = tools_by_toolset.setdefault(tg.tool_set, [])
+            tools_in_tset.append(tg.tool)
         return "<br/>".join([
-            "%s: (%s)" % (set, ",".join(str(t) for t in tools))
-            for (set, tools) in six.iteritems(tools_by_toolset)])
+            "%s: (%s)" % (tset, ",".join(str(t) for t in tools))
+            for (tset, tools) in six.iteritems(tools_by_toolset)])
 
     tools_str.short_description = 'Tools in toolgroup, by toolset'
     tools_str.allow_tags = True
@@ -594,6 +586,7 @@ class Credential(Base):
         return access
 
     CredentialData = namedtuple("CredentialData", "username, password, key")
+
     def get_decrypted(self):
         decrypted = self.get_credential_access().get()
         return self.CredentialData(self.username, decrypted['password'], decrypted['key'])
@@ -611,6 +604,7 @@ class Credential(Base):
         from ..backend import BaseBackend
         cls = BaseBackend.get_backend_cls_for_scheme(scheme)
         return getattr(cls, "backend_auth", {}).get("class", "") if cls else ""
+
 
 class Backend(Base):
     def __init__(self, *args, **kwargs):
@@ -653,6 +647,7 @@ class Backend(Base):
     @models.permalink
     def get_absolute_url(self):
         return ('backend_view', (), {'backend_id': str(self.id)})
+
 
 class HostKey(Base):
     hostname = models.CharField(max_length=512)
@@ -829,9 +824,9 @@ class YabiCache(models.Model):
     expires = models.DateTimeField(db_index=True)
 
 
-##
-## Django Signals
-##
+#
+# Django Signals
+#
 
 
 def signal_credential_pre_save(sender, instance, **kwargs):

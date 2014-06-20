@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-### BEGIN COPYRIGHT ###
-#
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -23,8 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-### END COPYRIGHT ###
 
 import os
 from django.conf.urls.defaults import *
@@ -44,7 +40,7 @@ from yabiadmin.yabi.models import Credential
 from yabiadmin.decorators import profile_required
 from yabiadmin.crypto_utils import DecryptException
 from yabiadmin.yabi.ws_frontend_views import ls, get
-from .utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
+from yabiadmin.yabifeapp.utils import preview_key, logout, using_dev_settings  # NOQA
 
 import logging
 logger = logging.getLogger(__name__)
@@ -124,12 +120,12 @@ def login(request):
 
     def render_form(form, error='Invalid login credentials'):
         return render_to_response('fe/login.html', {
-                 'request': request,
-                 'h': webhelpers,
-                 'base_site_url': webhelpers.url("").rstrip("/"),
-                 'form': form,
-                 'error': error,
-                 'show_dev_warning': show_dev_warning})
+            'request': request,
+            'h': webhelpers,
+            'base_site_url': webhelpers.url("").rstrip("/"),
+            'form': form,
+            'error': error,
+            'show_dev_warning': show_dev_warning})
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -154,7 +150,7 @@ def login(request):
                     for cred in creds:
                         try:
                             cred.on_login(username, password)
-                        except DecryptException as e:
+                        except DecryptException:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
                     next_page = request.GET.get('next', webhelpers.url("/"))
                     return HttpResponseRedirect(next_page)

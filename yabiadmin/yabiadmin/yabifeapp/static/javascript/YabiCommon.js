@@ -105,66 +105,23 @@ Yabi.util.text = function(e, text) {
 };
 
 Yabi.util.doesGlobMatch = function(name, glob) {
-  var matcher = Yabi.util.Glob.create(glob);
-  return matcher.doesMatch(name);
+  var matcher = globToRegexp(glob, {extended: true});
+  return matcher.test(name);
 };
-
-Yabi.util.Glob = {};
-Yabi.util.Glob.create = function(glob) {
-  var that = {};
-  that.ESCAPE_REGEX = /[-[\]{}()*+?.,\\^$|#\s]/g;
-  that.regex = null;
-
-  that.getRegex = function() {
-    if (that.regex === null) {
-      that.regex = that.convertGlobToRegex(glob);
-    }
-    return that.regex;
-  };
-
-  that.doesMatch = function(name) {
-    var regex = that.convertGlobToRegex(glob);
-    return regex.test(name);
-  };
-
-  that.convertGlobToRegex = function(glob) {
-    var regex = '';
-    var c;
-    var i = 0;
-
-    while (i < glob.length) {
-      c = glob.charAt(i);
-      i += 1;
-      if (c === '*') {
-        regex += '.*';
-      } else {
-        regex += that.escapeCharacter(c);
-      }
-    }
-    return new RegExp(regex);
-  };
-
-  that.escapeCharacter = function(c) {
-    return c.replace(that.ESCAPE_REGEX, '\\$&');
-  };
-
-  return that;
-};
-
 
 Yabi.util.Status = {};
 Yabi.util.Status.getStatusImage = function(status) {
-  if (status === "complete") return "ok.png";
-  if (status === "error") return "error.png";
-  if (status === "aborted") return "aborted.png";
-  if (status === "retrying") return "blocked.png";
-  return "pending.png";
+  if (status === 'complete') return 'ok.png';
+  if (status === 'error') return 'error.png';
+  if (status === 'aborted') return 'aborted.png';
+  if (status === 'retrying') return 'blocked.png';
+  return 'pending.png';
 };
 
 Yabi.util.Status.getStatusDescription = function(status) {
-  if (status === "complete") return "completed";
-  if (status === "error") return "errored";
-  if (status === "retrying") return "errored, Yabi is retrying to run it";
+  if (status === 'complete') return 'completed';
+  if (status === 'error') return 'errored';
+  if (status === 'retrying') return 'errored, Yabi is retrying to run it';
   return status;
 };
 
