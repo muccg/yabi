@@ -224,7 +224,7 @@ MANAGERS = ADMINS
 # code used for additional user related operations
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
-if env.get("auth_ldap_server", False):
+if env.get("auth_ldap_server", ""):
     AUTHENTICATION_BACKENDS = [
         'ccg_django_utils.auth.backends.LDAPBackend',
         'ccg_django_utils.auth.backends.NoAuthModelBackend',
@@ -247,7 +247,7 @@ LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
-if env.get("memcache", False):
+if env.get("memcache", ""):
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
