@@ -7,6 +7,7 @@
 function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
   this.job = job;
   this.payload = obj;
+  this.isSensitiveData = false;
   this.isInputFile = false;
   this.isOutputFile = false;
   this.allowsBatching = allowsBatching;
@@ -51,6 +52,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
   if (this.payload.output_file === true) {
     this.isOutputFile = true;
   }
+  this.isSensitiveData = this.payload.sensitive_data;
 
   //default to input
   this.renderMode = 'input';
@@ -82,7 +84,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     for (index in this.defaultValue) {
       if (!Y.Lang.isObject(this.defaultValue[index])) {
         this.valueEl.appendChild(document.createTextNode(
-            this.defaultValue[index]));
+            this.isSensitiveData ? '***' : this.defaultValue[index]));
       } else {
         //rendering differently per file type
         if (this.defaultValue[index].type == 'job') {
@@ -203,6 +205,9 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     this.inputEl = this.renderSelect(true);
   } else if (this.renderMode == 'input') {
     this.inputEl = document.createElement('input');
+    if (this.isSensitiveData) {
+      this.inputEl.type = 'password';
+    }
     this.inputEl.value = this.defaultValue;
     this.inputEl.style.width = '180px';
   } else if (this.renderMode == 'checkbox') {

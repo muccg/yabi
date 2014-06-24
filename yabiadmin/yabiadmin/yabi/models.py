@@ -190,7 +190,7 @@ class Tool(Base):
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
             'parameter_list': list(self.toolparameter_set.order_by('fe_rank', 'id').values(
-                "id", "rank", "fe_rank", "mandatory", "common", "hidden", "file_assignment", "output_file",
+                "id", "rank", "fe_rank", "mandatory", "common", "sensitive_data", "hidden", "file_assignment", "output_file",
                 "switch", "switch_use__display_text", "switch_use__formatstring", "switch_use__description",
                 "possible_values", "default_value", "helptext", "batch_bundle_files", "use_output_filename__switch"))
         }
@@ -255,6 +255,7 @@ class ToolParameter(Base):
     fe_rank = models.IntegerField(null=True, blank=True, verbose_name="Frontend rank")
     mandatory = models.BooleanField(blank=True, default=False)
     common = models.BooleanField(blank=True, default=False, verbose_name="Commonly used")
+    sensitive_data = models.BooleanField(blank=True, default=False)
     hidden = models.BooleanField(blank=True, default=False)
     output_file = models.BooleanField(blank=True, default=False)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
@@ -275,6 +276,7 @@ class ToolParameter(Base):
     fe_rank.help_text = "The order in which the switches should appear in the frontend. Leave blank if order is unimportant."
     mandatory.help_text = "Select if the switch is required as input."
     common.help_text = "Commonly used parameters will not hidden by default in the frontend."
+    sensitive_data.help_text = "Don't show the value of this field in clear text in the frontend."
     hidden.help_text = "Select if the switch should be hidden from users in the frontend."
     output_file.help_text = "Select if the switch is specifying an output file."
     accepted_filetypes.help_text = "The extensions of accepted filetypes for this switch."
