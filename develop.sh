@@ -32,7 +32,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_jslint|ci_lint) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_lint) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -195,6 +195,15 @@ jslint() {
         ${VIRTUALENV}/bin/gjslint --nojsdoc $JS
     done
 }
+
+# lint both Python and JS on CI server
+ci_lint() {
+    make_virtualenv
+    ${VIRTUALENV}/bin/pip install 'closure-linter==2.3.13' 'flake8>=2.0,<2.1'
+    lint
+    jslint
+}
+
 
 
 do_nosetests() {
@@ -548,14 +557,7 @@ jslint)
     jslint
     ;;
 ci_lint)
-    make_virtualenv
-    ${VIRTUALENV}/bin/pip install flake8
-    lint
-    ;;
-ci_jslint)
-    make_virtualenv
-    ${VIRTUALENV}/bin/pip install closure-linter==2.3.13
-    jslint
+    ci_lint
     ;;
 dropdb)
     settings
