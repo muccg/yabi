@@ -767,39 +767,23 @@ YabiJob.prototype.solidify = function(obj) {
   }
 
   //generate parameter objects
-  var params = this.payload.tool.parameter_list; //array
+  var params = this.payload.tool.parameter_list;
+  if (!Y.Lang.isArray(params)) {
+    params = [params];
+  }
 
   var allShown = true;
-  if (Y.Lang.isArray(params)) {
-    for (paramIndex in params) {
-      var preloadValue = this.preloadValueFor(params[paramIndex]['switch']);
+  for (paramIndex in params) {
+    var preloadValue = this.preloadValueFor(params[paramIndex]['switch']);
 
-      if (this.editable || preloadValue !== null) {
-        paramObj = new YabiJobParam(this, params[paramIndex],
+    if (this.editable || preloadValue !== null) {
+      paramObj = new YabiJobParam(this, params[paramIndex],
             (params[paramIndex]['switch'] == this.batchParameter),
             this.editable, preloadValue);
 
-        this.params.push(paramObj);
-
-        if (!params[paramIndex]['hidden']) {
-          this.optionsEl.appendChild(paramObj.containerEl);
-        }
-
-        if (!(paramObj.payload.mandatory || paramObj.payload.common)) {
-          allShown = false;
-        }
-      }
-    }
-  } else {
-    var preloadValue = this.preloadValueFor(params['switch']);
-
-    if (this.editable || preloadValue !== null) {
-      paramObj = new YabiJobParam(this, params,
-          (params['switch'] == this.batchParameter),
-          this.editable, this.preloadValueFor(params['switch']));
       this.params.push(paramObj);
 
-      if (!params['hidden']) {
+      if (!params[paramIndex]['hidden']) {
         this.optionsEl.appendChild(paramObj.containerEl);
       }
 

@@ -76,7 +76,10 @@ dependency_links = [
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-introspect-0.1.2.tar.gz',
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.3.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
-    'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+
+    #'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+    # Temporary fix
+    'http://repo.ccgapps.com.au/djamboloader-0.1.2.tar.gz',
 ]
 
 importlib_available = True
@@ -90,7 +93,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='7.2.5',
+      version='7.2.6',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',

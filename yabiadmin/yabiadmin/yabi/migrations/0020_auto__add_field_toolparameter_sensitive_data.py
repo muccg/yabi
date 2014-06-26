@@ -1,44 +1,23 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
-from yabiadmin.yabi.models import CredentialAccess
 
-class Migration(DataMigration):
+
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        """
-        For all credentials which are associated with S3, move
-          key (aws_secret_access_key) -> password
-          cert (aws_access_key_id)    -> key
-        """
-        users = []
-        for cred in orm['yabi.Credential'].objects.filter(backends__scheme="s3"):
-            if all(scheme == "s3" for scheme in cred.backends.values_list("scheme", flat=True)):
-                cred.password = cred.key
-                cred.key = cred.cert
-                cred.cert = ""
-                cred.save()
-                CredentialAccess(cred).clear_cache()
-                users.append(cred.user.id)
+        # Adding field 'ToolParameter.sensitive_data'
+        db.add_column(u'yabi_toolparameter', 'sensitive_data',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
 
-        # fixme: remove login session of users who have these
-        # credentials, or remove all sessions.
 
     def backwards(self, orm):
-        """
-        For all credentials which are associated with S3, move
-          key (aws_access_key_id)    -> cert
-          password (aws_secret_access_key) -> key
-        """
-        for cred in orm['yabi.Credential'].objects.filter(backends__scheme="s3"):
-            if all(scheme == "s3" for scheme in cred.backends.values_list("scheme", flat=True)):
-                cred.cert = cred.key
-                cred.key = cred.password
-                cred.password = ""
-                cred.save()
-                CredentialAccess(cred).clear_cache()
+        # Deleting field 'ToolParameter.sensitive_data'
+        db.delete_column(u'yabi_toolparameter', 'sensitive_data')
+
 
     models = {
         u'auth.group': {
@@ -237,8 +216,8 @@ class Migration(DataMigration):
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'toolparameter_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'default_value': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'fe_rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'extension_param': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.FileExtension']", 'null': 'True', 'blank': 'True'}),
+            'fe_rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'file_assignment': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
             'helptext': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'hidden': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -249,6 +228,7 @@ class Migration(DataMigration):
             'output_file': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'possible_values': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'sensitive_data': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'switch': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'switch_use': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ParameterSwitchUse']"}),
             'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Tool']"}),
@@ -285,4 +265,3 @@ class Migration(DataMigration):
     }
 
     complete_apps = ['yabi']
-    symmetrical = True

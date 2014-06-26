@@ -32,7 +32,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|ci_lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_jslint|ci_lint) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -183,14 +183,12 @@ ci_authorized_keys() {
 
 # lint using flake8
 lint() {
-    ${VIRTUALENV}/bin/pip install flake8
-    ${VIRTUALENV}/bin/flake8 --ignore=E501 yabiadmin/yabiadmin yabish/yabishell --count || true
+    ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count || true
 }
 
 
 # lint js, assumes closure compiler
 jslint() {
-    ${VIRTUALENV}/bin/pip install closure-linter==2.3.13
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
@@ -543,12 +541,20 @@ test_postgresql)
     settings
     dbtest
     ;;
-ci_lint)
-    make_virtualenv
+lint)
     lint
     ;;
 jslint)
+    jslint
+    ;;
+ci_lint)
     make_virtualenv
+    ${VIRTUALENV}/bin/pip install flake8
+    lint
+    ;;
+ci_jslint)
+    make_virtualenv
+    ${VIRTUALENV}/bin/pip install closure-linter==2.3.13
     jslint
     ;;
 dropdb)
