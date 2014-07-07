@@ -93,4 +93,11 @@ node default {
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }
+
+  logrotate::rule { 'celery':
+    path         => '/var/log/celery/*log',
+    rotate       => 7,
+    rotate_every => 'hour',
+    compress     => true,
+  }
 }
