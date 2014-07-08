@@ -70,4 +70,17 @@ node default {
   #    Ccgdatabase::Postgresql[$django_config['dbname']],
   #    Package['yabi-admin'] ]
   #}
+
+  logrotate::rule { 'celery':
+    path          => '/var/log/celery/*log',
+    rotate        => 7,
+    rotate_every  => 'day',
+    compress      => true,
+    delaycompress => true,
+    ifempty       => true,
+    create        => true,  
+    create_mode   => '0664',  
+    create_owner  => 'celery',  
+    create_group  => 'celery',
+  }
 }
