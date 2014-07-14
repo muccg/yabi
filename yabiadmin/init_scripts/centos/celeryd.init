@@ -224,7 +224,11 @@ _get_pids() {
 
 
 _chuid () {
-    su "$CELERYD_USER" -c "$CELERYD_MULTI $*"
+    niceit=""
+    if [ ! -z "$CELERY_NICENESS" ]; then
+        niceit="nice -n ${CELERY_NICENESS} "
+    fi
+    su "$CELERYD_USER" -c "${niceit}$CELERYD_MULTI $*"
 }
 
 
