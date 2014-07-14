@@ -222,15 +222,18 @@ _get_pids() {
     done
 }
 
-
-_chuid () {
+_nice_celeryd_multi () {
     niceit=""
     if [ ! -z "$CELERY_NICENESS" ]; then
         niceit="nice -n ${CELERY_NICENESS} "
     fi
-    su "$CELERYD_USER" -c "${niceit}$CELERYD_MULTI $*"
+    NICED_CELERYD_MULTI="${niceit}$CELERYD_MULTI"
 }
+_nice_celeryd_multi
 
+_chuid () {
+    su "$CELERYD_USER" -c "$NICED_CELERYD_MULTI $*"
+}
 
 start_workers () {
     if [ ! -z "$CELERYD_ULIMIT" ]; then
