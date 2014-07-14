@@ -37,10 +37,9 @@ import shutil
 import threading
 import Queue
 from six.moves import map
+
+
 logger = logging.getLogger(__name__)
-
-
-CP_PATH = '/bin/cp'
 
 
 def stream_watcher(identifier, stream):
