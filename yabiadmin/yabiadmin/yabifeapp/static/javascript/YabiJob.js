@@ -467,20 +467,13 @@ YabiJob.prototype.renderProgress = function(status, is_retrying, completed,
     this.renderStatusBadge(status, is_retrying);
   }
 
-  var addErrorMsg = function(text) {
-    if (!this.errorNode) {
-      this.errorNode = Y.Node.create('<div class="jobErrorMsg"/>')
-        .set("text", text).appendTo(this.jobNode);
-    }
-  };
-
   //if error
   if (status == 'error') {
-    addErrorMsg('error running job' + (message ? '\n' + message : ''));
+    this.addErrorMsg('error running job' + (message ? '\n' + message : ''));
   }
 
   if (status == 'aborted') {
-    addErrorMsg('job aborted');
+    this.addErrorMsg('job aborted');
   }
 
   if (Y.Lang.isUndefined(completed) || Y.Lang.isUndefined(total)) {
@@ -504,6 +497,18 @@ YabiJob.prototype.renderProgress = function(status, is_retrying, completed,
 
   //and hide the progress bar if the progress is 100%
   this.progressContainer.toggleView(this.progress < 100);
+};
+
+/**
+ * addErrorMsg
+ *
+ * Puts red text on the job.
+ */
+YabiJob.prototype.addErrorMsg = function(text) {
+  if (!this.errorNode) {
+    this.errorNode = Y.Node.create('<div class="jobErrorMsg"/>')
+      .set("text", text).appendTo(this.jobNode);
+  }
 };
 
 
