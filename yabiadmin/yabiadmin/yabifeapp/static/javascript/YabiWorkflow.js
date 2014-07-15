@@ -675,24 +675,12 @@ YUI().use(
        * verify validity of all jobs before proceeding
        */
       YabiWorkflow.prototype.isValid = function() {
-        if (this.jobs.length < 1) {
-          return false;
-        }
+        var nameValid = this.getName() !== '' && this.getName().indexOf('?') === -1;
 
-        if (this.getName() === '' || this.getName().indexOf('?') != -1) {
-          this.nameEl.className = 'invalidWorkflowName';
-          return false;
-        } else {
-          this.nameEl.className = 'workflowName';
-        }
+        this.nameEl.className = nameValid ? 'workflowName' : 'invalidWorkflowName';
 
-        for (var index in this.jobs) {
-          if (!this.jobs[index].valid) {
-            return false;
-          }
-        }
-
-        return true;
+        return this.jobs.length > 0 &&
+          nameValid && _.every(this.jobs, "valid");
       };
 
 
