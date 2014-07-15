@@ -41,7 +41,7 @@ from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-from yabiadmin.yabiengine.models import WorkflowTag
+from yabiadmin.yabiengine.models import WorkflowTag, SavedWorkflow
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.utils import cache_keyname, json_error_response, json_response
@@ -376,6 +376,29 @@ def munge_name(workflow_set, workflow_name):
     next_available_name = find_first(unused_name, generate_unique_names)
 
     return next_available_name
+
+
+@authentication_required
+def save_workflow(request):
+    try:
+        workflow_dict = json.loads(request.POST.get("workflowjson", ""))
+    except ValueError:
+        return json_error_response("Invalid workflow JSON")
+
+    user = User.objects.get(name=request.user.username)
+
+    # Check if the user already has a workflow with the same name, and if so,
+    # munge the name appropriately.
+    workflow_dict["name"] = munge_name(user.savedworkflow_set,
+                                       workflow_dict["name"])
+    workflow_json = json.dumps(workflow_dict)
+    workflow = SavedWorkflow.objects.create(
+        name=workflow_dict["name"],
+        creator=user, created=datetime.now(),
+        original_json=workflow_json
+    )
+
+    return json_response({"saved_workflow_id": workflow.pk})
 
 
 @authentication_required

@@ -71,6 +71,19 @@ class Editable(object):
     edit_link.allow_tags = True
 
 
+class SavedWorkflow(models.Model, Editable):
+    name = models.CharField(max_length=255)
+    creator = models.ForeignKey(User)
+    created = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
+    original_json = models.TextField()
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        get_latest_by = "created"
+
+
 class Workflow(models.Model, Editable, Status):
     name = models.CharField(max_length=255)
     user = models.ForeignKey(User)
