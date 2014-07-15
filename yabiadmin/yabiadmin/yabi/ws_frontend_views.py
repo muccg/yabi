@@ -29,6 +29,7 @@ import itertools
 from datetime import datetime, timedelta
 from urllib import unquote
 from urlparse import urlparse, urlunparse
+from collections import OrderedDict
 
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
@@ -79,58 +80,37 @@ def tool(request, toolname):
 @cache_page(300)
 @vary_on_cookie
 def menu(request):
-    username = request.user.username
-    logger.debug('Username: ' + username)
+    qs = ToolGrouping.objects.filter(tool_set__users=request.user)
+    qs = qs.filter(tool__enabled=True)  # only include tools that are enabled
+    qs = qs.order_by("tool_group__name", "tool__name")
+    qs = qs.prefetch_related(
+        'tool__tooloutputextension_set__file_extension',
+        'tool__toolparameter_set__accepted_filetypes__extensions',
+    )
+    qs = qs.select_related("tool_group")
 
-    try:
-        all_tools = {}
-        prefetch_related = (
-            'tool__tooloutputextension_set__file_extension',
-            'tool__toolparameter_set__accepted_filetypes__extensions',
-        )
-        select_related = ('tool_group',)
+    all_tools = OrderedDict()
+    for toolgroup in qs:
+        tg = all_tools.setdefault(toolgroup.tool_group.name, OrderedDict())
+        tg.setdefault(toolgroup.tool.name, {
+            "name": toolgroup.tool.name,
+            "displayName": toolgroup.tool.display_name,
+            "description": toolgroup.tool.description,
+            "outputExtensions": toolgroup.tool.output_filetype_extensions(),
+            "inputExtensions": toolgroup.tool.input_filetype_extensions(),
+        })
 
-        for toolgroup in ToolGrouping.objects.filter(tool_set__users__name=username).prefetch_related(*prefetch_related).select_related(*select_related):
-            tg = all_tools.setdefault(toolgroup.tool_group.name, {})
-            if toolgroup.tool.enabled:  # only include tools that are enabled
-                tool = tg.setdefault(toolgroup.tool.name, {})
-                if not tool:
-                    tool["name"] = toolgroup.tool.name
-                    tool["displayName"] = toolgroup.tool.display_name
-                    tool["description"] = toolgroup.tool.description
-                    tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                    tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+    # from here down is getting the tools into a form
+    # used by the front end so no changes are needed there
+    # toolsets are dev, marine science, ccg etc, not used on the front end
+    # toolgroups are for example genomics, select data, mapreduce
+    all_tools_toolset = {
+        "name": "all_tools",
+        "toolgroups": [{"name": name, "tools": toolgroup.values()}
+                       for name, toolgroup in all_tools.iteritems()]
+    }
 
-        # from here down is getting the tools into a form
-        # used by the front end so no changes are needed there
-        # toolsets are dev, marine science, ccg etc, not used on the front end
-        # toolgroups are for example genomics, select data, mapreduce
-        output = {}
-        output['menu'] = {}
-        output['menu']['toolsets'] = []
-
-        all_tools_toolset = {}
-        output['menu']['toolsets'].append(all_tools_toolset)
-
-        all_tools_toolset["name"] = 'all_tools'
-        all_tools_toolset["toolgroups"] = []
-
-        for key in sorted(six.iterkeys(all_tools)):
-            toolgroup = all_tools[key]
-            tg = {}
-            tg['name'] = key
-            tg['tools'] = []
-
-            for toolname in sorted(six.iterkeys(toolgroup)):
-                tg['tools'].append(toolgroup[toolname])
-
-            all_tools_toolset["toolgroups"].append(tg)
-
-        response = HttpResponse(json.dumps(output))
-#        response["Vary"] = "Cookie" # cache this page per session
-        return response
-    except ObjectDoesNotExist:
-        return JsonMessageResponseNotFound("Object not found")
+    return HttpResponse(json.dumps({"menu": {"toolsets": [all_tools_toolset]}}))
 
 
 @authentication_required
