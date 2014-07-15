@@ -41,6 +41,7 @@ urlpatterns = patterns(
 
     url(r'^workflows/submit[/]*$', 'submit_workflow'),
     url(r'^workflows/save[/]*$', 'save_workflow'),
+    url(r'^workflows/delete_saved[/]*$', 'delete_saved_workflow'),
     url(r'^workflows/get/(?P<workflow_id>\d+)[/]*$', 'get_workflow'),
     url(r'^workflows/datesearch[/]*$', 'workflow_datesearch'),
     url(r'^workflows/(?P<id>\d+)/tags[/]*$', 'workflow_change_tags'),

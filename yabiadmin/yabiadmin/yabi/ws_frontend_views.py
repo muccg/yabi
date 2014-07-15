@@ -40,6 +40,7 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
+from django.shortcuts import get_object_or_404
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag, SavedWorkflow
@@ -123,6 +124,7 @@ def menu_saved_workflows_toolset(user):
     def make_tool(wf):
         return {
             "name": wf.name,
+            "savedWorkflowId": wf.id,
             "displayName": wf.name,
             "description": wf.creator.name,
             "outputExtensions": ["*"],
@@ -413,6 +415,20 @@ def save_workflow(request):
     )
 
     return json_response({"saved_workflow_id": workflow.pk})
+
+@authentication_required
+def delete_saved_workflow(request):
+    if "id" not in request.POST:
+        return HttpResponseBadRequest("Need id param")
+
+    workflow = get_object_or_404(SavedWorkflow, id=request.POST["id"])
+
+    if workflow.creator.user != request.user and not request.user.is_superuser:
+        return json_error_response("That's not yours", status=403)
+
+    workflow.delete()
+
+    return json_response("deleted")
 
 
 @authentication_required
