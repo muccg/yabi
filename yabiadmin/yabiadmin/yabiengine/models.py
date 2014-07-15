@@ -366,12 +366,13 @@ class Task(models.Model, Editable, Status):
             "stageout_method": stageout_method
         }
 
-        stageins = self.stagein_set.all()
-        for s in stageins:
+        for s in self.stagein_set.all():
             src_scheme, src_rest = uriparse(s.src)
             dst_scheme, dst_rest = uriparse(s.dst)
 
-            output["stagein"].append({"src": s.src, "dst": s.dst, "order": s.order, "method": s.method})              # method may be 'copy', 'lcopy' or 'link'
+            # method may be 'copy', 'lcopy' or 'link'
+            output["stagein"].append({"src": s.src, "dst": s.dst,
+                                      "order": s.order, "method": s.method})
 
         return json.dumps(output)
 

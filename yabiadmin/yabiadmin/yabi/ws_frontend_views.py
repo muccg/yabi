@@ -329,16 +329,13 @@ def put(request):
 @transaction.commit_manually
 def submit_workflow(request):
     try:
-        yabiusername = request.user.username
-        logger.debug(yabiusername)
-
         received_json = request.POST["workflowjson"]
         workflow_dict = json.loads(received_json)
-        user = User.objects.get(name=yabiusername)
+        user = User.objects.get(name=request.user.username)
 
         # Check if the user already has a workflow with the same name, and if so,
         # munge the name appropriately.
-        workflow_dict["name"] = munge_name(yabiusername, workflow_dict["name"])
+        workflow_dict["name"] = munge_name(user.workflow_set, workflow_dict["name"])
         workflow_json = json.dumps(workflow_dict)
         workflow = EngineWorkflow.objects.create(
             name=workflow_dict["name"],
@@ -362,15 +359,15 @@ def submit_workflow(request):
     return json_response({"workflow_id": workflow.pk})
 
 
-def munge_name(user, workflow_name):
-    if EngineWorkflow.objects.filter(user__name=user, name=workflow_name).count() == 0:
+def munge_name(workflow_set, workflow_name):
+    if not workflow_set.filter(name=workflow_name).exists():
         return workflow_name
 
     match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_name)
     base = match.group(1) if match else workflow_name
 
-    used_names = [wf.name for wf in EngineWorkflow.objects.filter(user__name=user, name__startswith=base)]
-    used_names = frozenset(used_names)
+    workflows = workflow_set.filter(name__startswith=base)
+    used_names = frozenset(workflows.values_list("name", flat=True))
 
     unused_name = lambda name: name not in used_names
     infinite_range = itertools.count
