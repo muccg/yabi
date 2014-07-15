@@ -78,7 +78,6 @@ def tool(request, toolname):
 
 
 @authentication_required
-@cache_page(300)
 @vary_on_cookie
 def menu(request):
     # this view converts the tools into a form used by the front end.
@@ -96,11 +95,11 @@ def menu_all_tools_toolset(user):
     qs = ToolGrouping.objects.filter(tool_set__users=user)
     qs = qs.filter(tool__enabled=True)  # only include tools that are enabled
     qs = qs.order_by("tool_group__name", "tool__name")
+    qs = qs.select_related("tool_group", "tool")
     qs = qs.prefetch_related(
         'tool__tooloutputextension_set__file_extension',
         'tool__toolparameter_set__accepted_filetypes__extensions',
     )
-    qs = qs.select_related("tool_group")
 
     all_tools = OrderedDict()
     for toolgroup in qs:
@@ -135,6 +134,7 @@ def menu_saved_workflows_toolset(user):
         }
 
     qs = SavedWorkflow.objects.filter(creator=user).order_by("created")
+    qs = qs.select_related("creator")
 
     toolgroups = [{
         "name": "Saved Workflows",
