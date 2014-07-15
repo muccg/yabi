@@ -80,7 +80,19 @@ def tool(request, toolname):
 @cache_page(300)
 @vary_on_cookie
 def menu(request):
-    qs = ToolGrouping.objects.filter(tool_set__users=request.user)
+    # this view converts the tools into a form used by the front end.
+    # ToolSets are not shown in the front end, but map users to groups
+    # of tools.
+    # ToolGroups are for example genomics, select data, mapreduce.
+
+    toolsets = [menu_all_tools_toolset(request.user),
+                menu_saved_workflows_toolset(request.user)]
+
+    return HttpResponse(json.dumps({"menu": {"toolsets": toolsets}}))
+
+
+def menu_all_tools_toolset(user):
+    qs = ToolGrouping.objects.filter(tool_set__users=user)
     qs = qs.filter(tool__enabled=True)  # only include tools that are enabled
     qs = qs.order_by("tool_group__name", "tool__name")
     qs = qs.prefetch_related(
@@ -100,17 +112,37 @@ def menu(request):
             "inputExtensions": toolgroup.tool.input_filetype_extensions(),
         })
 
-    # from here down is getting the tools into a form
-    # used by the front end so no changes are needed there
-    # toolsets are dev, marine science, ccg etc, not used on the front end
-    # toolgroups are for example genomics, select data, mapreduce
-    all_tools_toolset = {
+    return {
         "name": "all_tools",
         "toolgroups": [{"name": name, "tools": toolgroup.values()}
                        for name, toolgroup in all_tools.iteritems()]
     }
 
-    return HttpResponse(json.dumps({"menu": {"toolsets": [all_tools_toolset]}}))
+
+def menu_saved_workflows_toolset(user):
+    def make_tool(wf):
+        return {
+            "name": wf.name,
+            "displayName": wf.name,
+            "description": wf.creator.name,
+            "outputExtensions": ["*"],
+            "inputExtensions": ["*"],
+            "creator": wf.creator.name,
+            "created": str(wf.created),
+            "json": json.loads(wf.original_json),
+        }
+
+    qs = SavedWorkflow.objects.filter(creator=user).order_by("created")
+
+    toolgroups = [{
+        "name": "Saved Workflows",
+        "tools": map(make_tool, qs),
+    }]
+
+    return {
+        "name": "saved_workflows",
+        "toolgroups": toolgroups
+    }
 
 
 @authentication_required
@@ -311,15 +343,17 @@ def submit_workflow(request):
     try:
         received_json = request.POST["workflowjson"]
         workflow_dict = json.loads(received_json)
-        user = User.objects.get(name=request.user.username)
+
+        yabiuser = User.objects.get(name=request.user.username)
 
         # Check if the user already has a workflow with the same name, and if so,
         # munge the name appropriately.
-        workflow_dict["name"] = munge_name(user.workflow_set, workflow_dict["name"])
+        workflow_dict["name"] = munge_name(yabiuser.workflow_set, workflow_dict["name"])
         workflow_json = json.dumps(workflow_dict)
+
         workflow = EngineWorkflow.objects.create(
             name=workflow_dict["name"],
-            user=user,
+            user=yabiuser,
             json=workflow_json,
             original_json=received_json,
             start_time=datetime.now()
@@ -365,16 +399,16 @@ def save_workflow(request):
     except ValueError:
         return json_error_response("Invalid workflow JSON")
 
-    user = User.objects.get(name=request.user.username)
+    yabiuser = User.objects.get(name=request.user.username)
 
     # Check if the user already has a workflow with the same name, and if so,
     # munge the name appropriately.
-    workflow_dict["name"] = munge_name(user.savedworkflow_set,
+    workflow_dict["name"] = munge_name(yabiuser.savedworkflow_set,
                                        workflow_dict["name"])
     workflow_json = json.dumps(workflow_dict)
     workflow = SavedWorkflow.objects.create(
         name=workflow_dict["name"],
-        creator=user, created=datetime.now(),
+        creator=yabiuser, created=datetime.now(),
         original_json=workflow_json
     )
 
