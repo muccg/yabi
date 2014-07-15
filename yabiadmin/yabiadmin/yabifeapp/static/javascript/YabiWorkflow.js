@@ -44,8 +44,7 @@ YUI().use(
 
         this.jobs = [];
 
-        this.containerEl = document.createElement('div');
-        this.containerEl.className = 'workflowContainer';
+        this.container = Y.Node.create('<div class="workflowContainer"/>');
 
         // construct the main dom, including title, submit (if editable) and
         // bookends
@@ -162,7 +161,7 @@ YUI().use(
           this.mainEl.appendChild(this.hintEl);
         }
 
-        this.mainEl.appendChild(this.containerEl);
+        this.container.appendTo(this.mainEl);
 
         this.endEl = document.createElement('div');
         this.endEl.appendChild(document.createTextNode('end'));
@@ -172,12 +171,12 @@ YUI().use(
 
         if (this.editable) {
           this.dd = new Y.DD.Drop({
-            node: this.containerEl
+            node: this.container
           });
           this.dd.on('drop:over', this.onDragOverJobCallback);
 
           // TODO - see other registerDDTarget for TODO expl.
-          YabiToolCollection.registerDDTarget(this.containerEl);
+          YabiToolCollection.registerDDTarget(this.container);
         }
 
         this.optionsEl = document.createElement('div');
@@ -287,8 +286,7 @@ YUI().use(
         if (!this.editable) {
           //attach events
           invoke = {'target': this, 'object': job};
-          Y.one(job.containerEl).on('click', this.selectJobCallback,
-              null, invoke);
+          job.container.on('click', this.selectJobCallback, null, invoke);
 
           //don't select any job (ie select null)
           this.selectJob(null);
@@ -306,12 +304,11 @@ YUI().use(
           //attach events
           invoke = {'target': this, 'object': job};
           Y.one(destroyEl).on('click', this.delJobCallback, null, invoke);
-          Y.one(job.containerEl).on('click', this.selectJobCallback,
-              null, invoke);
+          job.container.on('click', this.selectJobCallback, null, invoke);
 
           //drag drop
           job.dd = new Y.DD.Drag({
-            node: job.containerEl,
+            node: job.container,
             target: {}
           }).plug(Y.Plugin.DDProxy, {
             moveOnEnd: false
@@ -321,7 +318,7 @@ YUI().use(
           // We are registering this as DD.Drops in the YUI instance of the tool
           // collection, otherwise the tools can't be dropped on top of the job
           // elements. There has to be a better way to do this!
-          YabiToolCollection.registerDDTarget(job.containerEl);
+          YabiToolCollection.registerDDTarget(job.container);
 
           job.dd.on('drag:start', this.startDragJobCallback);
           job.dd.on('drag:end', this.endDragJobCallback);
@@ -338,18 +335,18 @@ YUI().use(
 
         if (shouldFadeIn) {
           //start off the opacity at 0.0
-          job.containerEl.style.opacity = 0.0;
+          job.container.setStyle("opacity", 0.0);
         }
 
         //add into the DOM
-        this.containerEl.appendChild(job.containerEl);
+        this.container.append(job.container);
         this.optionsEl.appendChild(job.optionsEl);
         this.statusEl.appendChild(job.statusEl);
 
         var anim;
         if (shouldFadeIn) {
           var anim = new Y.Anim({
-            node: Y.one(job.containerEl),
+            node: job.container,
             to: { opacity: 1.0 },
             duration: 1.0
           });
@@ -403,11 +400,11 @@ YUI().use(
 
         job.destroy();
 
-        this.containerEl.removeChild(job.containerEl);
+        job.container.remove();
         this.optionsEl.removeChild(job.optionsEl);
         this.statusEl.removeChild(job.statusEl);
 
-        Y.one(job.containerEl).detachAll();
+        job.container.detachAll();
 
         //force propagate
         this.propagateFiles();
@@ -1098,11 +1095,11 @@ YUI().use(
 
           job.destroy();
 
-          this.containerEl.removeChild(job.containerEl);
+          job.container.remove();
           this.optionsEl.removeChild(job.optionsEl);
           this.statusEl.removeChild(job.statusEl);
 
-          Y.one(job.containerEl).detachAll();
+          job.container.detachAll();
         }
 
         //purge all listeners on nameEl
@@ -1179,11 +1176,11 @@ YUI().use(
         if (this.dragType == 'job') {
           drag.setStyle('visibility', '');
         } else {
-          this.jobEl.style.visibility = '';
-          //this.jobEl.style.opacity = "1.0";
+          this.jobNode.show();
+          //this.jobNode.setStyle("opacity", "1.0");
 
           var anim = new Y.Anim({
-            node: Y.one(this.jobEl),
+            node: this.jobNode,
             to: { opacity: 1.0 },
             duration: 0.3
           });
@@ -1193,25 +1190,16 @@ YUI().use(
         }
         //this.getDragEl().style.visibility = 'hidden';
 
-        // identify the new location, recreating the jobs array based on
+        // replace jobs array with newly re-ordered items based on
         // current div locations
-        var alteredJobs = [];
-        var counter = 1;
-        var job;
-        for (var index in workflow.containerEl.childNodes) {
-          var childNode = workflow.containerEl.childNodes[index];
-          for (var jobindex in workflow.jobs) {
-            if (workflow.jobs[jobindex].containerEl == childNode) {
-              job = workflow.jobs[jobindex];
-              job.jobId = counter++;
-              job.updateTitle();
-              alteredJobs.push(job);
-            }
-          }
-        }
-
-        //replace jobs array with newly re-ordered items
-        workflow.jobs = alteredJobs;
+        var updateJob = (function() {
+          var jobNodes = workflow.container.get("childNodes");
+          return function(job) {
+            job.jobId = jobNodes.indexOf(job.container) + 1;
+            job.updateTitle();
+          };
+        })();
+        workflow.jobs = _(workflow.jobs).forEach(updateJob).sortBy("jobId").value();
 
         //re-propagate files
         workflow.propagateFiles();
@@ -1236,7 +1224,7 @@ YUI().use(
             drop = e.drop.get('node');
 
         if (this.dragType !== 'job') {
-          drag = Y.one(this.jobEl);
+          drag = this.jobNode;
         }
 
         if (drop.hasClass('jobSuperContainer')) {
@@ -1297,7 +1285,6 @@ YUI().use(
       };
 
       YabiWorkflow.prototype.reuseCallback = function(e, obj) {
-        //do stuff
         obj.reuse();
       };
 
@@ -1349,7 +1336,7 @@ YUI().use(
             var reusing = reuseId == null ? false : true
             tools = new YabiToolCollection();
 
-            document.getElementById("toolContainer").appendChild(tools.containerEl);
+            Y.one("#toolContainer").append(tools.containerNode);
 
             workflow = new YabiWorkflow(true, reusing);
 
@@ -1363,31 +1350,28 @@ YUI().use(
                     return;
                 }
 
-                if (job === null) {
-                    tools.searchEl.value = "";
-                } else {
-                    tools.searchEl.value = "in:" + job.emittedFileTypes();
-                }
+                var searchFilter = job ? "in:" + job.emittedFileTypes() : "";
+                tools.searchNode.set("value", searchFilter);
                 tools.filter();
 
                 // Resize the file selector to roughly fit the available space.
-                var fs = document.querySelector(".fileSelector");
+                var fs = Y.one(".fileSelector");
                 var height = Yabi.util.getViewportHeight();
                 if (fs && height) {
-                    var top = Yabi.util.getElementOffset(fs).top;
+                    var top = Yabi.util.getElementOffset(fs.getDOMNode()).top;
 
                     // The 30 pixels is pure, unadulterated fudge factor.
                     var height = height - top - 30;
 
-                    fs.querySelector(".fileSelectorBrowse").style.minHeight = height + "px";
+                    Y.one(".fileSelectorBrowse").setStyle("minHeight", height + "px");
                 }
             };
 
             workflow.afterSelectJob = updateFilter;
             workflow.afterPropagate = updateFilter;
 
-            document.getElementById("container").appendChild(workflow.mainEl);
-            document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
+            Y.one("#container").append(workflow.mainEl);
+            Y.one("#optionsDiv").append(workflow.optionsEl);
 
             Y.one("#submitButton").on("click", submitCallback, null, workflow);
         }

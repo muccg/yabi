@@ -4,25 +4,25 @@
  * YabiTool
  * render a single yabi tool
  */
-function YabiTool(obj, collection, groupEl) {
+function YabiTool(obj, collection, groupNode) {
 
   this.payload = obj;
   this.collection = collection;
-  this.groupEl = groupEl;
+  this.groupNode = groupNode;
 
-  this.el = document.createElement('div');
-  this.el.style.position = 'relative';
+  this.node = Y.Node.create("<div/>");
+  this.node.setStyle("position", "relative");
 
   this.toolEl = document.createElement('div');
   this.toolEl.className = 'tool';
   this.toolEl.appendChild(document.createTextNode(this.payload.displayName));
 
-  this.el.appendChild(this.toolEl);
+  this.node.append(this.toolEl);
 
   var addEl = document.createElement('div');
   addEl.className = 'addLink';
   Y.one(addEl).on('click', collection.addCallback, null, this.payload.name);
-  this.el.appendChild(addEl);
+  this.node.append(addEl);
 
   this.descriptionEl = document.createElement('div');
   this.descriptionEl.className = 'toolDescription';

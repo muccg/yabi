@@ -25,11 +25,10 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.workflow = null; //set later by the workflow
   this.batchParameter = null;
 
-  //___CONTAINER EL___
+  //___CONTAINER NODE___
   // this is used to retain the job's position in a workflow while
   // allowing us to replace the jobEl
-  this.containerEl = document.createElement('div');
-  this.containerEl.className = 'jobSuperContainer';
+  this.container = Y.Node.create('<div class="jobSuperContainer"/>');
 
   //___JOB EL___
   this.jobEl = document.createElement('div');
@@ -50,7 +49,7 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.jobEl.appendChild(this.outputsEl);
 
   //add the job el to the container
-  this.containerEl.appendChild(this.jobEl);
+  this.container.append(this.jobEl);
 
   //___OPTIONS EL___
   this.optionsEl = document.createElement('div');
@@ -280,7 +279,7 @@ YabiJob.prototype.selectJob = function() {
     newEl.appendChild(child);
   }
 
-  this.containerEl.replaceChild(newEl, this.jobEl);
+  this.container.replaceChild(newEl, this.jobEl);
 
   this.jobEl = newEl;
 
@@ -328,7 +327,7 @@ YabiJob.prototype.deselectJob = function() {
     newEl.appendChild(child);
   }
 
-  this.containerEl.replaceChild(newEl, this.jobEl);
+  this.container.replaceChild(newEl, this.jobEl);
 
   this.jobEl = newEl;
 
@@ -363,7 +362,7 @@ YabiJob.prototype.renderLoadFailJob = function() {
     }
   }
 
-  this.containerEl.replaceChild(newEl, this.jobEl);
+  this.container.replaceChild(newEl, this.jobEl);
 
   this.jobEl = newEl;
 
