@@ -10,10 +10,6 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.displayName = toolName; //temporary while loading
   this.jobId = jobId;
   this.payload = {};
-  this.preloadValues = preloadValues;
-  if (this.preloadValues !== null && !Y.Lang.isArray(this.preloadValues)) {
-    this.preloadValues = [this.preloadValues];
-  }
   this.params = [];
   this.valid = false;
   this.acceptsInput = false;
@@ -26,6 +22,11 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.batchParameter = null;
   this.nameDependents = [];
   this.errorNode = null;
+
+  // make preloadValues a map from switch name to switch value
+  var listify = function(ob) { return Y.Lang.isArray(ob) ? ob : [ob]; };
+  this.preloadValues = _(preloadValues ? listify(preloadValues) : [])
+    .indexBy("switchName").mapValues("value").value();
 
   //___CONTAINER NODE___
   // this is used to retain the job's position in a workflow while
@@ -596,9 +597,9 @@ YabiJob.prototype.solidify = function(obj) {
   var allShown = true;
 
   _.forEach(this.payload.tool.parameter_list, function(param) {
-    var preloadValue = this.preloadValueFor(param['switch']);
+    var preloadValue = this.preloadValues[param['switch']] || null;
 
-    if (this.editable || preloadValue !== null) {
+    if (this.editable || preloadValue) {
       var paramObj = new YabiJobParam(this, param,
             (param['switch'] == this.batchParameter),
             this.editable, preloadValue);
@@ -651,25 +652,6 @@ YabiJob.prototype.registerNameDependency = function(element) {
   this.nameDependents.push(element);
 };
 
-
-/**
- * preloadValueFor
- *
- * identifies the preload values for a given parameter
- */
-YabiJob.prototype.preloadValueFor = function(switchName) {
-  if (! Y.Lang.isUndefined(this.preloadValues) &&
-      this.preloadValues.length > 0) {
-    for (var index in this.preloadValues) {
-      if (! Y.Lang.isUndefined(this.preloadValues[index]) &&
-          this.preloadValues[index].switchName == switchName) {
-        return this.preloadValues[index].value;
-      }
-    }
-  }
-
-  return null;
-};
 
 // --------- callback methods, these require a target via their inputs --------
 
