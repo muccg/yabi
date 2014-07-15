@@ -4,86 +4,40 @@
  * YabiTool
  * render a single yabi tool
  */
-function YabiTool(obj, collection, groupNode) {
-
-  this.payload = obj;
+function YabiTool(tooldef, collection, groupNode) {
+  this.payload = tooldef;
   this.collection = collection;
   this.groupNode = groupNode;
 
-  this.node = Y.Node.create("<div/>");
-  this.node.setStyle("position", "relative");
+  this.node = Y.Node.create("<div/>").setStyle("position", "relative");
 
-  this.toolEl = document.createElement('div');
-  this.toolEl.className = 'tool';
-  this.toolEl.appendChild(document.createTextNode(this.payload.displayName));
+  var filetypesNode = function(title, exts) {
+    var node = Y.Node.create('<div class="toolHelp"/>').set("text", title + ': ');
+    var accepted = Y.Node.create('<span class="acceptedExtensionList"/>').appendTo(node);
 
-  this.node.append(this.toolEl);
+    _.forEach(exts, function(ext) {
+      var span = Y.Node.create('<span class="acceptedExtension"/>').set("text", ext);
+      accepted.append(span).append(" ");
+    });
 
-  var addEl = document.createElement('div');
-  addEl.className = 'addLink';
-  Y.one(addEl).on('click', collection.addCallback, null, this.payload.name);
-  this.node.append(addEl);
+    return node;
+  };
 
-  this.descriptionEl = document.createElement('div');
-  this.descriptionEl.className = 'toolDescription';
+  var descNode = Y.Node.create('<div class="toolDescription"/>')
+    .set("text", this.payload.description)
+    .append(filetypesNode("accepts", tooldef.inputExtensions))
+    .append(filetypesNode("outputs", tooldef.outputExtensions))
+    .hide();
 
-  this.descriptionEl.appendChild(document.createTextNode(
-      this.payload.description));
+  var addLink = Y.Node.create('<div class="addLink"/>');
+  addLink.on('click', collection.addCallback, null, this.payload.name);
 
-  //input filetypes
-  this.inputsEl = document.createElement('div');
-  this.inputsEl.className = 'toolHelp';
-  this.inputsEl.appendChild(document.createTextNode('accepts: '));
-  this.acceptedExtensionEl = document.createElement('span');
-  this.acceptedExtensionEl.setAttribute('class', 'acceptedExtensionList');
-  this.inputsEl.appendChild(this.acceptedExtensionEl);
-
-  if (!Y.Lang.isArray(this.payload.inputExtensions)) {
-    this.payload.inputExtensions = [this.payload.inputExtensions];
-  }
-
-  for (index in this.payload.inputExtensions) {
-    ext = document.createTextNode(this.payload.inputExtensions[index]);
-    spanEl = document.createElement('span');
-    spanEl.setAttribute('class', 'acceptedExtension');
-    spanEl.appendChild(ext);
-    this.acceptedExtensionEl.appendChild(spanEl);
-
-
-    this.acceptedExtensionEl.appendChild(document.createTextNode(' '));
-  }
-
-  //output filetypes
-  this.outputsEl = document.createElement('div');
-  this.outputsEl.className = 'toolHelp';
-  this.outputsEl.appendChild(document.createTextNode('outputs: '));
-  this.outputExtensionEl = document.createElement('span');
-  this.outputExtensionEl.setAttribute('class', 'acceptedExtensionList');
-  this.outputsEl.appendChild(this.outputExtensionEl);
-
-  if (! Y.Lang.isUndefined(this.payload.outputExtensions)) {
-
-    if (!Y.Lang.isArray(this.payload.outputExtensions)) {
-      this.payload.outputExtensions = [this.payload.outputExtensions];
-    }
-
-    for (index in this.payload.outputExtensions) {
-      ext = document.createTextNode(this.payload.outputExtensions[index]);
-      spanEl = document.createElement('span');
-      spanEl.setAttribute('class', 'acceptedExtension');
-      spanEl.appendChild(ext);
-      this.outputExtensionEl.appendChild(spanEl);
-
-      this.outputExtensionEl.appendChild(document.createTextNode(' '));
-    }
-  }
-
-  this.descriptionEl.appendChild(this.inputsEl);
-  this.descriptionEl.appendChild(this.outputsEl);
-
-  this.toolEl.appendChild(this.descriptionEl);
-
-  Y.one(this.toolEl).on('click', this.descriptionCallback, null, this);
+  Y.Node.create('<div class="tool"/>')
+    .set("text", this.payload.displayName)
+    .append(addLink)
+    .append(descNode)
+    .appendTo(this.node)
+    .on('click', function() { descNode.toggleView(); });
 }
 
 YabiTool.prototype.toString = function() {
@@ -143,21 +97,6 @@ YabiTool.prototype.matchesFilter = function(needle) {
   }
 
   return false;
-};
-
-YabiTool.prototype.toggleDescription = function() {
-  if (this.descriptionEl.style.display !== 'block') {
-    this.descriptionEl.style.display = 'block';
-  } else {
-    this.descriptionEl.style.display = 'none';
-  }
-};
-
-
-//  CALLBACKS
-
-YabiTool.prototype.descriptionCallback = function(e, target) {
-  target.toggleDescription();
 };
 
 

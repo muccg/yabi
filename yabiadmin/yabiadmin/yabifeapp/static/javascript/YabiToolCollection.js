@@ -79,13 +79,26 @@ ToolCollectionYUI = YUI().use(
 
         this.loading.hide();
 
+        var fixupTool = function(tooldef) {
+          if (!Y.Lang.isArray(tooldef.inputExtensions)) {
+            tooldef.inputExtensions = [tooldef.inputExtensions];
+          }
+
+          if (Y.Lang.isUndefined(tooldef.outputExtensions)) {
+            tooldef.outputExtensions = [];
+          } else if (!Y.Lang.isArray(tooldef.outputExtensions)) {
+            tooldef.outputExtensions = [tooldef.outputExtensions];
+          }
+          return tooldef;
+        };
+
         _.forEach(obj.menu.toolsets, function(toolset) {
           _.forEach(toolset.toolgroups, function(toolgroup) {
             var groupNode = Y.Node.create('<div class="toolGroup"/>');
             groupNode.set("text", toolgroup.name);
             self.listingNode.append(groupNode);
 
-            _.forEach(toolgroup.tools, function(tooldef) {
+            _(toolgroup.tools).map(fixupTool).forEach(function(tooldef) {
               var tool = new YabiTool(tooldef, self, groupNode);
 
               self.listingNode.append(tool.node);
@@ -163,7 +176,7 @@ ToolCollectionYUI = YUI().use(
           }
         });
 
-        Y.one(this.noResultsDiv).toggleView(visibleCount === 0 && this.tools.length !== 0);
+        this.noResultsDiv.toggleView(visibleCount === 0 && this.tools.length !== 0);
       };
 
 
