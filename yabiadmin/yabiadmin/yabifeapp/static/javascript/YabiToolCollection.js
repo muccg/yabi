@@ -266,10 +266,8 @@ ToolCollectionYUI = YUI().use(
       };
 
       YabiToolCollection.prototype.startDragToolCallback = function(e) {
-        var tool;
-
         // work out which tool it is
-        tool = e.target.get('data').tool;
+        var tool = e.target.get('data').tool;
 
         if (Y.Lang.isUndefined(tool)) {
           YAHOO.ccgyabi.widget.YabiMessage.fail('Failed to find tool');
@@ -278,10 +276,10 @@ ToolCollectionYUI = YUI().use(
 
         var job = workflow.addJob(tool.toString(), undefined, false);
         job.container.setStyle("opacity", '0.1');
-        job.optionsEl.style.display = 'none';
+        job.optionsNode.hide();
 
         this.jobNode = job.container;
-        this.optionsEl = job.optionsEl;
+        this.optionsNode = job.optionsNode;
 
         var dragNode = e.target.get('dragNode');
         dragNode.set('innerHTML', e.target.get('node').get('innerHTML'));
@@ -290,7 +288,7 @@ ToolCollectionYUI = YUI().use(
           textAlign: 'left'
         });
         // remove the 'add' image from the dragged item
-        dragNode.removeChild(dragNode.get('children').slice(-1).item(0));
+        dragNode.one(".addLink").remove();
 
         this.dragType = 'tool';
         this.lastY = dragNode.getY();

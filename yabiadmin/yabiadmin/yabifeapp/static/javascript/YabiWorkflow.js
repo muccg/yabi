@@ -275,8 +275,8 @@ YUI().use(
         var job = new YabiJob(toolName, this.jobs.length + 1, preloadValues);
         job.editable = this.editable;
         if (!this.editable) {
-          job.inputsEl.style.display = 'none';
-          job.outputsEl.style.display = 'none';
+          job.inputsNode.hide();
+          job.outputsNode.hide();
         }
         job.workflow = this;
         this.jobs.push(job);
@@ -299,7 +299,7 @@ YUI().use(
           destroyImg.alt = destroyImg.title;
           destroyImg.src = appURL + 'static/images/delnode.png';
           destroyEl.appendChild(destroyImg);
-          job.jobEl.appendChild(destroyEl);
+          job.jobNode.append(destroyEl);
 
           //attach events
           invoke = {'target': this, 'object': job};
@@ -340,8 +340,8 @@ YUI().use(
 
         //add into the DOM
         this.container.append(job.container);
-        this.optionsEl.appendChild(job.optionsEl);
-        this.statusEl.appendChild(job.statusEl);
+        job.optionsNode.appendTo(this.optionsEl);
+        job.statusNode.appendTo(this.statusEl);
 
         var anim;
         if (shouldFadeIn) {
@@ -401,8 +401,8 @@ YUI().use(
         job.destroy();
 
         job.container.remove();
-        this.optionsEl.removeChild(job.optionsEl);
-        this.statusEl.removeChild(job.statusEl);
+        job.optionsNode.remove();
+        job.statusNode.remove()
 
         job.container.detachAll();
 
@@ -1096,8 +1096,8 @@ YUI().use(
           job.destroy();
 
           job.container.remove();
-          this.optionsEl.removeChild(job.optionsEl);
-          this.statusEl.removeChild(job.statusEl);
+          job.optionsNode.remove();
+          job.statusNode.remove();
 
           job.container.detachAll();
         }
@@ -1177,7 +1177,6 @@ YUI().use(
           drag.setStyle('visibility', '');
         } else {
           this.jobNode.show();
-          //this.jobNode.setStyle("opacity", "1.0");
 
           var anim = new Y.Anim({
             node: this.jobNode,
@@ -1186,9 +1185,8 @@ YUI().use(
           });
           anim.run();
 
-          this.optionsEl.style.display = 'block';
+          this.optionsNode.show();
         }
-        //this.getDragEl().style.visibility = 'hidden';
 
         // replace jobs array with newly re-ordered items based on
         // current div locations
