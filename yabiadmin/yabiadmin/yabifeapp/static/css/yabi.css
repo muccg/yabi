@@ -359,8 +359,12 @@ display:inline;
     z-index:100;
 }
 
-.workflowToolbar {
+.workflowToolbar, .workflowSaveAsDlg {
     margin-top:9px;
+}
+
+.workflowSaveAsDlg .fakeButton {
+    margin-left: 0.5em;
 }
 
 .workflowContainer {
@@ -957,6 +961,25 @@ input {
     margin-top:3px;
 }
 
+.toolDescription li {
+    display: block;
+}
+
+.toolDescription .toolFooter {
+    border-top:1px solid #eee;
+    padding-top:2px;
+}
+
+.toolDescription .toolFooter button.fakeButton {
+    color: #808080;
+    font-size: 90%;
+    margin-left: 0.5em;
+}
+
+.toolDescription .toolFooter .confirm, .toolDescription .toolFooter .delButton {
+    float: right;
+}
+
 .toolHelp {
     font-size:90%;
     border-top:1px solid #eee;
@@ -1223,9 +1246,6 @@ div:hover > .tool {
     margin-right:8px;
     vertical-align:sub;
 }
-
-
-
 
 .displayNone {
     display:none;

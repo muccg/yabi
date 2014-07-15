@@ -7,7 +7,6 @@ ToolCollectionYUI = YUI().use(
        * fetch and render listing/grouping/smart filtering of tools
        */
       YabiToolCollection = function() {
-        var self = this;
         this.tools = [];
         this.autofilter = true;
 
@@ -43,8 +42,7 @@ ToolCollectionYUI = YUI().use(
         this.autofilterEl.className = 'virtualCheckboxOn';
         this.autofilterEl.appendChild(document.createTextNode('on'));
 
-        Y.one(self.autofilterEl).on('click', self.autofilterCallback,
-            null, self);
+        Y.one(this.autofilterEl).on('click', this.autofilterCallback, this);
         this.autofilterContainer.appendChild(this.autofilterEl);
 
         filterEl.append(this.autofilterContainer);
@@ -73,11 +71,11 @@ ToolCollectionYUI = YUI().use(
       };
 
       YabiToolCollection.prototype.solidify = function(obj) {
-        var self = this;
-
         this.payload = obj;
 
         this.loading.hide();
+
+        var toolMap = {};
 
         var fixupTool = function(tooldef) {
           if (!Y.Lang.isArray(tooldef.inputExtensions)) {
@@ -89,6 +87,15 @@ ToolCollectionYUI = YUI().use(
           } else if (!Y.Lang.isArray(tooldef.outputExtensions)) {
             tooldef.outputExtensions = [tooldef.outputExtensions];
           }
+
+          // convert jobs in saved workflows to tools
+          toolMap[tooldef.name] = tooldef;
+          if (tooldef.json) {
+            _.forEach(tooldef.json.jobs, function(job) {
+              _.assign(job, toolMap[job.toolName]);
+            });
+          }
+
           return tooldef;
         };
 
@@ -96,12 +103,12 @@ ToolCollectionYUI = YUI().use(
           _.forEach(toolset.toolgroups, function(toolgroup) {
             var groupNode = Y.Node.create('<div class="toolGroup"/>');
             groupNode.set("text", toolgroup.name);
-            self.listingNode.append(groupNode);
+            this.listingNode.append(groupNode);
 
             _(toolgroup.tools).map(fixupTool).forEach(function(tooldef) {
-              var tool = new YabiTool(tooldef, self, groupNode);
+              var tool = new YabiTool(tooldef, this, groupNode);
 
-              self.listingNode.append(tool.node);
+              this.listingNode.append(tool.node);
 
               //drag drop
               var dd = new Y.DD.Drag({
@@ -114,16 +121,16 @@ ToolCollectionYUI = YUI().use(
                 moveOnEnd: false
               });
 
-              dd.on('drag:start', self.startDragToolCallback);
+              dd.on('drag:start', this.startDragToolCallback, this);
               dd.on('drag:end', workflow.endDragJobCallback);
               dd.on('drag:drag', workflow.onDragJobCallback);
               dd.on('drag:over', workflow.onDragOverJobCallback);
 
-              self.tools.push(tool);
-            });
+              this.tools.push(tool);
+            }, this);
 
-          });
-        });
+          }, this);
+        }, this);
 
         this.filter();
       };
@@ -136,12 +143,11 @@ ToolCollectionYUI = YUI().use(
        *
        */
       YabiToolCollection.prototype.hydrate = function() {
-        var self = this;
         var url = appURL + 'ws/menu/';
 
         var cfg = {
-          on: { complete: self.hydrateResponse },
-          'arguments': self
+          on: { complete: this.hydrateResponse },
+          'arguments': this
         };
 
         Y.io(url, cfg);
@@ -230,18 +236,38 @@ ToolCollectionYUI = YUI().use(
        *
        * toggle autofiltering
        */
-      YabiToolCollection.prototype.autofilterCallback = function(e, target) {
-        target.autofilterToggle();
+      YabiToolCollection.prototype.autofilterCallback = function(e) {
+        this.autofilterToggle();
       };
 
 
       /**
-       * addCallback
+       * addToolToWorkflow
        *
-       * local callback for adding a tool
+       * adds a YabiTool to the workflow.
+       * returns the list of jobs added.
        */
-      YabiToolCollection.prototype.addCallback = function(e, obj) {
-        workflow.addJob(obj);
+      YabiToolCollection.prototype.addToolToWorkflow = function(tool, provisional) {
+        var addJob = function(name, preload) {
+          var job = workflow.addJob(name, preload, false);
+          if (provisional) {
+            job.container.setStyle("opacity", '0.1');
+            job.optionsNode.hide();
+          }
+          return job;
+        };
+
+        var jobs;
+
+        if (!tool.isSavedWorkflow()) {
+          jobs = [addJob(tool.toString())];
+        } else {
+          jobs = _.map(tool.getWorkflowJobs(), function(job) {
+            return addJob(job.toolName, job.parameterList.parameter);
+          });
+        }
+
+        return jobs;
       };
 
 
@@ -274,12 +300,10 @@ ToolCollectionYUI = YUI().use(
           return false;
         }
 
-        var job = workflow.addJob(tool.toString(), undefined, false);
-        job.container.setStyle("opacity", '0.1');
-        job.optionsNode.hide();
+        var jobs = this.addToolToWorkflow(tool, true);
 
-        this.jobNode = job.container;
-        this.optionsNode = job.optionsNode;
+        e.target.jobNodes = new Y.NodeList(_.pluck(jobs, "container"));
+        e.target.optionsNode = jobs[jobs.length - 1].optionsNode;
 
         var dragNode = e.target.get('dragNode');
         dragNode.set('innerHTML', e.target.get('node').get('innerHTML'));
@@ -290,8 +314,8 @@ ToolCollectionYUI = YUI().use(
         // remove the 'add' image from the dragged item
         dragNode.one(".addLink").remove();
 
-        this.dragType = 'tool';
-        this.lastY = dragNode.getY();
+        e.target.dragType = 'tool';
+        e.target.lastY = dragNode.getY();
       };
 
 

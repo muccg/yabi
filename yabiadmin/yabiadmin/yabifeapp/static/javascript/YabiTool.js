@@ -23,14 +23,17 @@ function YabiTool(tooldef, collection, groupNode) {
     return node;
   };
 
-  var descNode = Y.Node.create('<div class="toolDescription"/>')
-    .set("text", this.payload.description)
-    .append(filetypesNode("accepts", tooldef.inputExtensions))
-    .append(filetypesNode("outputs", tooldef.outputExtensions))
-    .hide();
+  var descNode = Y.Node.create('<div class="toolDescription"/>').hide();
+
+  this.setupDescNode(descNode);
+
+  descNode.append(filetypesNode("accepts", tooldef.inputExtensions))
+    .append(filetypesNode("outputs", tooldef.outputExtensions));
 
   var addLink = Y.Node.create('<div class="addLink"/>');
-  addLink.on('click', collection.addCallback, null, this.payload.name);
+  addLink.on('click', function() { collection.addToolToWorkflow(this); }, this);
+
+  this.setupFootNode().appendTo(descNode);
 
   Y.Node.create('<div class="tool"/>')
     .set("text", this.payload.displayName)
@@ -39,6 +42,78 @@ function YabiTool(tooldef, collection, groupNode) {
     .appendTo(this.node)
     .on('click', function() { descNode.toggleView(); });
 }
+
+YabiTool.prototype.isSavedWorkflow = function() {
+  return this.payload.json ? true : false;
+};
+
+YabiTool.prototype.getWorkflowJobs = function() {
+  return this.payload.json.jobs;
+};
+
+YabiTool.prototype.setupDescNode = function(descNode) {
+  if (this.isSavedWorkflow()) {
+    var list = Y.Node.create("<ul/>").appendTo(descNode);
+    _.forEach(this.getWorkflowJobs(), function(job) {
+      Y.Node.create("<li/>")
+        .set("text", job.jobId + ". " + job.displayName)
+        .appendTo(list);
+    });
+  } else {
+    descNode.set("text", this.payload.description);
+  }
+};
+
+YabiTool.prototype.setupFootNode = function() {
+  var node = Y.Node.create('<div class="toolFooter"/>');
+
+  var btn = function(text) {
+    return Y.Node.create('<button type="button" class="fakeButton" />').set("text", text);
+  };
+
+  if (this.isSavedWorkflow()) {
+    var creator = this.payload.creator;
+    var created = this.payload.created;
+    var del = btn("delete").addClass("delButton").appendTo(node);
+    var yes = btn("Yes"), no = btn("No");
+    var confirm = Y.Node.create('<span class="confirm">Sure?</span>')
+        .append(yes).append(no).appendTo(node).hide();
+    Y.Node.create("<span>creator: " + creator + "<br/>" +
+                  "last modified: " + created + "</span>").appendTo(node);
+
+    del.toggleView(creator === YAHOO.ccgyabi.username);
+
+    var ask = function(e) {
+      e.halt();
+      del.toggleView();
+      confirm.toggleView();
+    };
+
+    del.on("click", ask);
+    no.on("click", ask);
+    yes.on("click", function(e) {
+      var node = this.node;
+      ask(e);
+
+      Y.io(appURL + "ws/workflows/delete_saved/", {
+        method: 'POST',
+        on: {
+          success: function (transId, obj, args) {
+            node.hide();
+            YAHOO.ccgyabi.widget.YabiMessage.success("Deleted");
+          },
+          failure: function (transId, obj) {
+            YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to delete");
+          }
+        },
+        data: { id: this.payload.savedWorkflowId }
+      });
+
+    }, this);
+  }
+
+  return node.toggleView(this.isSavedWorkflow());
+};
 
 YabiTool.prototype.toString = function() {
   return this.payload.name;

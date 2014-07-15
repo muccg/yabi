@@ -133,18 +133,23 @@ YUI().use(
 
         this.mainEl.appendChild(this.tagEl);
 
-        if (!this.editable) {
-          //actions toolbar
-          this.toolbarEl = document.createElement('div');
-          this.toolbarEl.className = 'workflowToolbar';
-          this.mainEl.appendChild(this.toolbarEl);
+        //actions toolbar
+        this.toolbarEl = document.createElement('div');
+        this.toolbarEl.className = 'workflowToolbar';
+        this.mainEl.appendChild(this.toolbarEl);
 
+        if (!this.editable) {
           this.reuseButtonEl = document.createElement('span');
           this.reuseButtonEl.className = 'fakeButton';
           this.reuseButtonEl.appendChild(document.createTextNode('re-use'));
           Y.one(this.reuseButtonEl).on('click', this.reuseCallback, null, this);
           this.toolbarEl.appendChild(this.reuseButtonEl);
         }
+
+        Y.Node.create('<span class="fakeButton"/>')
+          .set("text", this.editable ? 'save' : 'save as')
+          .appendTo(this.toolbarEl)
+          .on('click', this.saveAsCallback, null, this);
 
         this.startEl = document.createElement('div');
         this.startEl.appendChild(document.createTextNode('start'));
@@ -772,6 +777,37 @@ YUI().use(
         window.location = baseURL;
       };
 
+      /**
+       * save as
+       *
+       * submits the workflow to server
+       */
+      YabiWorkflow.prototype.saveAs = function(name) {
+        if (this.isValid() || true) {
+          var oldName = this.name;
+          var name = name || oldName;
+          this.name = name;
+
+          Y.io(appURL + "ws/workflows/save/", {
+            method: 'POST',
+            on: {
+              success: function (transId, obj, args) {
+                YAHOO.ccgyabi.widget.YabiMessage.success("Saved workflow " + name);
+              },
+              failure: function (transId, obj) {
+                YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to save :-(");
+              }
+            },
+            data: { workflowjson: this.toJSON() }
+          });
+
+          this.name = oldName;
+        } else {
+          var msg = "Workflow isn't valid. Please correct errors before saving.";
+          YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
+        }
+      };
+
 
       /**
        * Called when workflow reused, after new workflow has been loaded with
@@ -1176,16 +1212,15 @@ YUI().use(
         if (this.dragType == 'job') {
           drag.setStyle('visibility', '');
         } else {
-          this.jobNode.show();
-
-          var anim = new Y.Anim({
-            node: this.jobNode,
-            to: { opacity: 1.0 },
-            duration: 0.3
-          });
-          anim.run();
-
           this.optionsNode.show();
+          this.jobNodes.show()
+            .each(function(node) {
+              (new Y.Anim({
+                node: node,
+                to: { opacity: 1.0 },
+                duration: 0.3
+              })).run();
+            });
         }
 
         // replace jobs array with newly re-ordered items based on
@@ -1222,7 +1257,7 @@ YUI().use(
             drop = e.drop.get('node');
 
         if (this.dragType !== 'job') {
-          drag = this.jobNode;
+          drag = this.jobNodes;
         }
 
         if (drop.hasClass('jobSuperContainer')) {
@@ -1230,8 +1265,13 @@ YUI().use(
           if (!this.goingUp) {
             drop = drop.get('nextSibling');
           }
-          //Add the node to this list
-          e.drop.get('node').get('parentNode').insertBefore(drag, drop);
+          //Add the nodes to this list
+          try {
+            e.drop.get('node').get('parentNode').insertBefore(drag, drop);
+          } catch (e) {
+            // ignore dom heirachy exceptions
+          }
+
           //Resize this nodes shim, so we can drop on it later.
           e.drop.sizeShim();
         }
@@ -1257,7 +1297,6 @@ YUI().use(
       };
 
       YabiWorkflow.prototype.addTagCallback = function(e, obj) {
-        //do stuff
         obj.tagAddLink.style.display = 'none';
         obj.tagListEl.style.display = 'none';
         obj.tagInputEl.style.display = 'inline';
@@ -1278,7 +1317,6 @@ YUI().use(
       };
 
       YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {
-        //do stuff
         obj.saveTags();
       };
 
@@ -1286,9 +1324,41 @@ YUI().use(
         obj.reuse();
       };
 
+      YabiWorkflow.prototype.saveAsCallback = function(e, self) {
+        var node = this;
+        e.halt(true);
+
+        var container = node.get("parentNode");
+
+        var btn = Y.Node.create('<span class="fakeButton"/>').set("text", "save");
+        var cancel = Y.Node.create('<span class="fakeButton"/>').set("text", "cancel");
+        var name = Y.Node.create('<input type="text" />').set("value", self.name);
+        var dlg = Y.Node.create('<div class="workflowSaveAsDlg" />')
+          .append(Y.Node.create('<label>Save as: </label').append(name))
+          .append(btn).append(cancel);
+
+        var clear = function() {
+          container.show();
+          dlg.remove();
+        };
+
+        btn.on('click', function() {
+          if (name.get("value").length > 0) {
+            self.saveAs(name.get("value"));
+          }
+          clear();
+        });
+        cancel.on('click', function() {
+          clear();
+        });
+
+        container.hide().get("parentNode").insert(dlg, container);
+        name.select();
+        name.focus();
+      };
+
       YabiWorkflow.prototype.saveTagsResponseCallback = function(
           transId, o, args) {
-        //do stuff
         YAHOO.ccgyabi.widget.YabiMessage.success('tags saved');
         var obj;
 
