@@ -547,9 +547,6 @@ YabiJobParam.prototype.focus = function() {
  * ie file paths are YabiSimpleFileValues, not YabiJobFileValues
  */
 YabiJobParam.prototype.toJSON = function() {
-  var values = [];
-  var val;
-
   var value = this.getValue(true);
 
   if (!value && !this.isMandatory) {
@@ -560,30 +557,25 @@ YabiJobParam.prototype.toJSON = function() {
     value = [value];
   }
 
-  for (var index in value) {
-    if (!Y.Lang.isObject(value[index])) {
-      values.push(value[index]);
+  var munge = function(val) {
+    if (val instanceof YabiSimpleFileValue) {
+      return val;
+    } else if (val instanceof YabiJob) {
+      return { 'type': 'job',
+               'jobId': val.jobId };
+    } else if (val instanceof YabiJobFileValue) {
+      return { 'type': 'jobfile',
+               'jobId': val.job.jobId,
+               'filename': val.filename };
     } else {
-      if (value[index] instanceof YabiSimpleFileValue) {
-        values.push(value[index]);
-      } else if (value[index] instanceof YabiJob) {
-        val = { 'type': 'job',
-          'jobId': value[index].jobId };
-
-        values.push(val);
-      } else if (value[index] instanceof YabiJobFileValue) {
-        val = { 'type': 'jobfile',
-          'jobId': value[index].job.jobId,
-          'filename': value[index].filename };
-
-        values.push(val);
-      }
+      return val;
     }
-  }
+  };
 
   var result = { 'switchName': this.switchName,
     'valid': this.valid,
-    'value': values };
+    'value': _.map(value, munge)
+ };
 
   return result;
 };
