@@ -1,3 +1,6 @@
+// globals for workflow design page
+var workflow, tools;
+
 YUI().use(
     'node', 'event', 'dd-drag', 'dd-proxy', 'dd-drop', 'io', 'json', 'anim',
     function(Y) {
@@ -9,9 +12,8 @@ YUI().use(
        * managed in a sequential, logical manner
        */
       YabiWorkflow = function(editable, reusing) {
-        if (typeof reusing === 'undefined') reusing = false;
-
-        this.reusing = reusing;
+        this.editable = editable ? true : false;
+        this.reusing = reusing ? true : false;
         this.workflowLoaded = false;
         this.payload = {};
         this.isPropagating = false; //recursion protection
@@ -39,11 +41,6 @@ YUI().use(
 
         this.status = 'Design';
         this.selectedJob = null;
-
-        this.editable = true;
-        if (editable !== null && editable === false) {
-          this.editable = false;
-        }
 
         this.jobs = [];
 
@@ -1346,5 +1343,106 @@ YUI().use(
         target.workflowId = obj.data.workflow_id;
         target.saveTags(postRelocateCallback);
      };
+
+      YabiWorkflow.initPage = (function() {
+        function initWorkflow(reuseId) {
+            var reusing = reuseId == null ? false : true
+            tools = new YabiToolCollection();
+
+            document.getElementById("toolContainer").appendChild(tools.containerEl);
+
+            workflow = new YabiWorkflow(true, reusing);
+
+            if (reusing) {
+              workflow.hydrate(reuseId);
+              workflow.workflowId = undefined;
+            }
+
+            var updateFilter = function(job) {
+                if (!tools.autofilter) {
+                    return;
+                }
+
+                if (job === null) {
+                    tools.searchEl.value = "";
+                } else {
+                    tools.searchEl.value = "in:" + job.emittedFileTypes();
+                }
+                tools.filter();
+
+                // Resize the file selector to roughly fit the available space.
+                var fs = document.querySelector(".fileSelector");
+                var height = Yabi.util.getViewportHeight();
+                if (fs && height) {
+                    var top = Yabi.util.getElementOffset(fs).top;
+
+                    // The 30 pixels is pure, unadulterated fudge factor.
+                    var height = height - top - 30;
+
+                    fs.querySelector(".fileSelectorBrowse").style.minHeight = height + "px";
+                }
+            };
+
+            workflow.afterSelectJob = updateFilter;
+            workflow.afterPropagate = updateFilter;
+
+            document.getElementById("container").appendChild(workflow.mainEl);
+            document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
+
+            Y.one("#submitButton").on("click", submitCallback, null, workflow);
+        }
+
+        //this function is used after a workflow is submitted,
+        //and after the tags have been saved,
+        //to redirect the browser to view this particular workflow using a hashtag
+        var summonJobsView = function(workflowId) {
+            window.location = appURL + 'jobs#' + workflowId;
+        };
+
+        function submitCallback(e, wf) {
+
+            // TODO add decent callbacks
+            e.halt(true);
+
+            if (!wf.isValid()) {
+                YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow isn't valid. Please correct errors before submitting.");
+            } else {
+
+                var baseURL = appURL + "ws/workflows/submit/";
+
+                jsCallback = {
+                    success: function (transId, obj, args) {
+                        YAHOO.ccgyabi.widget.YabiMessage.success("Success on submit!");
+                        workflow.submitSuccessCallback(obj, summonJobsView, args.target);
+                    },
+                    failure: function (transId, obj) {
+                        YAHOO.ccgyabi.widget.YabiMessage.fail("Fail on submit!");
+                    }
+                };
+                var data = "username=" + YAHOO.ccgyabi.username +
+                    "&workflowjson=" + encodeURIComponent(wf.toJSON());
+                var cfg = {
+                    method: 'POST',
+                    on: jsCallback,
+                    data: data,
+                    "arguments": {
+                        target: wf
+                    }
+                };
+                jsTransaction = Y.io(baseURL, cfg);
+            }
+        }
+
+        function summonJob(toolName) {
+            workflow.addJob(toolName);
+        }
+
+        function destroyWorkflow() {
+            workflow.destroy();
+            return false;
+        }
+
+        return initWorkflow;
+      })();
 
     }); // end of YUI().use(...
