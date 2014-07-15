@@ -19,6 +19,7 @@ YUI().use(
         this.isPropagating = false; //recursion protection
         this.tags = [];
         this.attachedProxies = [];
+        this.importingWorkflowJobs = [];
 
         //util fn
         var dblzeropad = function(number) {
@@ -582,6 +583,9 @@ YUI().use(
         this.workflowLoaded = true;
         if (this.reusing) {
           this.onReuseAfterLoad();
+        } else if (this.importingWorkflowJobs.length > 0) {
+          this.setupJobParams(this.importingWorkflowJobs);
+          this.importingWorkflowJobs = [];
         }
       };
 
@@ -814,39 +818,20 @@ YUI().use(
        * data from template workflow.
        */
       YabiWorkflow.prototype.onReuseAfterLoad = function() {
+        this.setupJobParams(workflow.jobs);
+      };
 
-        function collectAllInputFileParams(workflow) {
-          var result = [];
-          var i, j, job, jobParam;
-          for (i = 0; i < workflow.jobs.length; i++) {
-            job = workflow.jobs[i];
-            for (j = 0; j < job.params.length; j++) {
-              jobParam = job.params[j];
-              if (jobParam.isInputFile) {
-                result.push(jobParam);
-              }
-            }
-          }
-          return result;
+      YabiWorkflow.prototype.setupJobParams = function(jobs) {
+        function collectAllInputFileParams(jobs) {
+          return jobs.map(function(job) {
+            return _.filter(job.params, "isInputFile");
+          }).flatten(true);
         }
 
-        function orderParams(params) {
+        function paramOrder(param) {
           // Currently we just make sure fileselector params come before
           // other params. Should be enough.
-          var fileSelectors = [];
-          var rest = [];
-          var i, param;
-
-          for (i = 0; i < params.length; i++) {
-            param = params[i];
-            if (param.renderMode === 'fileselector') {
-              fileSelectors.push(param);
-            } else {
-              rest.push(param);
-            }
-          }
-
-          return fileSelectors.concat(rest);
+          return param.renderMode === 'fileselector' ? 0 : 1;
         }
 
         function setPreviousDropDownValues(param) {
@@ -923,12 +908,9 @@ YUI().use(
           }
         }
 
-        var allParams = orderParams(collectAllInputFileParams(this));
-
-        for (var i = 0; i < allParams.length; i++) {
-          setPreviousValues(allParams[i]);
-        }
-
+        collectAllInputFileParams(_(jobs))
+          .sortBy(paramOrder)
+          .forEach(setPreviousValues);
       };
 
 

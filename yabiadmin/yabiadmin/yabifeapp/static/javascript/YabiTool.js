@@ -185,7 +185,7 @@ var YabiToolCache = (function() {
   return {
     get: function(name, success, failure) {
       if (name in tools) {
-        success(tools[name]);
+        window.setTimeout(function() { success(tools[name]); }, 0);
       } else {
         var url = appURL + 'ws/tool/' + escape(name);
         var callbacks = {

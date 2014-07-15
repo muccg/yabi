@@ -265,6 +265,8 @@ ToolCollectionYUI = YUI().use(
           jobs = _.map(tool.getWorkflowJobs(), function(job) {
             return addJob(job.toolName, job.parameterList.parameter);
           });
+          workflow.workflowLoaded = false;
+          workflow.importingWorkflowJobs = jobs;
         }
 
         return jobs;
