@@ -13,8 +13,8 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('creator', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.User'])),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
-            ('original_json', self.gf('django.db.models.fields.TextField')()),
+            ('created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, db_index=True, blank=True)),
+            ('json', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal(u'yabiengine', ['SavedWorkflow'])
 
@@ -232,11 +232,11 @@ class Migration(SchemaMigration):
         },
         u'yabiengine.savedworkflow': {
             'Meta': {'object_name': 'SavedWorkflow'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'db_index': 'True', 'blank': 'True'}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'db_index': 'True', 'blank': 'True'}),
             'creator': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.User']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'original_json': ('django.db.models.fields.TextField', [], {})
+            'json': ('django.db.models.fields.TextField', [], {})
         },
         u'yabiengine.stagein': {
             'Meta': {'object_name': 'StageIn'},
