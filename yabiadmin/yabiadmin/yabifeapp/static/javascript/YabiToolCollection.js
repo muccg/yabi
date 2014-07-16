@@ -92,13 +92,15 @@ ToolCollectionYUI = YUI().use(
         _.forEach(obj.menu.toolsets, function(toolset) {
           _.forEach(toolset.toolgroups, function(toolgroup) {
             var groupNode = Y.Node.create('<div class="toolGroup"/>');
-            groupNode.set("text", toolgroup.name);
+            groupNode
+              .set("text", toolgroup.name)
+              .addClass(toolset.name);
             this.listingNode.append(groupNode);
 
             _(toolgroup.tools).map(fixupTool, this).forEach(function(tooldef) {
               var tool = new YabiTool(tooldef, this, groupNode);
 
-              this.listingNode.append(tool.node);
+              tool.node.appendTo(this.listingNode).addClass(toolset.name);
 
               //drag drop
               var dd = new Y.DD.Drag({
