@@ -27,8 +27,12 @@ function YabiTool(tooldef, collection, groupNode) {
 
   this.setupDescNode(descNode);
 
-  descNode.append(filetypesNode("accepts", tooldef.inputExtensions))
-    .append(filetypesNode("outputs", tooldef.outputExtensions));
+  if (tooldef.inputExtensions) {
+    descNode.append(filetypesNode("accepts", tooldef.inputExtensions));
+  }
+  if (tooldef.outputExtensions) {
+    descNode.append(filetypesNode("outputs", tooldef.outputExtensions));
+  }
 
   var addLink = Y.Node.create('<div class="addLink"/>');
   addLink.on('click', function() { collection.addToolToWorkflow(this); }, this);

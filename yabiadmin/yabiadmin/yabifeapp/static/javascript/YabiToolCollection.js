@@ -78,16 +78,6 @@ ToolCollectionYUI = YUI().use(
         var toolMap = {};
 
         var fixupTool = function(tooldef) {
-          if (!Y.Lang.isArray(tooldef.inputExtensions)) {
-            tooldef.inputExtensions = [tooldef.inputExtensions];
-          }
-
-          if (Y.Lang.isUndefined(tooldef.outputExtensions)) {
-            tooldef.outputExtensions = [];
-          } else if (!Y.Lang.isArray(tooldef.outputExtensions)) {
-            tooldef.outputExtensions = [tooldef.outputExtensions];
-          }
-
           // convert jobs in saved workflows to tools
           toolMap[tooldef.name] = tooldef;
           if (tooldef.json) {

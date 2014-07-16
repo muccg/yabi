@@ -126,8 +126,6 @@ def menu_saved_workflows_toolset(user):
             "savedWorkflowId": wf.id,
             "displayName": wf.name,
             "description": wf.creator.name,
-            "outputExtensions": ["*"],
-            "inputExtensions": ["*"],
             "creator": wf.creator.name,
             "created_on": str(wf.created_on),
             "json": json.loads(wf.json),
