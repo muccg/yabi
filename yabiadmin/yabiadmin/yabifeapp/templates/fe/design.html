@@ -7,7 +7,7 @@
     <script type="text/javascript">
         Y.use('*', function(Y) {
             Y.on('domready', function() {
-                YabiWorkflow.initPage({% if reuseId %}{{reuseId}}{% else %}null{% endif %});
+                YabiApp.initDesignPage({% if reuseId %}{{reuseId}}{% else %}null{% endif %});
             });
         });
     </script>
