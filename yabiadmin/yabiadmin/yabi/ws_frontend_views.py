@@ -397,7 +397,10 @@ def munge_name(workflow_set, workflow_name):
 @authentication_required
 def save_workflow(request):
     try:
-        workflow_dict = json.loads(request.POST.get("workflowjson", ""))
+        workflow_dict = json.loads(request.POST["workflowjson"])
+    except KeyError:
+        return json_error_response("workflowjson param not posted",
+                                   status=400)
     except ValueError:
         return json_error_response("Invalid workflow JSON")
 
