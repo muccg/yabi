@@ -8,6 +8,8 @@ ToolCollectionYUI = YUI().use(
        */
       YabiToolCollection = function() {
         this.tools = [];
+        this.toolMap = {};
+
         this.autofilter = true;
 
         this.containerNode = Y.Node.create('<div class="toolCollection"/>');
@@ -75,15 +77,13 @@ ToolCollectionYUI = YUI().use(
 
         this.loading.hide();
 
-        var toolMap = {};
-
         var fixupTool = function(tooldef) {
           // convert jobs in saved workflows to tools
-          toolMap[tooldef.name] = tooldef;
+          this.toolMap[tooldef.name] = tooldef;
           if (tooldef.json) {
             _.forEach(tooldef.json.jobs, function(job) {
-              _.assign(job, toolMap[job.toolName]);
-            });
+              _.assign(job, this.toolMap[job.toolName]);
+            }, this);
           }
 
           return tooldef;
@@ -95,7 +95,7 @@ ToolCollectionYUI = YUI().use(
             groupNode.set("text", toolgroup.name);
             this.listingNode.append(groupNode);
 
-            _(toolgroup.tools).map(fixupTool).forEach(function(tooldef) {
+            _(toolgroup.tools).map(fixupTool, this).forEach(function(tooldef) {
               var tool = new YabiTool(tooldef, this, groupNode);
 
               this.listingNode.append(tool.node);
@@ -133,15 +133,32 @@ ToolCollectionYUI = YUI().use(
        *
        */
       YabiToolCollection.prototype.hydrate = function() {
-        var url = appURL + 'ws/menu/';
+        Y.io(appURL + 'ws/menu/', {
+          on: {
+            complete: function(transId, o) {
+              this.hydrateResponse(o);
+              this.hydrateSavedWorkflows();
+            }
+          },
+          context: this
+        });
+      };
 
-        var cfg = {
-          on: { complete: this.hydrateResponse },
-          'arguments': this
-        };
-
-        Y.io(url, cfg);
-
+      /**
+       * hydrateSavedWorkflows
+       *
+       * performs another AJAX json fetch to get saved workflows
+       *
+       */
+      YabiToolCollection.prototype.hydrateSavedWorkflows = function() {
+        Y.io(appURL + 'ws/menu_saved_workflows/', {
+          on: {
+            complete: function(transId, o) {
+              this.hydrateResponse(o);
+            }
+          },
+          context: this
+        });
       };
 
       YabiToolCollection.prototype.toString = function() {
@@ -269,18 +286,17 @@ ToolCollectionYUI = YUI().use(
        * handle the response
        * parse json, store internally
        */
-      YabiToolCollection.prototype.hydrateResponse = function(
-          transId, o, target) {
-        var i, json;
+      YabiToolCollection.prototype.hydrateResponse = function(o) {
+        var obj;
 
         try {
-          json = o.responseText;
-
-          target.solidify(Y.JSON.parse(json));
+          obj = Y.JSON.parse(o.responseText);
         } catch (e) {
           YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-          target.solidify({'menu': {'toolsets': []}});
+          obj = {'menu': {'toolsets': []}};
         }
+
+        this.solidify(obj);
       };
 
       YabiToolCollection.prototype.startDragToolCallback = function(e) {

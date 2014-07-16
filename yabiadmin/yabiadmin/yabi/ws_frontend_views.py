@@ -78,18 +78,21 @@ def tool(request, toolname):
 
 
 @authentication_required
+@cache_page(300)
 @vary_on_cookie
 def menu(request):
     # this view converts the tools into a form used by the front end.
     # ToolSets are not shown in the front end, but map users to groups
     # of tools.
     # ToolGroups are for example genomics, select data, mapreduce.
+    toolset = menu_all_tools_toolset(request.user)
+    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}))
 
-    toolsets = [menu_all_tools_toolset(request.user),
-                menu_saved_workflows_toolset(request.user)]
 
-    return HttpResponse(json.dumps({"menu": {"toolsets": toolsets}}))
-
+@authentication_required
+def menu_saved_workflows(request):
+    toolset = menu_saved_workflows_toolset(request.user)
+    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}))
 
 def menu_all_tools_toolset(user):
     qs = ToolGrouping.objects.filter(tool_set__users=user)

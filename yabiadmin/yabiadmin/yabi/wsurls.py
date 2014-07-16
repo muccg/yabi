@@ -29,6 +29,8 @@ urlpatterns = patterns(
     'yabiadmin.yabi.ws_frontend_views',
     url(r'^tool/(?P<toolname>[^/]+)[/]*$', 'tool', name='tool'),
     url(r'^menu[/]*$', 'menu', name='menu'),
+    url(r'^menu_saved_workflows[/]*$',
+        'menu_saved_workflows', name='menu_saved_workflows'),
 
     url(r'^fs/ls[/]*$', 'ls', name='ls'),
     url(r'^fs/get[/]*$', 'get', name='get'),
