@@ -33,8 +33,6 @@ class BaseBackend(object):
     task = None
     cred = None
     yabiusername = None
-    last_stdout = None
-    last_stderr = None
 
     def working_dir_uri(self):
         """working dir"""
