@@ -74,14 +74,14 @@ class Editable(object):
 class SavedWorkflow(models.Model, Editable):
     name = models.CharField(max_length=255)
     creator = models.ForeignKey(User)
-    created = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
-    original_json = models.TextField()
+    created_on = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
+    json = models.TextField()
 
     def __unicode__(self):
         return self.name
 
     class Meta:
-        get_latest_by = "created"
+        get_latest_by = "created_on"
 
 
 class Workflow(models.Model, Editable, Status):

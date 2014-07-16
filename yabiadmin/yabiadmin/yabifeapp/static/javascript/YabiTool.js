@@ -73,7 +73,7 @@ YabiTool.prototype.setupFootNode = function() {
 
   if (this.isSavedWorkflow()) {
     var creator = this.payload.creator;
-    var created = this.payload.created;
+    var created = this.payload.created_on;
     var del = btn("delete").addClass("delButton").appendTo(node);
     var yes = btn("Yes"), no = btn("No");
     var confirm = Y.Node.create('<span class="confirm">Sure?</span>')

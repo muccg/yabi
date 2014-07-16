@@ -129,11 +129,11 @@ def menu_saved_workflows_toolset(user):
             "outputExtensions": ["*"],
             "inputExtensions": ["*"],
             "creator": wf.creator.name,
-            "created": str(wf.created),
-            "json": json.loads(wf.original_json),
+            "created_on": str(wf.created_on),
+            "json": json.loads(wf.json),
         }
 
-    qs = SavedWorkflow.objects.filter(creator=user).order_by("created")
+    qs = SavedWorkflow.objects.filter(creator=user).order_by("created_on")
     qs = qs.select_related("creator")
 
     toolgroups = [{
@@ -410,8 +410,8 @@ def save_workflow(request):
     workflow_json = json.dumps(workflow_dict)
     workflow = SavedWorkflow.objects.create(
         name=workflow_dict["name"],
-        creator=yabiuser, created=datetime.now(),
-        original_json=workflow_json
+        creator=yabiuser, created_on=datetime.now(),
+        json=workflow_json
     )
 
     return json_response({"saved_workflow_id": workflow.pk})
