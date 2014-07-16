@@ -21,24 +21,7 @@ YUI().use(
         this.attachedProxies = [];
         this.importingWorkflowJobs = [];
 
-        //util fn
-        var dblzeropad = function(number) {
-          if (number < 10) {
-            number = '0' + number;
-          }
-          return number;
-        };
         var header;
-
-        var date = new Date();
-        if (editable) {
-          this.name = 'unnamed (' +
-              date.getFullYear() + '-' + dblzeropad(date.getMonth() + 1) + '-' +
-              dblzeropad(date.getDate()) + ' ' +
-              dblzeropad(date.getHours()) + ':' +
-              dblzeropad(date.getMinutes()) + ')';
-          this.prefillName = this.name;
-        }
 
         this.status = 'Design';
         this.selectedJob = null;
@@ -61,7 +44,6 @@ YUI().use(
           this.nameEl = document.createElement('input');
           this.nameEl.className = 'workflowName';
           this.nameEl.id = 'titleDiv';
-          this.nameEl.value = this.name;
 
           Y.one(this.nameEl).on('blur', this.nameBlurCallback, null, this);
           Y.one(this.nameEl).on('keyup', this.nameChangeCallback, null, this);
@@ -71,6 +53,10 @@ YUI().use(
           this.nameEl = document.createElement('div');
           this.nameEl.className = 'workflowName';
           this.nameEl.id = 'titleDiv';
+        }
+
+        if (editable) {
+          this.setInitialName("unnamed");
         }
 
         this.mainEl.appendChild(this.nameEl);
@@ -258,6 +244,36 @@ YUI().use(
               this.loadingEl = null;
           }
         }
+      };
+
+      /* sets a name for the workflow, using the date to uniquify it */
+      YabiWorkflow.prototype.setInitialName = function(base) {
+        //util fn
+        var dblzeropad = function(number) {
+          if (number < 10) {
+            number = '0' + number;
+          }
+          return number;
+        };
+        var date = new Date();
+        this.name = base + ' (' +
+          date.getFullYear() + '-' + dblzeropad(date.getMonth() + 1) + '-' +
+          dblzeropad(date.getDate()) + ' ' +
+          dblzeropad(date.getHours()) + ':' +
+          dblzeropad(date.getMinutes()) + ')';
+        this.prefillName = this.name;
+
+        this.nameEl.value = this.name;
+      };
+
+      /* returns true iff the user hasn't edited the name */
+      YabiWorkflow.prototype.nameIsUnchanged = function() {
+        return this.name === this.prefillName;
+      };
+
+      /* returns true iff the workflow has no jobs */
+      YabiWorkflow.prototype.isEmpty = function() {
+        return this.jobs.length === 0;
       };
 
 

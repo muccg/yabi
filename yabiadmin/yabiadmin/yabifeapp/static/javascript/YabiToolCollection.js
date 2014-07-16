@@ -269,6 +269,10 @@ ToolCollectionYUI = YUI().use(
         if (!tool.isSavedWorkflow()) {
           jobs = [addJob(tool.toString())];
         } else {
+          if (workflow.isEmpty() && workflow.nameIsUnchanged()) {
+            workflow.setInitialName(tool.getTitle());
+          }
+
           jobs = _.map(tool.getWorkflowJobs(), function(job) {
             return addJob(job.toolName, job.parameterList.parameter);
           });

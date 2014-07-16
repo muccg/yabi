@@ -55,6 +55,10 @@ YabiTool.prototype.getWorkflowJobs = function() {
   return this.payload.json.jobs;
 };
 
+YabiTool.prototype.getTitle = function() {
+  return this.payload.displayName;
+};
+
 YabiTool.prototype.setupDescNode = function(descNode) {
   if (this.isSavedWorkflow()) {
     var list = Y.Node.create("<ul/>").appendTo(descNode);
