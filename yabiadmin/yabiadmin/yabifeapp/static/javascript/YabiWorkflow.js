@@ -977,10 +977,7 @@ YUI().use(
           updateMode = true;
         }
 
-        while (this.tagListEl.firstChild) {
-          this.tagListEl.removeChild(this.tagListEl.firstChild);
-        }
-        this.tagListEl.appendChild(document.createTextNode(this.tags));
+        this.refreshTagList();
 
         for (index in obj.jobs) {
           jobData = obj.jobs[index];
@@ -1037,6 +1034,7 @@ YUI().use(
         if (this.tagInputEl.style.display != 'inline') {
           this.tags = tagArray;
           this.tagInputEl.value = tagArray;
+          this.refreshTagList();
         } //dont set the tags if they are being edited
       };
 
@@ -1072,10 +1070,7 @@ YUI().use(
        */
       YabiWorkflow.prototype.tagsFinishedSaving = function(postRelocate) {
         this.tags = this.tagInputEl.value.split(',');
-        while (this.tagListEl.firstChild) {
-          this.tagListEl.removeChild(this.tagListEl.firstChild);
-        }
-        this.tagListEl.appendChild(document.createTextNode('' + this.tags));
+        this.refreshTagList();
 
         //notify attached proxies
         for (var index in this.attachedProxies) {
@@ -1104,6 +1099,12 @@ YUI().use(
         this.saveDraft();
       };
 
+      YabiWorkflow.prototype.refreshTagList = function() {
+        while (this.tagListEl.firstChild) {
+          this.tagListEl.removeChild(this.tagListEl.firstChild);
+        }
+        this.tagListEl.appendChild(document.createTextNode('' + this.tags));
+      };
 
       /**
        * destroy
