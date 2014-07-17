@@ -279,7 +279,7 @@ ToolCollectionYUI = YUI().use(
             return addJob(job.toolName, job.parameterList.parameter);
           });
           workflow.workflowLoaded = false;
-          workflow.importingWorkflowJobs = jobs;
+          workflow.setupJobsList = jobs;
         }
 
         return jobs;

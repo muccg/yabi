@@ -190,6 +190,7 @@ YabiJob.prototype.checkValid = function(propagate) {
 
   if (propagate) {
     this.propagateFiles();
+    this.workflow.onJobChanged(this);
   }
   if (this.valid) {
     this.valid = this.payload.tool.enabled;

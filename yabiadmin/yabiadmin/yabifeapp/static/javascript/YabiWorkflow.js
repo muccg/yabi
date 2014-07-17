@@ -1,5 +1,5 @@
 YUI().use(
-    'node', 'event', 'dd-drag', 'dd-proxy', 'dd-drop', 'io', 'json', 'anim',
+    'node', 'event', 'dd-drag', 'dd-proxy', 'dd-drop', 'io', 'json', 'anim', 'cookie',
     function(Y) {
 
       /**
@@ -12,18 +12,16 @@ YUI().use(
         this.editable = editable ? true : false;
         this.reusing = reusing ? true : false;
         this.workflowLoaded = false;
+        this.draftLoaded = true;
         this.payload = {};
         this.isPropagating = false; //recursion protection
         this.tags = [];
+        this.jobs = [];
         this.attachedProxies = [];
-        this.importingWorkflowJobs = [];
-
-        var header;
-
+        this.setupJobsList = [];
         this.status = 'Design';
         this.selectedJob = null;
 
-        this.jobs = [];
 
         this.container = Y.Node.create('<div class="workflowContainer"/>');
 
@@ -175,6 +173,7 @@ YUI().use(
         this.statusEl.className = 'jobStatusContainer';
 
         if (!editable) {
+          var header;
           this.fileOutputsEl = document.createElement('div');
           this.fileOutputsEl.className = 'fileOutputs';
           header = document.createElement('h1');
@@ -198,6 +197,10 @@ YUI().use(
           }
           this.saveTags();
         }, this);
+
+        if (!reusing) {
+          this.loadDraft();
+        }
       };
 
       YabiWorkflow.prototype.setStatus = function(statusText, is_retrying) {
@@ -289,8 +292,6 @@ YUI().use(
 
         this.hintEl.style.display = 'none';
 
-        var invoke, destroyEl, destroyImg;
-
         var job = new YabiJob(toolName, this.jobs.length + 1, preloadValues);
         job.editable = this.editable;
         if (!this.editable) {
@@ -302,28 +303,25 @@ YUI().use(
 
         job.hydrate();
 
-        if (!this.editable) {
-          //attach events
-          invoke = {'target': this, 'object': job};
-          job.container.on('click', this.selectJobCallback, null, invoke);
+        job.container.on('click', function(e, job) {
+          e.halt(true);
+          this.selectJob(job);
+        }, this, job);
 
+        if (!this.editable) {
           //don't select any job (ie select null)
           this.selectJob(null);
         } else {
           //decorate the job with a 'destroy' link
-          destroyEl = document.createElement('div');
-          destroyEl.setAttribute('class', 'destroyDiv');
-          destroyImg = new Image();
-          destroyImg.title = 'delete tool';
-          destroyImg.alt = destroyImg.title;
-          destroyImg.src = appURL + 'static/images/delnode.png';
-          destroyEl.appendChild(destroyImg);
-          job.jobNode.append(destroyEl);
-
-          //attach events
-          invoke = {'target': this, 'object': job};
-          Y.one(destroyEl).on('click', this.delJobCallback, null, invoke);
-          job.container.on('click', this.selectJobCallback, null, invoke);
+          Y.Node.create('<div class="destroyDiv"/>')
+            .append(Y.Node.create('<img title="delete tool" alt="delete tool"/>')
+                    .set("src", appURL + 'static/images/delnode.png'))
+            .appendTo(job.jobNode)
+            .on('click', function(e, job) {
+              //prevent propagation of the event to select/deselecting the job
+              e.halt(true);
+              this.deleteJob(job);
+            }, this, job);
 
           //drag drop
           job.dd = new Y.DD.Drag({
@@ -362,17 +360,17 @@ YUI().use(
         job.optionsNode.appendTo(this.optionsEl);
         job.statusNode.appendTo(this.statusEl);
 
-        var anim;
         if (shouldFadeIn) {
-          var anim = new Y.Anim({
+          new Y.Anim({
             node: job.container,
             to: { opacity: 1.0 },
             duration: 1.0
-          });
-          anim.run();
+          }).run();
         }
 
         this.processing = false;
+
+        this.onJobChanged(job);
 
         return job;
       };
@@ -427,6 +425,8 @@ YUI().use(
 
         //force propagate
         this.propagateFiles();
+
+        this.saveDraft();
 
         this.deleting = false;
       };
@@ -578,16 +578,7 @@ YUI().use(
 
 
       YabiWorkflow.prototype.onJobLoaded = function(job) {
-        if (this.workflowLoaded) return;
-        var i;
-        var allJobsLoaded = true;
-        for (i = 0; i < this.jobs.length; i++) {
-            if (!this.jobs[i].loaded) {
-                allJobsLoaded = false;
-                break;
-            }
-        }
-        if (allJobsLoaded) {
+        if (!this.workflowLoaded && _.every(this.jobs, "loaded")) {
           this.onWorkflowLoaded();
         }
       };
@@ -595,10 +586,10 @@ YUI().use(
       YabiWorkflow.prototype.onWorkflowLoaded = function(value) {
         this.workflowLoaded = true;
         if (this.reusing) {
-          this.onReuseAfterLoad();
-        } else if (this.importingWorkflowJobs.length > 0) {
-          this.setupJobParams(this.importingWorkflowJobs);
-          this.importingWorkflowJobs = [];
+          this.setupJobParams(this.jobs);
+        } else if (this.setupJobsList.length > 0) {
+          this.setupJobParams(this.setupJobsList);
+          this.setupJobsList = [];
         }
       };
 
@@ -703,17 +694,12 @@ YUI().use(
        * produces a json string for this workflow
        */
       YabiWorkflow.prototype.toJSON = function() {
-        var result = { 'name': this.name, 'tags': this.tags };
-
-        var jobs = [];
-        for (var index in this.jobs) {
-          jobs.push(this.jobs[index].toJSON());
-        }
-
-        result.jobs = jobs;
-        return Y.JSON.stringify(result);
+        return Y.JSON.stringify({
+          name: this.name,
+          tags: this.tags,
+          jobs: _.map(this.jobs, function(job) { return job.toJSON(); })
+        });
       };
-
 
       /**
        * hydrate
@@ -813,15 +799,40 @@ YUI().use(
         }
       };
 
-
-      /**
-       * Called when workflow reused, after new workflow has been loaded with
-       * data from template workflow.
-       */
-      YabiWorkflow.prototype.onReuseAfterLoad = function() {
-        this.setupJobParams(workflow.jobs);
+      YabiWorkflow.prototype.onJobChanged = function(job) {
+        this.saveDraft();
       };
 
+      YabiWorkflow.prototype.saveDraft = function() {
+        if (this.editable && this.draftLoaded) {
+          Y.Cookie.set("workflow", this.toJSON());
+        }
+      };
+
+      YabiWorkflow.prototype.loadDraft = function() {
+        if (this.editable) {
+          this.draftLoaded = false;
+          var json = Y.Cookie.get("workflow");
+          if (json) {
+            var ob = Y.JSON.parse(json);
+            this.solidify(ob);
+            this.setTags(ob.tags);
+            this.setupJobsList = this.jobs
+          }
+          this.draftLoaded = true;
+        }
+      };
+
+      /**
+       * Job parameters can't be set until the tool definitions are
+       * loaded.
+       *
+       * This method is called after all tools are loaded, when there
+       * are params which need to be set.
+       *
+       * Params need to be set when reusing workflows, importing saved
+       * workflows, or loading a saved draft workflow.
+       */
       YabiWorkflow.prototype.setupJobParams = function(jobs) {
         function collectAllInputFileParams(jobs) {
           return jobs.map(function(job) {
@@ -889,15 +900,11 @@ YUI().use(
         }
 
         function setPreviousFileSelectorValues(param) {
-          var value, fileObj;
-
-          for (var i = 0; i < param.value.length; i++) {
-            value = param.value[i];
-            fileObj = new YabiSimpleFileValue(value.root, value.filename);
-
+          _(param.value).filter("filename").forEach(function(value) {
+            var fileObj = new YabiSimpleFileValue(value.root, value.filename);
             param.fileSelector.selectFile(fileObj);
             unselectFileIfInvalid(param, fileObj);
-          }
+          });
         }
 
         function setPreviousValues(param) {
@@ -981,7 +988,8 @@ YUI().use(
             jobEl = this.jobs[index];
           } else {
             jobEl = this.addJob(jobData.toolName,
-                                jobData.parameterList.parameter);
+                                jobData.parameterList.parameter,
+                                false);
           }
           if (!this.editable) {
             oldJobStatus = '';
@@ -1093,6 +1101,7 @@ YUI().use(
         if (!Y.Lang.isUndefined(postRelocate)) {
           postRelocate(this.workflowId);
         }
+        this.saveDraft();
       };
 
 
@@ -1159,20 +1168,6 @@ YUI().use(
         target.solidify(obj.json);
       };
 
-      YabiWorkflow.prototype.delJobCallback = function(e, invoke) {
-        e.halt(true);
-        invoke.target.deleteJob(invoke.object);
-        //prevent propagation of the event to select/deselecting the job
-      };
-
-      YabiWorkflow.prototype.selectJobCallback = function(e, invoke) {
-        e.halt(true);
-        var workflow = invoke.target;
-
-        workflow.selectJob(invoke.object);
-
-      };
-
       YabiWorkflow.prototype.startDragJobCallback = function(e) {
         var dragNode = e.target.get('dragNode');
         var node = e.target.get('node');
@@ -1219,6 +1214,8 @@ YUI().use(
 
         //re-propagate files
         workflow.propagateFiles();
+
+        workflow.saveDraft();
       };
 
       YabiWorkflow.prototype.onDragJobCallback = function(e) {

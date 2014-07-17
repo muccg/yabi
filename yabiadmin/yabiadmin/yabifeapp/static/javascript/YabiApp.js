@@ -92,15 +92,6 @@ YUI().use(
         }
       }
 
-      function summonJob(toolName) {
-        workflow.addJob(toolName);
-      }
-
-      function destroyWorkflow() {
-        workflow.destroy();
-        return false;
-      }
-
       return initWorkflow;
     })();
 
