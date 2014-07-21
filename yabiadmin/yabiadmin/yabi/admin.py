@@ -176,14 +176,18 @@ class CredentialAdmin(AdminBase):
     decache_credential.short_description = "Purge selected credentials from cache."
 
 
+class DynamicBackendConfigurationAdmin(AdminBase):
+    list_display = ['name']
+
+
 class BackendAdmin(AdminBase):
     form = BackendForm
     list_display = ['name', 'description', 'scheme', 'hostname',
                     'port', 'path', 'uri', 'backend_summary_link']
     fieldsets = (
         (None, {
-            'fields': ('name', 'description', 'scheme',
-                       'hostname', 'port', 'path', 'caps')
+            'fields': ('name', 'dynamic_backend', 'dynamic_backend_configuration',
+                       'description', 'scheme', 'hostname', 'port', 'path', 'caps')
         }),
         ('Filesystem Backends', {
             'classes': ('fsbackend-only',),
@@ -242,4 +246,5 @@ def register(site):
     site.register(Credential, CredentialAdmin)
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)
+    site.register(DynamicBackendConfiguration, DynamicBackendConfigurationAdmin)
     site.register(HostKey, HostKeyAdmin)

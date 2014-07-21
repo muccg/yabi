@@ -47,6 +47,12 @@ class BackendForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(BackendForm, self).clean()
+        dynamic_backend = cleaned_data.get("dynamic_backend")
+        dynamic_backend_configuration = cleaned_data.get("dynamic_backend_configuration")
+
+        if dynamic_backend and dynamic_backend_configuration is None:
+            raise forms.ValidationError("You must select a Dynamic Backend Configuration "
+                                        "for a Dynamic Backend.")
         scheme = self.cleaned_data.get('scheme')
 
         caps = get_backend_caps()
