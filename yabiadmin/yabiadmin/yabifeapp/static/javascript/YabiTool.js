@@ -93,17 +93,22 @@ YabiTool.prototype.setupFootNode = function() {
       confirm.toggleView();
     };
 
+    var self = this;
+    var removeFromCollection = function() {
+      self.node.hide();
+      _.pull(self.collection.tools, self);
+    };
+
     del.on("click", ask);
     no.on("click", ask);
     yes.on("click", function(e) {
-      var node = this.node;
       ask(e);
 
       Y.io(appURL + "ws/workflows/delete_saved/", {
         method: 'POST',
         on: {
           success: function (transId, obj, args) {
-            node.hide();
+            removeFromCollection();
             YAHOO.ccgyabi.widget.YabiMessage.success("Deleted");
           },
           failure: function (transId, obj) {
