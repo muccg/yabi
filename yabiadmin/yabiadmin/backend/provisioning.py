@@ -43,9 +43,9 @@ def create_backend(task, be_type):
     Possible types are 'fs', and 'ex'.
     """
 
-    if be_type = 'fs':
+    if be_type == 'fs':
         be = task.job.tool.fs_backend
-    elif be_type = 'ex':
+    elif be_type == 'ex':
         be = task.job.tool.backend
     else:
         raise ValueError('Invalid Backend type "%s"' % be_type)
@@ -97,7 +97,7 @@ def start_up_instance(configuration):
     return instance
 
 
-def create_dynamic_backend_in_db(instance, be, task, be_type, config):
+def create_dynamic_backend_in_db(instance, be, job, be_type, config):
     dynbe_inst = DynamicBackendInstance.objects.create(
         backend=be,
         created_for_job=job,
