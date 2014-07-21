@@ -128,9 +128,8 @@ YUI().use(
           this.toolbarEl.appendChild(this.reuseButtonEl);
         }
 
-        Y.Node.create('<span class="fakeButton"/>')
-          .set("text", this.editable ? 'save' : 'save as')
-          .appendTo(this.toolbarEl)
+        Yabi.util.fakeButton(this.editable ? 'save' : 'save as')
+          .appendTo(toolbar)
           .on('click', this.saveAsCallback, null, this);
 
         this.startEl = document.createElement('div');

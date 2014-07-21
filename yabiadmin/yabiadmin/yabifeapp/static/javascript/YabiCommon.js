@@ -77,3 +77,8 @@ Yabi.util.Status.getStatusDescription = function(status) {
   if (status === 'retrying') return 'errored, Yabi is retrying to run it';
   return status;
 };
+
+/* Creates a real fake button Y.Node */
+Yabi.util.fakeButton = function(text) {
+  return Y.Node.create('<button type="button" class="fakeButton" />').set("text", text);
+};
