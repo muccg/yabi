@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # Provisioning, cleaning up Backends dynamically
 
 
-def create_backend(task, be_type):
+def create_backend(job, be_type):
     """
     Creates the right type of BE for the job if the BE is dynamic.
     For non-dynamic BEs nothing is done.
@@ -44,21 +44,21 @@ def create_backend(task, be_type):
     """
 
     if be_type == 'fs':
-        be = task.job.tool.fs_backend
+        be = job.tool.fs_backend
     elif be_type == 'ex':
-        be = task.job.tool.backend
+        be = job.tool.backend
     else:
         raise ValueError('Invalid Backend type "%s"' % be_type)
 
     if not be.dynamic_backend:
-        logger.debug("%s task's %s BE not dynamic. No provisioning.", task.pk, be_type)
+        logger.debug("%s job's %s BE not dynamic. No provisioning.", job.pk, be_type)
         return
 
-    logger.info("Creating dynamic backend %s for task %s", be, task.pk)
+    logger.info("Creating dynamic backend %s for job %s", be, job.pk)
     config = be.dynamic_backend_configuration
     instance = start_up_instance(config.configuration)
 
-    create_dynamic_backend_in_db(instance, be, task, be_type, config)
+    create_dynamic_backend_in_db(instance, be, job, be_type, config)
 
 
 def use_stagein_backend_for_execution(job):
