@@ -244,6 +244,7 @@ class Migration(SchemaMigration):
             'command': ('django.db.models.fields.TextField', [], {}),
             'command_template': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'cpus': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
+            'dynamic_backends': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabiengine.DynamicBackendInstance']", 'null': 'True', 'through': u"orm['yabiengine.JobDynamicBackend']", 'blank': 'True'}),
             'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'exec_backend': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
             'fs_backend': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
