@@ -17,23 +17,6 @@ Yabi = {
 
 
 /**
- * Removes all children from the given element. Normally you'd use a library
- * that does this for you, but sadly, we're not blessed with such a beast in
- * YUI 2.
- *
- * @param {DOMElement} e The element to purge children from.
- * @return {DOMElement} The element.
- */
-Yabi.util.empty = function(e) {
-  while (e.childNodes.length) {
-    e.removeChild(e.firstChild);
-  }
-
-  return e;
-};
-
-
-/**
  * Returns the offset from the top-left of the viewport for the given element.
  *
  * @return {Object} An object with "left" and "top" elements, each a number
@@ -74,36 +57,6 @@ Yabi.util.getViewportHeight = function() {
   return height;
 };
 
-
-/**
- * Replaces all child elements in the given element with the new element(s).
- *
- * @param {DOMElement} e The parent element.
- * {Array.<DOMElement>} childrenElements The children elements to add.
- * @return {DOMElement} The passed in elements with children replaced.
- */
-Yabi.util.replace = function(e) {
-  Yabi.util.empty(e);
-
-  for (var i = 1; i < arguments.length; i++) {
-    e.appendChild(arguments[i]);
-  }
-
-  return e;
-};
-
-
-/**
- * Updates the given element to contain only the given text.
- *
- * @param {DOMElement} e The element.
- * @param {String} text The text to set.
- * @return {DOMElement} The passed in element with the set text.
- */
-Yabi.util.text = function(e, text) {
-  return Yabi.util.replace(e, document.createTextNode(text));
-};
-
 Yabi.util.doesGlobMatch = function(name, glob) {
   var matcher = globToRegexp(glob, {extended: true});
   return matcher.test(name);
@@ -124,4 +77,3 @@ Yabi.util.Status.getStatusDescription = function(status) {
   if (status === 'retrying') return 'errored, Yabi is retrying to run it';
   return status;
 };
-

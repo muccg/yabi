@@ -359,8 +359,12 @@ display:inline;
     z-index:100;
 }
 
-.workflowToolbar {
+.workflowToolbar, .workflowSaveAsDlg {
     margin-top:9px;
+}
+
+.workflowSaveAsDlg .fakeButton {
+    margin-left: 0.5em;
 }
 
 .workflowContainer {
@@ -951,11 +955,29 @@ input {
 }
 
 .toolDescription {
-    display: none;
     border-top:1px solid #eee;
     color:#aaa;
     padding-top:2px;
     margin-top:3px;
+}
+
+.toolDescription li {
+    display: block;
+}
+
+.toolDescription .toolFooter {
+    border-top:1px solid #eee;
+    padding-top:2px;
+}
+
+.toolDescription .toolFooter button.fakeButton {
+    color: #808080;
+    font-size: 90%;
+    margin-left: 0.5em;
+}
+
+.toolDescription .toolFooter .confirm, .toolDescription .toolFooter .delButton {
+    float: right;
 }
 
 .toolHelp {
@@ -983,6 +1005,10 @@ input {
     border-bottom:2px solid #eee;
     margin-bottom:4px;
     font-size:90%;
+}
+
+.toolGroup.saved_workflows {
+    margin-top: 1.5em;
 }
 
 .tool {
@@ -1015,6 +1041,18 @@ div:hover > .tool {
     background: -moz-linear-gradient(top, #eaeff2, #dadfe2);
     background: -webkit-gradient(linear, left top, left bottom, from(#eaeff2), to(#dadfe2));
     text-shadow: 0 1px 1px #eee;
+}
+
+.saved_workflows > .tool {
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eaf2f0', EndColorStr='#dae2df');
+    background: -moz-linear-gradient(top, #eaf2f0, #dae2df);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eaf2f0), to(#dae2df));
+}
+
+.saved_workflows:hover > .tool {
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eaeff2', EndColorStr='#dadfe2');
+    background: -moz-linear-gradient(top, #eaeff2, #dadfe2);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eaeff2), to(#dadfe2));
 }
 
 .addLink {
@@ -1224,9 +1262,6 @@ div:hover > .tool {
     margin-right:8px;
     vertical-align:sub;
 }
-
-
-
 
 .displayNone {
     display:none;

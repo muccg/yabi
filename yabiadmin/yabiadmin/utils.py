@@ -39,8 +39,8 @@ def json_response(data):
     }))
 
 
-def json_error_response(message):
+def json_error_response(message, **response_kwargs):
     return HttpResponse(json.dumps({
         'status': 'error',
         'message': message,
-    }))
+    }), **response_kwargs)

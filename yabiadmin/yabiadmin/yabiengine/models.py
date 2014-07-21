@@ -71,6 +71,19 @@ class Editable(object):
     edit_link.allow_tags = True
 
 
+class SavedWorkflow(models.Model, Editable):
+    name = models.CharField(max_length=255)
+    creator = models.ForeignKey(User)
+    created_on = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
+    json = models.TextField()
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        get_latest_by = "created_on"
+
+
 class Workflow(models.Model, Editable, Status):
     name = models.CharField(max_length=255)
     user = models.ForeignKey(User)
@@ -366,12 +379,13 @@ class Task(models.Model, Editable, Status):
             "stageout_method": stageout_method
         }
 
-        stageins = self.stagein_set.all()
-        for s in stageins:
+        for s in self.stagein_set.all():
             src_scheme, src_rest = uriparse(s.src)
             dst_scheme, dst_rest = uriparse(s.dst)
 
-            output["stagein"].append({"src": s.src, "dst": s.dst, "order": s.order, "method": s.method})              # method may be 'copy', 'lcopy' or 'link'
+            # method may be 'copy', 'lcopy' or 'link'
+            output["stagein"].append({"src": s.src, "dst": s.dst,
+                                      "order": s.order, "method": s.method})
 
         return json.dumps(output)
 
