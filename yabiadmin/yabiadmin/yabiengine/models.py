@@ -210,6 +210,8 @@ class Job(models.Model, Editable, Status):
     preferred_stagein_method = models.CharField(max_length=5, null=False, choices=STAGING_COPY_CHOICES)
     preferred_stageout_method = models.CharField(max_length=5, null=False, choices=STAGING_COPY_CHOICES)
 
+    dynamic_backends = models.ManyToManyField('DynamicBackendInstance', through='JobDynamicBackend', null=True, blank=True)
+
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)
 
