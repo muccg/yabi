@@ -858,6 +858,7 @@ YUI().use(
             this.solidify(ob);
             this.setTags(ob.tags);
             this.setupJobsList = this.jobs
+            this.prefillName = ob.name;
           }
           this.draftLoaded = true;
         }
