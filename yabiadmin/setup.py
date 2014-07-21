@@ -36,6 +36,7 @@ install_requires = [
     'yaphc==0.1.5',
     'six>=1.5,<1.6',
     'flower>=0.7.0',
+    'cloudseeder==1.2.4',
 ]
 
 # Compiled python modules which are usually provided by system packages
@@ -76,6 +77,7 @@ dependency_links = [
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-introspect-0.1.2.tar.gz',
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.3.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
+    'https://bitbucket.org/ccgmurdoch/cloudseeder/downloads/cloudseeder-1.2.4.tar.gz',
 
     #'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
     # Temporary fix
