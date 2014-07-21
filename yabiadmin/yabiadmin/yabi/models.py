@@ -103,7 +103,6 @@ class Tool(Base):
     enabled = models.BooleanField(default=True)
     backend = models.ForeignKey('Backend')
     fs_backend = models.ForeignKey('Backend', related_name="fs_backends")
-    use_same_dynamic_backend = models.BooleanField(default=True)
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     accepts_input = models.BooleanField(default=False)
@@ -124,7 +123,6 @@ class Tool(Base):
     enabled.help_text = "Enable tool in frontend."
     backend.help_text = "The execution backend for this tool."
     fs_backend.help_text = "The filesystem backend for this tool."
-    use_same_dynamic_backend.help_text = "If checked, and both FS and Exec Backend's are dynamic, create just one instance and use that for both FS and Exec Backends."
     accepts_input.help_text = "If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
     module.help_text = "Comma separated list of modules to load."
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
@@ -610,15 +608,6 @@ class Credential(Base):
         return getattr(cls, "backend_auth", {}).get("class", "") if cls else ""
 
 
-class DynamicBackendConfiguration(Base):
-    name = models.CharField(max_length=255)
-    configuration = models.TextField()
-    configuration.help_text = "JSON of the configuration dictionary to be used when creating this Dynamic Backend"
-
-    def __unicode__(self):
-        return self.name
-
-
 class Backend(Base):
     def __init__(self, *args, **kwargs):
         super(Backend, self).__init__(*args, **kwargs)
@@ -635,11 +624,8 @@ class Backend(Base):
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
     submission = models.TextField(blank=True)
-    dynamic_backend = models.BooleanField(default=False)
-    dynamic_backend_configuration = models.ForeignKey(DynamicBackendConfiguration, null=True, blank=True)
-
     temporary_directory = models.CharField(max_length=512, blank=True)
-    hostname.help_text = "Hostname must not end with a /. For dynamic backends set to \"DYNAMIC\"."
+    hostname.help_text = "Hostname must not end with a /."
     path.help_text = """Path must start and end with a /.<br/><br/>Execution backends must only have / in the path field.<br/><br/>
     For filesystem backends, Yabi will take the value in path and combine it with any path snippet in Backend Credential to form a URI. <br/>
     i.e. http://myserver.mydomain/home/ would be entered here and then on the Backend Credential for UserX you would enter <br/>
@@ -647,8 +633,6 @@ class Backend(Base):
     lcopy_supported.help_text = "Backend supports 'cp' localised copies."
     link_supported.help_text = "Backend supports 'ln' localised symlinking."
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
-    dynamic_backend.help_text = "Is this Backend dynamic? Dynamic backends can be created dynamically on demand. For example Amazon EC2 or LXC (Linux Containers)."
-    dynamic_backend_configuration.help_text = "The configuration used to create the Dynamic Backend.Set on Dynamic Backends only!"
     temporary_directory.help_text = 'Only to be set on execution backends. Temporary directory used for temporary execution scripts. Blank means "/tmp".'
 
     @property
