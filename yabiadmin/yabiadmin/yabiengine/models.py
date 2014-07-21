@@ -460,6 +460,37 @@ class Task(models.Model, Editable, Status):
         self.save()
 
 
+class DynamicBackendInstance(models.Model):
+    created_on = models.DateTimeField(auto_now_add=True, editable=False)
+    backend = models.ForeignKey(Backend)
+    created_for_job = models.ForeignKey(Job)
+    configuration = models.ForeignKey(DynamicBackendConfiguration)
+    instance_handle = models.CharField(max_length=256)
+    hostname = models.CharField(max_length=512)
+    destroyed_on = models.DateTimeField(blank=True, null=True)
+
+
+class JobDynamicBackend(models.Model):
+    BE_TYPE_CHOICES = (
+        ('fs', 'filesystem'),
+        ('ex', 'execution'),
+    )
+    BE_TYPE_MAP = dict(BE_TYPE_CHOICES)
+    BE_TYPE_REVERSED_MAP = dict(map(reversed, BE_TYPE_CHOICES))
+
+    @staticmethod
+    def descr_to_type(descr):
+        return JobDynamicBackend.BE_TYPE_REVERSED_MAP[descr]
+
+    job = models.ForeignKey(Job)
+    backend = models.ForeignKey(DynamicBackendInstance)
+    be_type = models.CharField(max_length=2, choices=BE_TYPE_CHOICES)
+
+    @property
+    def type_descr(self):
+        return self.BE_TYPE_MAP[self.be_type]
+
+
 class StageIn(models.Model, Editable):
     src = models.CharField(max_length=256)
     dst = models.CharField(max_length=256)
