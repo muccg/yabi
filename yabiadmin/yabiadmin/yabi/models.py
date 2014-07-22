@@ -732,10 +732,16 @@ class BackendCredential(Base):
 
     @property
     def homedir_uri(self):
+        return self.get_homedir_uri()
+
+    def get_homedir_uri(self, hostname=None):
         """
         Returns full uri to the user's homedir
         """
-        netloc = '%s@%s' % (self.credential.username, self.backend.hostname)
+        if hostname is None:
+            hostname = self.backend.hostname
+
+        netloc = '%s@%s' % (self.credential.username, hostname)
         if self.backend.port:
             netloc += ':%d' % self.backend.port
 
