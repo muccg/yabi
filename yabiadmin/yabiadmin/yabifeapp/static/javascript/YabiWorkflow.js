@@ -434,7 +434,7 @@ YUI().use(
 
         this.removeJobNode(job)
 
-        this.hintNode.toggleView(this.jobs.length > 0);
+        this.hintNode.toggleView(this.jobs.length === 0);
 
         //force propagate
         this.propagateFiles();
