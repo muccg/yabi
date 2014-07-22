@@ -464,7 +464,6 @@ class Task(models.Model, Editable, Status):
 
 class DynamicBackendInstance(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
-    backend = models.ForeignKey(Backend)
     created_for_job = models.ForeignKey(Job)
     configuration = models.ForeignKey(DynamicBackendConfiguration)
     instance_handle = models.CharField(max_length=256)
@@ -485,7 +484,8 @@ class JobDynamicBackend(models.Model):
         return JobDynamicBackend.BE_TYPE_REVERSED_MAP[descr]
 
     job = models.ForeignKey(Job)
-    backend = models.ForeignKey(DynamicBackendInstance)
+    backend = models.ForeignKey(Backend)
+    instance = models.ForeignKey(DynamicBackendInstance)
     be_type = models.CharField(max_length=2, choices=BE_TYPE_CHOICES)
 
     @property
