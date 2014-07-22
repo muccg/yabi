@@ -22,13 +22,14 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
-from django.utils import simplejson as json
 import os
+from functools import partial
+from django.utils import simplejson as json
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabi.models import Backend, BackendCredential
-from django.core.exceptions import ObjectDoesNotExist
 import logging
-from functools import partial
 
 
 logger = logging.getLogger(__name__)
@@ -75,16 +76,12 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
         raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri: path passed in was: %s" % path)
 
     # get our set of credential candidates
-    bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
-                                           backend__scheme=schema,
-                                           credential__username=rest.username,
-                                           backend__hostname=rest.hostname)
+    bcs = _get_credential_candidates(yabiusername, schema, rest.username, rest.hostname)
 
-    # there must only be one valid exec credential
-    if len(bcs) == 1:
-        return bcs[0]
+    if len(bcs) == 0:
+        raise ObjectDoesNotExist("Could not find backendcredential")
 
-    raise ObjectDoesNotExist("Could not find backendcredential")
+    return bcs[0]
 
 
 def _enforce_FS_schema_only(schema):
@@ -101,10 +98,17 @@ def _normalise_path(path):
 
 
 def _get_credential_candidates(yabiusername, schema, username, hostname):
-    return BackendCredential.objects.filter(credential__user__name=yabiusername,
-                                            backend__scheme=schema,
-                                            credential__username=username,
-                                            backend__hostname=hostname)
+    def is_running_dyn_be(hostname):
+        return (Q(backend__jobdynamicbackend__instance__hostname=hostname) &
+                Q(backend__jobdynamicbackend__instance__destroyed_on__isnull=True))
+
+    def is_hostname_matching(hostname):
+        return Q(backend__hostname=hostname) | is_running_dyn_be(hostname)
+
+    return BackendCredential.objects.filter(
+        credential__user__name=yabiusername,
+        backend__scheme=schema,
+        credential__username=username).filter(is_hostname_matching(hostname))
 
 
 def _be_cred_path(be_cred):
