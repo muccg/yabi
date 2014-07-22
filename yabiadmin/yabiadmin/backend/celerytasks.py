@@ -38,6 +38,7 @@ from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Job, Task, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, create_logger, YabiDBHandler, YabiContextFilter
+from yabiadmin.backend import provisioning
 import celery
 from django.conf import settings
 from django.db.models import Q
@@ -103,6 +104,28 @@ def create_jobs(workflow_id):
     return workflow.pk
 
 
+def _process_job(job):
+    def dynamicbe_job_chain(job_id):
+        return chain(
+            provision_fs_be.s(job_id),
+            provision_ex_be.s(),
+            create_db_tasks.s(),
+            spawn_ready_tasks.s())
+        # clean_up_dynamic_backends() happens on_job_completed()
+
+    def simple_job_chain(job_id):
+        return chain(
+            create_db_tasks.s(job_id),
+            spawn_ready_tasks.s())
+
+    if job.has_dynamic_backend:
+        job_chain = dynamicbe_job_chain(job.pk)
+    else:
+        job_chain = simple_job_chain(job.pk)
+
+    job_chain.apply_async()
+
+
 @app.task
 @log_it('workflow')
 def process_jobs(workflow_id):
@@ -113,7 +136,7 @@ def process_jobs(workflow_id):
         return
 
     for job in workflow.jobs_that_need_processing():
-        chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
+        _process_job(job)
 
 
 @app.task
@@ -141,6 +164,35 @@ def on_workflow_completed(workflow_id):
 
 @app.task(max_retries=None)
 @log_it('job')
+def provision_fs_be(job_id):
+    provision_be(job_id, 'fs')
+    return job_id
+
+
+@app.task(max_retries=None)
+@log_it('job')
+def provision_ex_be(job_id):
+    provision_be(job_id, 'ex')
+    return job_id
+
+
+@app.task(max_retries=None)
+@log_it('job')
+def clean_up_dynamic_backends(job_id):
+    job = EngineJob.objects.get(pk=job_id)
+    dynamic_backends = job.dynamicbackendinstance_set.filter(destroyed_on__isnull=True)
+    if dynamic_backends.count() == 0:
+        logger.info("Job %s has no dynamic backends to be cleaned up.", job_id)
+        return
+    for dynamic_be in dynamic_backends:
+        logger.info("Cleaning up dynamic backend %s", dynamic_be.hostname)
+        provisioning.destroy_backend(dynamic_be)
+
+    return job_id
+
+
+@app.task(max_retries=None)
+@log_it('job')
 def create_db_tasks(job_id):
     job_logger = create_job_logger(logger, job_id)
     request = get_current_celery_task().request
@@ -155,9 +207,7 @@ def create_db_tasks(job_id):
             return job_id
 
         if job.is_workflow_aborting:
-            job.status = STATUS_ABORTED
-            job.save()
-            job.workflow.update_status()
+            abort_job(job)
             return None
 
         tasks_count = job.create_tasks()
@@ -201,9 +251,7 @@ def spawn_ready_tasks(job_id):
                 # need to update task.job.status here when all tasks for job spawned ?
 
         if aborting:
-            job.status = STATUS_ABORTED
-            job.save()
-            job.workflow.update_status()
+            abort_job(job)
 
         job_logger.info("Finished spawn_ready_tasks for Job %s", job_id)
 
@@ -217,6 +265,11 @@ def spawn_ready_tasks(job_id):
         job.save()
         job.workflow.save()
         raise
+
+
+@app.task
+def on_job_completed(job_id):
+    clean_up_dynamic_backends.apply_async((job_id,))
 
 
 # Celery Tasks working on a Yabi Task
@@ -444,6 +497,32 @@ def mark_task_as_error(task_id, error_msg="Some error occured"):
     mark_workflow_as_error(task_id)
 
 
+def provision_be(job_id, be_type):
+    job = EngineJob.objects.get(pk=job_id)
+    if job.is_workflow_aborting:
+        abort_job(job)
+        return None
+
+    def should_use_same_backend(job):
+        tool = job.tool
+        return (tool.backend.dynamic_backend and
+                tool.fs_backend.dynamic_backend and
+                tool.use_same_dynamic_backend)
+
+    if be_type == 'ex' and should_use_same_backend(job):
+        provisioning.use_fs_backend_for_execution(job)
+    else:
+        provisioning.create_backend(job, be_type)
+
+    return job_id
+
+
+def abort_job(job):
+    job.status = STATUS_ABORTED
+    job.save()
+    job.workflow.update_status()
+
+
 # Service methods
 # TODO TSZ move to another file?
 
@@ -468,6 +547,8 @@ def change_task_status(task_id, status):
             task.job.workflow.update_status()
             # commit before submission of Celery Tasks
             transaction.commit()
+            if job_status == STATUS_COMPLETE:
+                on_job_completed.apply_async((task.job.pk,))
             new_status = task.job.workflow.status
             if old_status != new_status and new_status == STATUS_COMPLETE:
                 on_workflow_completed.apply_async((task.job.workflow.pk,))
