@@ -24,7 +24,6 @@
 
 import os
 from functools import partial
-from django.utils import simplejson as json
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from yabiadmin.yabiengine.urihelper import uriparse
@@ -165,17 +164,3 @@ def get_exec_credential_for_uri(yabiusername, uri):
 
 def get_exec_backend_for_uri(yabiusername, uri):
     return get_exec_backendcredential_for_uri(yabiusername, uri).backend
-
-
-def get_backend_list(yabiusername):
-    """
-    Returns a list of backends for user, returns in json
-    """
-    logger.debug('yabiusername: %s' % (yabiusername))
-
-    results = {yabiusername: {'files': [], 'directories': []}}
-
-    for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
-        results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
-
-    return json.dumps(results)
