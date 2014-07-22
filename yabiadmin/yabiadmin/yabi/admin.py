@@ -91,6 +91,23 @@ class ToolParameterInline(admin.StackedInline):
     extra = 3
     filter_horizontal = ['accepted_filetypes']
 
+    def get_formset(self, request, obj=None, **kwargs):
+        # squirrel away tool object so it can be used in the filter
+        # for use_output_filename.
+        self.parent_tool = obj
+        return super(ToolParameterInline, self).get_formset(
+            request, obj, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "use_output_filename":
+            toolparams = db_field.rel.to.objects.all()
+            toolparams = toolparams.filter(tool=self.parent_tool)
+            kwargs["queryset"] = toolparams
+
+        return super(
+            ToolParameterInline, self).formfield_for_foreignkey(
+                db_field, request, **kwargs)
+
 
 class ToolAdmin(AdminBase):
     form = ToolForm
