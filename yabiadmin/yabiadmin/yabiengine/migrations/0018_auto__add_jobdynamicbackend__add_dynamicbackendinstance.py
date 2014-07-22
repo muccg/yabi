@@ -12,7 +12,8 @@ class Migration(SchemaMigration):
         db.create_table(u'yabiengine_jobdynamicbackend', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('job', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabiengine.Job'])),
-            ('backend', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabiengine.DynamicBackendInstance'])),
+            ('backend', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.Backend'])),
+            ('instance', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabiengine.DynamicBackendInstance'])),
             ('be_type', self.gf('django.db.models.fields.CharField')(max_length=2)),
         ))
         db.send_create_signal(u'yabiengine', ['JobDynamicBackend'])
@@ -21,7 +22,6 @@ class Migration(SchemaMigration):
         db.create_table(u'yabiengine_dynamicbackendinstance', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('backend', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.Backend'])),
             ('created_for_job', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabiengine.Job'])),
             ('configuration', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.DynamicBackendConfiguration'])),
             ('instance_handle', self.gf('django.db.models.fields.CharField')(max_length=256)),
@@ -230,7 +230,6 @@ class Migration(SchemaMigration):
         },
         u'yabiengine.dynamicbackendinstance': {
             'Meta': {'object_name': 'DynamicBackendInstance'},
-            'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Backend']"}),
             'configuration': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.DynamicBackendConfiguration']"}),
             'created_for_job': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Job']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -266,9 +265,10 @@ class Migration(SchemaMigration):
         },
         u'yabiengine.jobdynamicbackend': {
             'Meta': {'object_name': 'JobDynamicBackend'},
-            'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.DynamicBackendInstance']"}),
+            'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Backend']"}),
             'be_type': ('django.db.models.fields.CharField', [], {'max_length': '2'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'instance': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.DynamicBackendInstance']"}),
             'job': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Job']"})
         },
         u'yabiengine.queuedworkflow': {
