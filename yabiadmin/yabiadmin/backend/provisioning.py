@@ -58,15 +58,15 @@ def create_backend(job, be_type):
     config = be.dynamic_backend_configuration
     instance = start_up_instance(config.configuration)
 
-    jobdynbe = create_dynamic_backend_in_db(instance, be, job, be_type, config)
-    _update_backend_uri_on_job_in_db(job, be_type, jobdynbe.instance)
+    dbinstance = create_dynamic_backend_in_db(instance, be, job, be_type, config)
+    _update_backend_uri_on_job_in_db(job, be_type, dbinstance)
 
 
-def _update_backend_uri_on_job_in_db(job, be_type, instance):
+def _update_backend_uri_on_job_in_db(job, be_type, db_instance):
     if be_type == 'fs':
-        job.fs_backend = job.fs_credential.get_homedir_uri(instance.hostname)
+        job.fs_backend = job.fs_credential.get_homedir_uri(db_instance.hostname)
     if be_type == 'ex':
-        job.exec_backend = job.exec_credential.get_homedir_uri(instance.hostname)
+        job.exec_backend = job.exec_credential.get_homedir_uri(db_instance.hostname)
     job.save()
 
 
@@ -75,28 +75,28 @@ def use_fs_backend_for_execution(job):
     Point the EX be to the instance created for the FS BE, instead of creating
     a new instance.
     """
-    fs_be = job.dynamic_backends.get(jobdynamicbackend__be_type='fs')
+    fs_dbinstance = job.dynamic_backends.get(jobdynamicbackend__be_type='fs')
     JobDynamicBackend.objects.create(
         backend=job.tool.backend,
         job=job,
-        instance=fs_be,
+        instance=fs_dbinstance,
         be_type='ex')
-    _update_backend_uri_on_job_in_db(job, 'ex', fs_be)
+    _update_backend_uri_on_job_in_db(job, 'ex', fs_dbinstance)
 
 
-def destroy_backend(dynbe_inst):
+def destroy_backend(dbinstance):
     """
     Destroys a dynamic backend created by previously by Yabi.
     Accepts the DynamicBackendInstance that was created on BE creation.
     """
-    logger.info("Destroying dynamic backend %s", dynbe_inst.hostname)
+    logger.info("Destroying dynamic backend %s", dbinstance.hostname)
     seeder = CloudSeeder()
-    handle = InstanceHandle.from_json(dynbe_inst.instance_handle)
+    handle = InstanceHandle.from_json(dbinstance.instance_handle)
     instance = seeder.get_instance(handle)
     instance.destroy()
 
-    dynbe_inst.destroyed_on = datetime.now()
-    dynbe_inst.save()
+    dbinstance.destroyed_on = datetime.now()
+    dbinstance.save()
 
 
 # Implementation
@@ -119,8 +119,10 @@ def create_dynamic_backend_in_db(instance, be, job, be_type, config):
         instance_handle=instance.handle.to_json(),
         hostname=instance.ip_address)
 
-    return JobDynamicBackend.objects.create(
+    JobDynamicBackend.objects.create(
         job=job,
         backend=be,
         instance=dynbe_inst,
         be_type=be_type)
+
+    return dynbe_inst
