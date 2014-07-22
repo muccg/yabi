@@ -271,6 +271,11 @@ class Job(models.Model, Editable, Status):
     def is_retrying(self):
         return any([t.is_retrying for t in self.task_set.all()])
 
+    @property
+    def has_dynamic_backend(self):
+        return (self.tool.fs_backend.dynamic_backend or
+                self.tool.backend.dynamic_backend)
+
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
