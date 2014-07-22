@@ -51,22 +51,37 @@ def create_backend(job, be_type):
         raise ValueError('Invalid Backend type "%s"' % be_type)
 
     if not be.dynamic_backend:
-        logger.debug("%s job's %s BE not dynamic. No provisioning.", job.pk, be_type)
+        logger.info("%s job's %s BE not dynamic. No provisioning.", job.pk, be_type)
         return
 
     logger.info("Creating dynamic backend %s for job %s", be, job.pk)
     config = be.dynamic_backend_configuration
     instance = start_up_instance(config.configuration)
 
-    create_dynamic_backend_in_db(instance, be, job, be_type, config)
+    jobdynbe = create_dynamic_backend_in_db(instance, be, job, be_type, config)
+    _update_backend_uri_on_job_in_db(job, be_type, jobdynbe.instance)
 
 
-def use_stagein_backend_for_execution(job):
-    stagein_be = job.dynamic_backends.get(jobdynamicbackend__be_type='fs')
+def _update_backend_uri_on_job_in_db(job, be_type, instance):
+    if be_type == 'fs':
+        job.fs_backend = job.fs_credential.get_homedir_uri(instance.hostname)
+    if be_type == 'ex':
+        job.exec_backend = job.exec_credential.get_homedir_uri(instance.hostname)
+    job.save()
+
+
+def use_fs_backend_for_execution(job):
+    """
+    Point the EX be to the instance created for the FS BE, instead of creating
+    a new instance.
+    """
+    fs_be = job.dynamic_backends.get(jobdynamicbackend__be_type='fs')
     JobDynamicBackend.objects.create(
+        backend=job.tool.backend,
         job=job,
-        backend=stagein_be,
+        instance=fs_be,
         be_type='ex')
+    _update_backend_uri_on_job_in_db(job, 'ex', fs_be)
 
 
 def destroy_backend(dynbe_inst):
@@ -99,13 +114,13 @@ def start_up_instance(configuration):
 
 def create_dynamic_backend_in_db(instance, be, job, be_type, config):
     dynbe_inst = DynamicBackendInstance.objects.create(
-        backend=be,
         created_for_job=job,
         configuration=config,
         instance_handle=instance.handle.to_json(),
         hostname=instance.ip_address)
 
-    JobDynamicBackend.objects.create(
+    return JobDynamicBackend.objects.create(
         job=job,
-        backend=dynbe_inst,
+        backend=be,
+        instance=dynbe_inst,
         be_type=be_type)
