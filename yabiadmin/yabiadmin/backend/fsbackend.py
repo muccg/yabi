@@ -33,7 +33,6 @@ from yabiadmin.constants import ENVVAR_FILENAME
 import dateutil.parser
 import logging
 import traceback
-import shutil
 import threading
 import Queue
 from six.moves import map
