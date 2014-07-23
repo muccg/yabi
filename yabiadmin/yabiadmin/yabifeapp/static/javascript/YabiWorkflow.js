@@ -116,21 +116,43 @@ YUI().use(
         this.mainEl.appendChild(this.tagEl);
 
         //actions toolbar
-        this.toolbarEl = document.createElement('div');
-        this.toolbarEl.className = 'workflowToolbar';
-        this.mainEl.appendChild(this.toolbarEl);
+        var toolbar = Y.Node.create('<div class="workflowToolbar" />').appendTo(this.mainEl);
 
         if (!this.editable) {
           this.reuseButtonEl = document.createElement('span');
           this.reuseButtonEl.className = 'fakeButton';
           this.reuseButtonEl.appendChild(document.createTextNode('re-use'));
           Y.one(this.reuseButtonEl).on('click', this.reuseCallback, null, this);
-          this.toolbarEl.appendChild(this.reuseButtonEl);
+          toolbar.appendChild(this.reuseButtonEl);
+        } else {
+          var clear = Yabi.util.fakeButton("clear").appendTo(toolbar);
+          var yes = Yabi.util.fakeButton("Yes"), no = Yabi.util.fakeButton("No");
+          var dlg = Y.Node.create('<div class="workflowSaveAsDlg" />')
+            .append(Y.Node.create('<label>Clear workflow?</label').append(yes).append(no))
+            .appendTo(this.mainEl)
+            .hide();
+
+          var self = this;
+          var reset = function() {
+            toolbar.show();
+            dlg.hide();
+          };
+
+          clear.on('click', function() {
+            dlg.show();
+            toolbar.hide();
+          });
+          yes.on('click', function() {
+            self.clear();
+            reset();
+          });
+          no.on('click', function() {
+            reset();
+          });
         }
 
-        Y.Node.create('<span class="fakeButton"/>')
-          .set("text", this.editable ? 'save' : 'save as')
-          .appendTo(this.toolbarEl)
+        Yabi.util.fakeButton(this.editable ? 'save' : 'save as')
+          .appendTo(toolbar)
           .on('click', this.saveAsCallback, null, this);
 
         this.startEl = document.createElement('div');
@@ -140,12 +162,11 @@ YUI().use(
         this.mainEl.appendChild(this.startEl);
 
         //add empty workflow marker
-        this.hintEl = document.createElement('div');
-        this.hintEl.className = 'workflowHint';
+        this.hintNode = Y.Node.create('<div class="workflowHint" />')
+          .appendTo(this.mainEl);
         if (this.editable) {
-          this.hintEl.innerHTML = '<div>drag tools here to begin<br />' +
-              '(or use the <span>add</span> buttons)</div>';
-          this.mainEl.appendChild(this.hintEl);
+          this.hintNode.append('<div>drag tools here to begin<br />' +
+              '(or use the <span>add</span> buttons)</div>');
         }
 
         this.container.appendTo(this.mainEl);
@@ -290,7 +311,7 @@ YUI().use(
         }
         this.processing = true;
 
-        this.hintEl.style.display = 'none';
+        this.hintNode.hide();
 
         var job = new YabiJob(toolName, this.jobs.length + 1, preloadValues);
         job.editable = this.editable;
@@ -411,17 +432,9 @@ YUI().use(
 
         this.jobs.splice(delIndex, 1);
 
-        if (this.jobs.length === 0) {
-          this.hintEl.style.display = 'block';
-        }
+        this.removeJobNode(job)
 
-        job.destroy();
-
-        job.container.remove();
-        job.optionsNode.remove();
-        job.statusNode.remove()
-
-        job.container.detachAll();
+        this.hintNode.toggleView(this.jobs.length > 0);
 
         //force propagate
         this.propagateFiles();
@@ -429,6 +442,33 @@ YUI().use(
         this.saveDraft();
 
         this.deleting = false;
+      };
+
+      YabiWorkflow.prototype.removeJobNode = function(job) {
+        job.destroy();
+
+        job.container.remove();
+        job.optionsNode.remove();
+        job.statusNode.remove()
+
+        job.container.detachAll();
+      };
+
+      /* resets workflow to initial state */
+      YabiWorkflow.prototype.clear = function() {
+        _.forEach(this.jobs, this.removeJobNode, this);
+        this.tags = [];
+        this.jobs = [];
+        this.setInitialName("unnamed");
+
+        this.refreshTagList();
+
+        this.selectedJob = null;
+        this.afterSelectJob(null);
+
+        this.hintNode.show();
+
+        this.saveDraft();
       };
 
 
@@ -818,6 +858,7 @@ YUI().use(
             this.solidify(ob);
             this.setTags(ob.tags);
             this.setupJobsList = this.jobs
+            this.prefillName = ob.name;
           }
           this.draftLoaded = true;
         }
@@ -1104,6 +1145,7 @@ YUI().use(
           this.tagListEl.removeChild(this.tagListEl.firstChild);
         }
         this.tagListEl.appendChild(document.createTextNode('' + this.tags));
+        this.tagInputEl.value = this.tags;
       };
 
       /**
@@ -1318,7 +1360,7 @@ YUI().use(
           .append(Y.Node.create('<label>Save as: </label').append(name))
           .append(btn).append(cancel);
 
-        var clear = function() {
+        var reset = function() {
           container.show();
           dlg.remove();
         };
@@ -1327,10 +1369,10 @@ YUI().use(
           if (name.get("value").length > 0) {
             self.saveAs(name.get("value"));
           }
-          clear();
+          reset();
         });
         cancel.on('click', function() {
-          clear();
+          reset();
         });
 
         container.hide().get("parentNode").insert(dlg, container);

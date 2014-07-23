@@ -75,15 +75,11 @@ YabiTool.prototype.setupDescNode = function(descNode) {
 YabiTool.prototype.setupFootNode = function() {
   var node = Y.Node.create('<div class="toolFooter"/>');
 
-  var btn = function(text) {
-    return Y.Node.create('<button type="button" class="fakeButton" />').set("text", text);
-  };
-
   if (this.isSavedWorkflow()) {
     var creator = this.payload.creator;
     var created = this.payload.created_on;
-    var del = btn("delete").addClass("delButton").appendTo(node);
-    var yes = btn("Yes"), no = btn("No");
+    var del = Yabi.util.fakeButton("delete").addClass("delButton").appendTo(node);
+    var yes = Yabi.util.fakeButton("Yes"), no = Yabi.util.fakeButton("No");
     var confirm = Y.Node.create('<span class="confirm">Sure?</span>')
         .append(yes).append(no).appendTo(node).hide();
     Y.Node.create("<span>creator: " + creator + "<br/>" +
@@ -97,17 +93,22 @@ YabiTool.prototype.setupFootNode = function() {
       confirm.toggleView();
     };
 
+    var self = this;
+    var removeFromCollection = function() {
+      self.node.hide();
+      _.pull(self.collection.tools, self);
+    };
+
     del.on("click", ask);
     no.on("click", ask);
     yes.on("click", function(e) {
-      var node = this.node;
       ask(e);
 
       Y.io(appURL + "ws/workflows/delete_saved/", {
         method: 'POST',
         on: {
           success: function (transId, obj, args) {
-            node.hide();
+            removeFromCollection();
             YAHOO.ccgyabi.widget.YabiMessage.success("Deleted");
           },
           failure: function (transId, obj) {
