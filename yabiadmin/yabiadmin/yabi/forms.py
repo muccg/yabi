@@ -147,7 +147,7 @@ class BackendCredentialForm(forms.ModelForm):
 class ToolForm(forms.ModelForm):
     class Meta:
         model = Tool
-        exclude = ('groups', 'output_filetypes')
+        exclude = ('groups', 'output_filetypes', 'use_same_dynamic_backend')
 
     def clean_backend(self):
         backend = self.cleaned_data['backend']
