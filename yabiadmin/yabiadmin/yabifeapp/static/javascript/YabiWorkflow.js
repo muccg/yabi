@@ -468,7 +468,7 @@ YUI().use(
 
         this.hintNode.show();
 
-        this.saveDraft();
+        this.deleteDraft();
       };
 
 
@@ -847,6 +847,10 @@ YUI().use(
         if (this.editable && this.draftLoaded) {
           Y.Cookie.set("workflow", this.toJSON());
         }
+      };
+
+      YabiWorkflow.prototype.deleteDraft = function() {
+        Y.Cookie.remove("workflow");
       };
 
       YabiWorkflow.prototype.loadDraft = function() {
