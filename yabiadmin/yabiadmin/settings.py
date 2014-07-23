@@ -177,6 +177,10 @@ if env.get("dbtype", "") == "mysql":
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env.get("secret_key", "changeme")
 
+# AWS Credentials used to provision EC2 instances
+AWS_ACCESS_KEY_ID = env.get("aws_access_key_id", "")
+AWS_SECRET_ACCESS_KEY = env.get("aws_secret_access_key", "")
+
 # email settings so yabi can send email error alerts etc
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host
 EMAIL_HOST = env.get("email_host", "")

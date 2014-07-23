@@ -22,12 +22,15 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 
-import logging
-from yabiadmin.yabiengine.models import DynamicBackendInstance, JobDynamicBackend
-from datetime import datetime
-
-from cloudseeder import InstanceHandle, InstanceConfig, CloudSeeder
 import json
+from datetime import datetime
+import logging
+from cloudseeder import InstanceHandle, InstanceConfig, CloudSeeder
+from django.core.exceptions import ImproperlyConfigured
+from django.conf import settings
+
+from yabiadmin.yabiengine.models import DynamicBackendInstance, JobDynamicBackend
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +58,11 @@ def create_backend(job, be_type):
         return
 
     logger.info("Creating dynamic backend %s for job %s", be, job.pk)
-    config = be.dynamic_backend_configuration
-    instance = start_up_instance(config.configuration)
+    config = prepare_config(be.dynamic_backend_configuration)
+    instance = start_up_instance(config)
 
-    dbinstance = create_dynamic_backend_in_db(instance, be, job, be_type, config)
+    dbinstance = create_dynamic_backend_in_db(instance, be, job, be_type,
+                                              be.dynamic_backend_configuration)
     _update_backend_uri_on_job_in_db(job, be_type, dbinstance)
 
 
@@ -92,7 +96,8 @@ def destroy_backend(dbinstance):
     logger.info("Destroying dynamic backend %s", dbinstance.hostname)
     seeder = CloudSeeder()
     handle = InstanceHandle.from_json(dbinstance.instance_handle)
-    instance = seeder.get_instance(handle)
+    config = InstanceConfig("yabi_config", prepare_config(dbinstance.configuration))
+    instance = seeder.get_instance(handle, config=config)
     instance.destroy()
 
     dbinstance.destroyed_on = datetime.now()
@@ -102,9 +107,20 @@ def destroy_backend(dbinstance):
 # Implementation
 
 
+def prepare_config(dynbe_config):
+    config_dict = json.loads(dynbe_config.configuration)
+    if config_dict.get('instance_class') == 'ec2':
+        if not (settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
+            raise ImproperlyConfigured("Please set 'AWS_ACCESS_KEY_ID' and 'AWS_SECRET_ACCESS_KEY' in your settings file.")
+        config_dict.update({
+            'aws_access_key_id': settings.AWS_ACCESS_KEY_ID,
+            'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY})
+
+    return config_dict
+
+
 def start_up_instance(configuration):
-    config_dict = json.loads(configuration)
-    config = InstanceConfig("yabi_config", config_dict)
+    config = InstanceConfig("yabi_config", configuration)
     seeder = CloudSeeder()
     instance = seeder.instance(config)
     instance.start()
