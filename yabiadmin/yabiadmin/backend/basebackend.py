@@ -22,8 +22,6 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 from yabiadmin.yabiengine.urihelper import url_join
 import logging
-import os
-import shutil
 
 
 logger = logging.getLogger(__name__)
