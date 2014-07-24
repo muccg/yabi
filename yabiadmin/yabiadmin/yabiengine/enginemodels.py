@@ -258,7 +258,7 @@ class EngineJob(Job):
         template.parse_parameter_description()
 
         self.job_dict = job_dict
-        self.tool = Tool.objects.get(name=job_dict["toolName"])
+        self.tool = Tool.objects.get(id=job_dict["toolId"], desc__name=job_dict["toolName"])
         if not self.tool.enabled:
             raise InvalidRequestError("Can't process workflow with disabled tool '%s'" % self.tool.name)
 
@@ -273,7 +273,7 @@ class EngineJob(Job):
         self.command = str(template)                    # text description of command
 
         self.status = STATUS_PENDING
-        self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s" % (self.order + 1, self.tool.display_name))
+        self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s" % (self.order + 1, self.tool.desc.display_name))
         self.exec_backend = self.exec_credential.homedir_uri
         self.fs_backend = self.fs_credential.homedir_uri
         self.cpus = self.tool.cpus

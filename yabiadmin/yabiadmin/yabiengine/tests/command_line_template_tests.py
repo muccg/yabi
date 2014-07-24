@@ -45,7 +45,7 @@ class CommandLineTemplateTest(unittest.TestCase):
         demo_user = m.User.objects.get(name='demo')
         workflow = mommy.make('Workflow', user=demo_user)
         self.job = mommy.make('Job', workflow=workflow, order=0)
-        self.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
+        self.tool = mommy.make('ToolDesc', name='my-tool', path='tool.sh')
         combined_with_equals = ParameterSwitchUse.objects.get(display_text='combined with equals')
         value_only = ParameterSwitchUse.objects.get(display_text='valueOnly')
         mommy.make('ToolParameter', tool=self.tool, switch="-arg1", switch_use=combined_with_equals, rank=2)
