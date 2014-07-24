@@ -8,7 +8,7 @@ YUI().use(
   function(Y) {
     YabiApp.initDesignPage = (function() {
       function initWorkflow(reuseId) {
-        var reusing = reuseId == null ? false : true
+        var reusing = reuseId == null ? false : true;
         tools = new YabiToolCollection();
 
         Y.one("#toolContainer").append(tools.containerNode);
