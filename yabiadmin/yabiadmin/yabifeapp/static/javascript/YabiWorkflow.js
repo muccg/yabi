@@ -119,11 +119,9 @@ YUI().use(
         var toolbar = Y.Node.create('<div class="workflowToolbar" />').appendTo(this.mainEl);
 
         if (!this.editable) {
-          this.reuseButtonEl = document.createElement('span');
-          this.reuseButtonEl.className = 'fakeButton';
-          this.reuseButtonEl.appendChild(document.createTextNode('re-use'));
-          Y.one(this.reuseButtonEl).on('click', this.reuseCallback, null, this);
-          toolbar.appendChild(this.reuseButtonEl);
+          Yabi.util.fakeButton('re-use')
+            .appendTo(toolbar)
+            .on('click', this.reuseCallback, null, this);
         } else {
           var clear = Yabi.util.fakeButton("clear").appendTo(toolbar);
           var yes = Yabi.util.fakeButton("Yes"), no = Yabi.util.fakeButton("No");
