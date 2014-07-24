@@ -165,30 +165,47 @@ def on_workflow_completed(workflow_id):
 @app.task(max_retries=None)
 @log_it('job')
 def provision_fs_be(job_id):
-    provision_be(job_id, 'fs')
-    return job_id
+    job_logger = create_job_logger(logger, job_id)
+    try:
+        provision_be(job_id, 'fs')
+        return job_id
+    except Exception:
+        job_logger.exception("Exception in provision_fs_be for job {0}".format(job_id))
+        mark_job_as_error(job_id)
+        raise
 
 
 @app.task(max_retries=None)
 @log_it('job')
 def provision_ex_be(job_id):
-    provision_be(job_id, 'ex')
-    return job_id
+    job_logger = create_job_logger(logger, job_id)
+    try:
+        provision_be(job_id, 'ex')
+        return job_id
+    except Exception:
+        job_logger.exception("Exception in provision_ex_be for job {0}".format(job_id))
+        mark_job_as_error(job_id)
+        raise
 
 
 @app.task(max_retries=None)
 @log_it('job')
 def clean_up_dynamic_backends(job_id):
-    job = EngineJob.objects.get(pk=job_id)
-    dynamic_backends = job.dynamicbackendinstance_set.filter(destroyed_on__isnull=True)
-    if dynamic_backends.count() == 0:
-        logger.info("Job %s has no dynamic backends to be cleaned up.", job_id)
-        return
-    for dynamic_be in dynamic_backends:
-        logger.info("Cleaning up dynamic backend %s", dynamic_be.hostname)
-        provisioning.destroy_backend(dynamic_be)
+    job_logger = create_job_logger(logger, job_id)
+    try:
+        job = EngineJob.objects.get(pk=job_id)
+        dynamic_backends = job.dynamicbackendinstance_set.filter(destroyed_on__isnull=True)
+        if dynamic_backends.count() == 0:
+            logger.info("Job %s has no dynamic backends to be cleaned up.", job_id)
+            return
+        for dynamic_be in dynamic_backends:
+            logger.info("Cleaning up dynamic backend %s", dynamic_be.hostname)
+            provisioning.destroy_backend(dynamic_be)
 
-    return job_id
+        return job_id
+    except Exception:
+        job_logger.exception("Exception in clean_up_dynamic_backends for job {0}".format(job_id))
+        raise
 
 
 @app.task(max_retries=None)
