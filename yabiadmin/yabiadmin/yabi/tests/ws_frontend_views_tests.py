@@ -170,5 +170,4 @@ class TestLsWithExtraBackendCredentials(WSTestCase):
         self.assertItemsEqual(
             [[self.PRELOADED_BC.homedir_uri, 0, ''],
              [expected_homedir_uri, 0, '']],
-            listing[USER]['directories'],
-            'Should get preloaded BC and the visible, non-dynamic BC we created')
+            listing[USER]['directories'])
