@@ -222,10 +222,7 @@ def create_db_tasks(job_id):
         raise get_current_celery_task().retry(exc=dcna, countdown=countdown)
     except Exception:
         job_logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
-        job.status = STATUS_ERROR
-        job.workflow.status = STATUS_ERROR
-        job.save()
-        job.workflow.save()
+        mark_job_as_error(job_id)
         raise
 
 
@@ -259,11 +256,7 @@ def spawn_ready_tasks(job_id):
 
     except Exception:
         job_logger.exception("Exception when spawning tasks for job {0}".format(job_id))
-        job = EngineJob.objects.get(pk=job_id)
-        job.status = STATUS_ERROR
-        job.workflow.status = STATUS_ERROR
-        job.save()
-        job.workflow.save()
+        mark_job_as_error(job_id)
         raise
 
 
@@ -273,16 +266,6 @@ def on_job_completed(job_id):
 
 
 # Celery Tasks working on a Yabi Task
-
-def mark_workflow_as_error(task_id):
-    task_logger = create_task_logger(logger, task_id)
-    task_logger.error("Task chain for Task {0} failed.".format(task_id))
-    task = Task.objects.get(pk=task_id)
-    task.job.status = STATUS_ERROR
-    task.job.workflow.status = STATUS_ERROR
-    task.job.save()
-    task.job.workflow.save()
-    task_logger.info("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
 
 
 @transaction.commit_on_success()
@@ -356,6 +339,7 @@ def retry_on_error(original_function):
             retry_celery_task(exc, countdown)
 
         if task_id is not None:
+            task_logger.info('Task %s recovered from error' % task_id)
             remove_task_retrying_mark(task_id)
 
         return result
@@ -473,6 +457,15 @@ def backoff(count=0):
     return 5 ** (count + 1)
 
 
+def mark_job_as_error(job_id):
+    job = Job.objects.get(pk=job_id)
+    wfl_logger = create_workflow_logger(logger, job.workflow.pk)
+    job.status = STATUS_ERROR
+    job.save()
+    job.workflow.update_status()
+    wfl_logger.info("Workflow {0} encountered an error.".format(job.workflow.pk))
+
+
 def mark_task_as_retrying(task_id, message="Some error occurred"):
     task = Task.objects.get(pk=task_id)
     task.mark_task_as_retrying(message)
@@ -481,7 +474,7 @@ def mark_task_as_retrying(task_id, message="Some error occurred"):
 def remove_task_retrying_mark(task_id):
     task = Task.objects.get(pk=task_id)
     if task.is_retrying:
-        task.recovered_from_error()
+        task.finished_retrying()
 
 
 def set_task_error_message(task_id, error_msg):
@@ -491,10 +484,11 @@ def set_task_error_message(task_id, error_msg):
 
 
 def mark_task_as_error(task_id, error_msg="Some error occured"):
+    task_logger = create_task_logger(logger, task_id)
+    task_logger.error("Task chain for Task {0} failed with '{1}'".format(task_id, error_msg))
     remove_task_retrying_mark(task_id)
     change_task_status(task_id, STATUS_ERROR)
     set_task_error_message(task_id, error_msg)
-    mark_workflow_as_error(task_id)
 
 
 def provision_be(job_id, be_type):

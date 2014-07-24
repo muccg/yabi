@@ -125,12 +125,22 @@ class Workflow(models.Model, Editable, Status):
         return self.job_set.get(order=order)
 
     def update_status(self):
+        FINISHED = (STATUS_COMPLETE, STATUS_ERROR, STATUS_ABORTED)
+
         job_statuses = [x['status'] for x in Job.objects.filter(workflow=self).values('status')]
-        if not all([status in (STATUS_COMPLETE, STATUS_ERROR, STATUS_ABORTED) for status in job_statuses]):
+        jobs_finished = [status in FINISHED for status in job_statuses]
+        jobs_errored = [STATUS_ERROR == status for status in job_statuses]
+
+        if not all(jobs_finished):
+            # Handles transition from READY to RUNNING
+            # TODO Could be clearer than this
             if self.status == STATUS_READY:
                 if any([status in (STATUS_RUNNING, STATUS_COMPLETE) for status in job_statuses]):
                     self.status = STATUS_RUNNING
                     self.save()
+            if any(jobs_errored):
+                self.status = STATUS_ERROR
+                self.save()
             return self.status
 
         # All jobs should be finished (either completed, errored or aborted) at this point
@@ -460,8 +470,7 @@ class Task(models.Model, Editable, Status):
         self.error_msg = message
         self.save()
 
-    def recovered_from_error(self):
-        logger.debug("Task %s recovered from error", self.pk)
+    def finished_retrying(self):
         self.is_retrying = False
         self.error_msg = None
         self.save()
