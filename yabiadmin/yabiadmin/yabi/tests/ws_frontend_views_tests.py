@@ -164,10 +164,11 @@ class TestLsWithExtraBackendCredentials(WSTestCase):
         # BackendCredential we created with visible True and associated with a
         # non-dynamic backend
         expected_homedir_uri = 'sftp://%s@some.host.com:2222/some/home/someusername' % USER
-        self.assertEquals(
-            {USER: {
-                'files': [],
-                'directories': [
-                    [self.PRELOADED_BC.homedir_uri, 0, ''],
-                    [expected_homedir_uri, 0, '']]}},
-            listing)
+        self.assertIn(USER, listing, 'Should be keyed by username')
+        self.assertEquals(1, len(listing), 'Should be only one entry')
+        self.assertEquals([], listing[USER]['files'], 'Should have empty files array')
+        self.assertItemsEqual(
+            [[self.PRELOADED_BC.homedir_uri, 0, ''],
+             [expected_homedir_uri, 0, '']],
+            listing[USER]['directories'],
+            'Should get preloaded BC and the visible, non-dynamic BC we created')
