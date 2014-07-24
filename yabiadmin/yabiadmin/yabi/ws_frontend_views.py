@@ -70,7 +70,7 @@ def tool(request, toolname):
     try:
         tool = Tool.objects.get(name=toolname)
 
-        response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
+        response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
         cache.set(toolname_key, response, 30)
         return response
     except ObjectDoesNotExist:
@@ -86,13 +86,15 @@ def menu(request):
     # of tools.
     # ToolGroups are for example genomics, select data, mapreduce.
     toolset = menu_all_tools_toolset(request.user)
-    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}))
+    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}),
+                        content_type="application/json")
 
 
 @authentication_required
 def menu_saved_workflows(request):
     toolset = menu_saved_workflows_toolset(request.user)
-    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}))
+    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}),
+                        content_type="application/json")
 
 def menu_all_tools_toolset(user):
     qs = ToolGrouping.objects.filter(tool_set__users=user)

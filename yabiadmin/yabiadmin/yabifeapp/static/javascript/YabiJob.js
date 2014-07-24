@@ -192,9 +192,6 @@ YabiJob.prototype.checkValid = function(propagate) {
     this.propagateFiles();
     this.workflow.onJobChanged(this);
   }
-  if (this.valid) {
-    this.valid = this.payload.tool.enabled;
-  }
 };
 
 
@@ -556,11 +553,6 @@ YabiJob.prototype.solidify = function(obj) {
 
   this.titleNode.set("text", this.payload.tool.display_name);
   this.displayName = this.payload.tool.display_name;
-  if (!this.payload.tool.enabled) {
-      this.displayName = 'Disabled Tool: ' + this.displayName;
-      this.valid = false;
-      this.jobNode.addClass("disabled");
-  }
 
   var setupExtensions = function(title, node, extensions) {
     node.empty();

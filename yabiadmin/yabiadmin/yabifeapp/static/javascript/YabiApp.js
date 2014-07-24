@@ -72,6 +72,7 @@ YUI().use(
           jsCallback = {
             success: function (transId, obj, args) {
               YAHOO.ccgyabi.widget.YabiMessage.success("Success on submit!");
+              workflow.deleteDraft(true);
               workflow.submitSuccessCallback(obj, summonJobsView, args.target);
             },
             failure: function (transId, obj) {

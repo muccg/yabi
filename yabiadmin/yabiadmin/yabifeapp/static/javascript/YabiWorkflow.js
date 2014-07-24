@@ -119,11 +119,9 @@ YUI().use(
         var toolbar = Y.Node.create('<div class="workflowToolbar" />').appendTo(this.mainEl);
 
         if (!this.editable) {
-          this.reuseButtonEl = document.createElement('span');
-          this.reuseButtonEl.className = 'fakeButton';
-          this.reuseButtonEl.appendChild(document.createTextNode('re-use'));
-          Y.one(this.reuseButtonEl).on('click', this.reuseCallback, null, this);
-          toolbar.appendChild(this.reuseButtonEl);
+          Yabi.util.fakeButton('re-use')
+            .appendTo(toolbar)
+            .on('click', this.reuseCallback, null, this);
         } else {
           var clear = Yabi.util.fakeButton("clear").appendTo(toolbar);
           var yes = Yabi.util.fakeButton("Yes"), no = Yabi.util.fakeButton("No");
@@ -434,7 +432,7 @@ YUI().use(
 
         this.removeJobNode(job)
 
-        this.hintNode.toggleView(this.jobs.length > 0);
+        this.hintNode.toggleView(this.jobs.length === 0);
 
         //force propagate
         this.propagateFiles();
@@ -468,7 +466,7 @@ YUI().use(
 
         this.hintNode.show();
 
-        this.saveDraft();
+        this.deleteDraft();
       };
 
 
@@ -847,6 +845,15 @@ YUI().use(
         if (this.editable && this.draftLoaded) {
           Y.Cookie.set("workflow", this.toJSON());
         }
+      };
+
+      YabiWorkflow.prototype.deleteDraft = function(preventSaves) {
+        if (preventSaves) {
+          // Sometimes you want to delete the draft and prevent
+          // callback functions, etc from saving it again.
+          this.draftLoaded = false;
+        }
+        Y.Cookie.remove("workflow");
       };
 
       YabiWorkflow.prototype.loadDraft = function() {
