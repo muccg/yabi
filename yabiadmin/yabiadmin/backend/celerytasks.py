@@ -262,7 +262,9 @@ def spawn_ready_tasks(job_id):
 
 @app.task
 def on_job_completed(job_id):
-    clean_up_dynamic_backends.apply_async((job_id,))
+    job = Job.objects.get(pk=job_id)
+    if job.has_dynamic_backend:
+        clean_up_dynamic_backends.apply_async((job_id,))
 
 
 # Celery Tasks working on a Yabi Task
