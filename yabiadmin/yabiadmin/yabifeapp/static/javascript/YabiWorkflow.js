@@ -849,7 +849,12 @@ YUI().use(
         }
       };
 
-      YabiWorkflow.prototype.deleteDraft = function() {
+      YabiWorkflow.prototype.deleteDraft = function(preventSaves) {
+        if (preventSaves) {
+          // Sometimes you want to delete the draft and prevent
+          // callback functions, etc from saving it again.
+          this.draftLoaded = false;
+        }
         Y.Cookie.remove("workflow");
       };
 
