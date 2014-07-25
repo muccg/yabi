@@ -26,7 +26,10 @@ def main():
         argparser = ArgumentParser(add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
         argparser.add_argument("--yabi-bg", action='store_true', help="Run in background")
-        argparser.add_argument("--yabi-url", help="The URL of the YABI server", default=YABI_DEFAULT_URL)
+        argparser.add_argument("--yabi-url", help="The URL of the YABI server",
+                               default=YABI_DEFAULT_URL)
+        argparser.add_argument("--backend", metavar="BACKEND", default=None,
+                               help="Sets the execution backend.")
         options, args = argparser.parse_known_args()
 
         args = CommandLineArguments(args)
@@ -41,7 +44,8 @@ def main():
             return
 
         debug = options.yabi_debug
-        yabi = Yabi(url=options.yabi_url, bg=options.yabi_bg, debug=options.yabi_debug)
+        yabi = Yabi(url=options.yabi_url, backend=options.backend,
+                    bg=options.yabi_bg, debug=options.yabi_debug)
         action = yabi.choose_action(args.first_argument)
         if action.stagein_required():
             stagein = StageIn(yabi, args)
@@ -171,13 +175,14 @@ class StageIn(object):
 
 
 class Yabi(object):
-    def __init__(self, url, bg=False, debug=False):
+    def __init__(self, url, backend=None, bg=False, debug=False):
         self._http = None
         self.yabi_url = url
         self.workdir = os.path.expanduser('~/.yabish')
         self.cachedir = os.path.join(self.workdir, 'cache')
         self.cookiesfile = os.path.join(self.workdir, 'cookies.txt')
         self.username = None
+        self.backend = backend
         self.run_in_background = bg
         self.debug = debug
         if self.debug:

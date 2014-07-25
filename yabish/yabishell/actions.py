@@ -93,6 +93,8 @@ class RemoteAction(Action):
 
     def process(self, args):
         params = {'name': self.name}
+        if self.yabi.backend:
+            params["backend"] = self.yabi.backend
         for i, arg in enumerate(args):
             params['arg' + str(i)] = arg
 
@@ -328,13 +330,39 @@ class Status(Action):
             print("%4s %20s   %s" % ('ID', 'Status', 'Toolname'))
             print("=" * 80)
             for job in response['json']['jobs']:
-                tool_name = job['toolName']
-                if len(tool_name) > 50:
-                    tool_name = tool_name[:47] + '...'
+                tool_name = ellipsize(job['toolName'], 50)
                 print("%4s %20s   %s" % (job['jobId'], job['status'], tool_name))
 
         except Exception as e:
             print("Unable to load job status: %s" % e)
+
+
+def ellipsize(s, n=50):
+    if len(s) > n:
+        return s[:n - 3] + '...'
+    return s
+
+
+def pad(s, n):
+    return s + (" " * max(0, n - len(s)))
+
+
+class Backends(Action):
+    def __init__(self, *args, **kwargs):
+        Action.__init__(self, *args, **kwargs)
+        self.url = 'ws/yabish/backends'
+
+    def map_args(self, args):
+        return {}
+
+    def process_response(self, response):
+        if not response.get("success", False) or "backends" not in response:
+            print("Unable to list backends")
+
+        for backend in response["backends"]:
+            backend["desc"] = ellipsize(backend["description"], 44)
+            backend["name"] = pad(backend["name"], 32)
+            print("%(name)s %(desc)s" % backend)
 
 
 class Cp(Action, FileDownload):

@@ -67,4 +67,5 @@ urlpatterns += patterns(
     url(r'^yabish/submitjob/?$', 'submitjob', name='submitjob'),
     url(r'^yabish/createstageindir/?$', 'createstageindir', name='createstageindir'),
     url(r'^yabish/is_stagein_required/?$', 'is_stagein_required', name='is_stagein_required'),
+    url(r'^yabish/backends/?$', 'list_backends', name='list_backends'),
 )
