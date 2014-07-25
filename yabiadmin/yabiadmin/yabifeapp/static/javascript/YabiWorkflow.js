@@ -161,7 +161,7 @@ YUI().use(
 
         //add empty workflow marker
         this.hintNode = Y.Node.create('<div class="workflowHint" />')
-          .appendTo(this.mainEl);
+          .appendTo(this.mainEl).toggleView(this.editable);
         if (this.editable) {
           this.hintNode.append('<div>drag tools here to begin<br />' +
               '(or use the <span>add</span> buttons)</div>');
@@ -1038,8 +1038,8 @@ YUI().use(
           }
           if (!this.editable) {
             oldJobStatus = '';
-            if (!Y.Lang.isUndefined(oldJobsData)) {
-                oldJobStatus = oldJobsData[index].status;
+            if (oldJobsData && oldJobsData[index]) {
+                oldJobStatus = oldJobsData[index].status || '';
             }
 
             jobEl.renderProgress(jobData.status, jobData.is_retrying,
