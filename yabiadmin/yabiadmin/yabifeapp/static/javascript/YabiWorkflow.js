@@ -119,11 +119,9 @@ YUI().use(
         var toolbar = Y.Node.create('<div class="workflowToolbar" />').appendTo(this.mainEl);
 
         if (!this.editable) {
-          this.reuseButtonEl = document.createElement('span');
-          this.reuseButtonEl.className = 'fakeButton';
-          this.reuseButtonEl.appendChild(document.createTextNode('re-use'));
-          Y.one(this.reuseButtonEl).on('click', this.reuseCallback, null, this);
-          toolbar.appendChild(this.reuseButtonEl);
+          Yabi.util.fakeButton('re-use')
+            .appendTo(toolbar)
+            .on('click', this.reuseCallback, null, this);
         } else {
           var clear = Yabi.util.fakeButton("clear").appendTo(toolbar);
           var yes = Yabi.util.fakeButton("Yes"), no = Yabi.util.fakeButton("No");
@@ -163,7 +161,7 @@ YUI().use(
 
         //add empty workflow marker
         this.hintNode = Y.Node.create('<div class="workflowHint" />')
-          .appendTo(this.mainEl);
+          .appendTo(this.mainEl).toggleView(this.editable);
         if (this.editable) {
           this.hintNode.append('<div>drag tools here to begin<br />' +
               '(or use the <span>add</span> buttons)</div>');
@@ -1041,8 +1039,8 @@ YUI().use(
           }
           if (!this.editable) {
             oldJobStatus = '';
-            if (!Y.Lang.isUndefined(oldJobsData)) {
-                oldJobStatus = oldJobsData[index].status;
+            if (oldJobsData && oldJobsData[index]) {
+                oldJobStatus = oldJobsData[index].status || '';
             }
 
             jobEl.renderProgress(jobData.status, jobData.is_retrying,
