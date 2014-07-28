@@ -25,11 +25,11 @@
 import json
 from datetime import datetime
 import logging
-from cloudseeder import InstanceHandle, InstanceConfig, CloudSeeder
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 
 from yabiadmin.yabiengine.models import DynamicBackendInstance, JobDynamicBackend
+from . import cloud
 
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ def create_backend(job, be_type):
 
     logger.info("Creating dynamic backend %s for job %s", be, job.pk)
     config = prepare_config(be.dynamic_backend_configuration)
-    instance = start_up_instance(config)
+    instance = cloud.start_up_instance(config)
 
     dbinstance = create_dynamic_backend_in_db(instance, be, job, be_type,
                                               be.dynamic_backend_configuration)
@@ -94,11 +94,8 @@ def destroy_backend(dbinstance):
     Accepts the DynamicBackendInstance that was created on BE creation.
     """
     logger.info("Destroying dynamic backend %s", dbinstance.hostname)
-    seeder = CloudSeeder()
-    handle = InstanceHandle.from_json(dbinstance.instance_handle)
-    config = InstanceConfig("yabi_config", prepare_config(dbinstance.configuration))
-    instance = seeder.get_instance(handle, config=config)
-    instance.destroy()
+    config = prepare_config(dbinstance.configuration)
+    cloud.destroy_instance(dbinstance.instance_handle, config)
 
     dbinstance.destroyed_on = datetime.now()
     dbinstance.save()
@@ -117,15 +114,6 @@ def prepare_config(dynbe_config):
             'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY})
 
     return config_dict
-
-
-def start_up_instance(configuration):
-    config = InstanceConfig("yabi_config", configuration)
-    seeder = CloudSeeder()
-    instance = seeder.instance(config)
-    instance.start()
-
-    return instance
 
 
 def create_dynamic_backend_in_db(instance, be, job, be_type, config):
