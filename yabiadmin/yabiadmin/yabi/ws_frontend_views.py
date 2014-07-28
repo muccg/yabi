@@ -32,7 +32,8 @@ from urlparse import urlparse, urlunparse
 from collections import OrderedDict
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, BackendCredential
 from django.utils import simplejson as json
@@ -51,7 +52,6 @@ from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
 
 import logging
-import six
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d'
@@ -95,6 +95,7 @@ def menu_saved_workflows(request):
     toolset = menu_saved_workflows_toolset(request.user)
     return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}),
                         content_type="application/json")
+
 
 def menu_all_tools_toolset(user):
     qs = ToolGrouping.objects.filter(tool_set__users=user)
@@ -421,6 +422,7 @@ def save_workflow(request):
     )
 
     return json_response({"saved_workflow_id": workflow.pk})
+
 
 @authentication_required
 def delete_saved_workflow(request):

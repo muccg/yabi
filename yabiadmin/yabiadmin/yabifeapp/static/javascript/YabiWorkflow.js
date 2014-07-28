@@ -430,7 +430,7 @@ YUI().use(
 
         this.jobs.splice(delIndex, 1);
 
-        this.removeJobNode(job)
+        this.removeJobNode(job);
 
         this.hintNode.toggleView(this.jobs.length === 0);
 
@@ -447,7 +447,7 @@ YUI().use(
 
         job.container.remove();
         job.optionsNode.remove();
-        job.statusNode.remove()
+        job.statusNode.remove();
 
         job.container.detachAll();
       };
@@ -820,10 +820,10 @@ YUI().use(
           Y.io(appURL + "ws/workflows/save/", {
             method: 'POST',
             on: {
-              success: function (transId, obj, args) {
+              success: function(transId, obj, args) {
                 YAHOO.ccgyabi.widget.YabiMessage.success("Saved workflow " + name);
               },
-              failure: function (transId, obj) {
+              failure: function(transId, obj) {
                 YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to save :-(");
               }
             },
@@ -864,7 +864,7 @@ YUI().use(
             var ob = Y.JSON.parse(json);
             this.solidify(ob);
             this.setTags(ob.tags);
-            this.setupJobsList = this.jobs
+            this.setupJobsList = this.jobs;
             this.prefillName = ob.name;
           }
           this.draftLoaded = true;

@@ -398,8 +398,8 @@ YabiJob.prototype.renderJobStatus = function() {
  */
 YabiJob.prototype.renderJobStatusError = function() {
   this.statusLoading.destroy();
-  this.statusList.hide()
-  this.statusError.show()
+  this.statusList.hide();
+  this.statusError.show();
 };
 
 
