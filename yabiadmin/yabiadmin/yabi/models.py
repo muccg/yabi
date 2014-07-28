@@ -147,6 +147,7 @@ class ToolDesc(Base):
             'display_name': self.display_name,
             'path': self.path,
             'description': self.description,
+            'enabled': True,
             'accepts_input': self.accepts_input,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
@@ -205,7 +206,6 @@ class Tool(Base):
     link_supported.help_text = "If this tool should use symlinks on supported backends where appropriate."
 
     def tool_dict(self):
-        "This method not used since ToolDesc was split out"
         output = self.desc.tool_dict()
         output.update({
             'enabled': self.enabled,

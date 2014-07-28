@@ -434,9 +434,7 @@ class Submitworkflow(Action):
         self.url = 'ws/workflows/submit/'
 
     def submit_json(self, args):
-        json_file = args[0]
-        with open(json_file) as f:
-            wfjson = f.read()
+        wfjson = self._load_workflow_json(args[0])
         resp, json_response = self.yabi.post(self.url, {'workflowjson': wfjson})
         decoded_resp = self.decode_json(json_response)
         if not decoded_resp['data']['workflow_id']:
@@ -444,6 +442,17 @@ class Submitworkflow(Action):
         wfid = decoded_resp['data']['workflow_id']
         print('Running your job on the server. Id: %s' % wfid)
         return wfid
+
+    def _load_workflow_json(self, json_file):
+        # looks into the workflow and overrides tool backend for each
+        # job if --backend was specified
+        wf = json.load(open(json_file))
+        if self.yabi.backend:
+            for job in wf.get("jobs", []):
+                job["backendName"] = self.yabi.backend
+                if "toolId" in job:
+                    del job["toolId"]
+        return json.dumps(wf)
 
     def process(self, args):
         wfid = self.submit_json(args)

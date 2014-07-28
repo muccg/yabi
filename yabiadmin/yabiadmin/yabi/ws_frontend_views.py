@@ -360,21 +360,13 @@ def put(request):
 @transaction.commit_manually
 def submit_workflow(request):
     try:
-        received_json = request.POST["workflowjson"]
-        workflow_dict = json.loads(received_json)
-
         yabiuser = User.objects.get(name=request.user.username)
-
-        # Check if the user already has a workflow with the same name, and if so,
-        # munge the name appropriately.
-        workflow_dict["name"] = munge_name(yabiuser.workflow_set, workflow_dict["name"])
-        workflow_json = json.dumps(workflow_dict)
+        workflow_dict = _preprocess_workflow_json(yabiuser, request.POST["workflowjson"])
 
         workflow = EngineWorkflow.objects.create(
             name=workflow_dict["name"],
             user=yabiuser,
-            json=workflow_json,
-            original_json=received_json,
+            original_json=json.dumps(workflow_dict),
             start_time=datetime.now()
         )
 
@@ -390,6 +382,25 @@ def submit_workflow(request):
         return json_error_response("Workflow submission error")
 
     return json_response({"workflow_id": workflow.pk})
+
+
+def _preprocess_workflow_json(yabiuser, received_json):
+    workflow_dict = json.loads(received_json)
+
+    # Check if the user already has a workflow with the same name, and if so,
+    # munge the name appropriately.
+    workflow_dict["name"] = munge_name(yabiuser.workflow_set, workflow_dict["name"])
+
+    # convert backendName and toolName into toolId
+    for job_dict in workflow_dict.get("jobs", []):
+        if "toolId" not in job_dict and "backendName" in job_dict:
+            tool = Tool.objects.filter(desc__name=job_dict.get("toolName", ""),
+                                       backend__name=job_dict["backendName"])[:1]
+            if len(tool) > 0:
+                job_dict["toolId"] = tool[0].id
+                del job_dict["backendName"]
+
+    return workflow_dict
 
 
 def munge_name(workflow_set, workflow_name):
