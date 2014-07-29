@@ -186,3 +186,4 @@ def register(site):
     site.register(Job, JobAdmin)
     site.register(Task, TaskAdmin)
     site.register(StageIn, StageInAdmin)
+    site.register(SavedWorkflow, BaseModelAdmin)
