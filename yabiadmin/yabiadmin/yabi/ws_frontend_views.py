@@ -118,11 +118,11 @@ def menu_all_tools_toolset(user):
     all_tools = OrderedDict()
     for toolgroup in qs:
         tg = all_tools.setdefault(toolgroup.tool_group.name, OrderedDict())
-        backend_tools = toolgroup.tool.tool_set.values_list("id", "backend__name")
-        for backend_tool_id, backend_name in backend_tools:
+        backend_tools = toolgroup.tool.tool_set.values_list("id", "backend__name", "display_name")
+        for backend_tool_id, backend_name, display_name in backend_tools:
             tg.setdefault(backend_tool_id, {
                 "name": toolgroup.tool.name,
-                "displayName": toolgroup.tool.display_name,
+                "displayName": display_name or toolgroup.tool.name,
                 "description": toolgroup.tool.description,
                 "outputExtensions": toolgroup.tool.output_filetype_extensions(),
                 "inputExtensions": toolgroup.tool.input_filetype_extensions(),

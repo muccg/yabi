@@ -98,15 +98,13 @@ class ToolDesc(Base):
         verbose_name = "tool description"
 
     name = models.CharField(max_length=255, unique=True)
-    display_name = models.CharField(max_length=255)
     path = models.CharField(max_length=512, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     accepts_input = models.BooleanField(default=False)
 
-    name.help_text = "Unique toolname for internal use."
-    display_name.help_text = "Tool name visible to users."
+    name.help_text = "Unique tool name."
     path.help_text = "The path to the binary for this file. Will normally just be binary name."
     description.help_text = "The description that will be sent to the frontend for the user."
     accepts_input.help_text = "If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
@@ -144,7 +142,7 @@ class ToolDesc(Base):
 
         tool_dict = {
             'name': self.name,
-            'display_name': self.display_name,
+            'display_name': self.name,
             'path': self.path,
             'description': self.description,
             'enabled': True,
@@ -183,6 +181,7 @@ class ToolDesc(Base):
 
 class Tool(Base):
     desc = models.ForeignKey(ToolDesc, verbose_name="Tool")
+    display_name = models.CharField(max_length=255, blank=True)
     enabled = models.BooleanField(default=True)
     backend = models.ForeignKey('Backend', verbose_name="Exec Backend")
     fs_backend = models.ForeignKey('Backend', related_name="fs_backends", verbose_name="FS Backend")
@@ -197,6 +196,7 @@ class Tool(Base):
     link_supported = models.BooleanField(default=True)
 
     desc.help_text = "The tool definition"
+    display_name.help_text = "Optional text visible to users. If blank, then tool description's name is used."
     enabled.help_text = "Enable tool in frontend."
     backend.help_text = "The execution backend for this tool."
     fs_backend.help_text = "The filesystem backend for this tool."
@@ -209,6 +209,7 @@ class Tool(Base):
         output = self.desc.tool_dict()
         output.update({
             'enabled': self.enabled,
+            'display_name': self.display_name or output['display_name'],
             'backend': self.backend.name,
             'fs_backend': self.fs_backend.name,
             'cpus': self.cpus,

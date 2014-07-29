@@ -15,7 +15,6 @@ class Migration(DataMigration):
 
         for tool in Tool.objects.all():
             desc = ToolDesc(name=tool.name,
-                            display_name=tool.display_name,
                             path=tool.path,
                             description=tool.description,
                             accepts_input=tool.accepts_input,
@@ -40,7 +39,6 @@ class Migration(DataMigration):
 
         for tool in Tool.objects.all():
             tool.name = tool.desc.name
-            tool.display_name = tool.desc.display_name
             tool.path = tool.desc.path
             tool.description = tool.desc.description
             tool.accepts_input = tool.desc.accepts_input
@@ -215,7 +213,6 @@ class Migration(DataMigration):
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tooldesc_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'display_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.ToolGroup']", 'null': 'True', 'through': u"orm['yabi.ToolGrouping']", 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tooldesc_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
