@@ -37,6 +37,7 @@ install_requires = [
     'six>=1.5,<1.6',
     'flower>=0.7.0',
     'cloudseeder==1.2.4',
+    'apache-libcloud==0.15.1',
 ]
 
 # Compiled python modules which are usually provided by system packages
