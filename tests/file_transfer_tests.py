@@ -13,7 +13,7 @@ class FileUploadTest(YabiTestCase, FileUtils):
 
     def tearDownAdmin(self):
         from yabiadmin.yabi import models
-        models.Tool.objects.get(name='cksum').delete()
+        models.Tool.objects.get(desc__name='cksum').delete()
 
     def setUp(self):
         YabiTestCase.setUp(self)
@@ -43,12 +43,7 @@ class FileUploadTest(YabiTestCase, FileUtils):
 class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
 
     def setUpAdmin(self):
-        from yabiadmin.yabi import models
-        admin.create_tool_dd()
-
-    def tearDownAdmin(self):
-        from yabiadmin.yabi import models
-        models.Tool.objects.get(name='dd').delete()
+        admin.create_tool_dd(testcase=self)
 
     def setUp(self):
         YabiTestCase.setUp(self)
@@ -58,7 +53,6 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
         self.setUpAdmin()
 
     def tearDown(self):
-        self.tearDownAdmin()
         FileUtils.tearDown(self)
         YabiTestCase.tearDown(self)
 
@@ -67,7 +61,7 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
 
     def test_nolink_nolcopy(self):
         from yabiadmin.yabi import models
-        dd = models.Tool.objects.get(name='dd')
+        dd = models.Tool.objects.get(desc__name='dd')
         dd.lcopy_supported = False
         dd.link_supported = False
         dd.save()
@@ -75,7 +69,7 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
 
     def test_nolink_lcopy(self):
         from yabiadmin.yabi import models
-        dd = models.Tool.objects.get(name='dd')
+        dd = models.Tool.objects.get(desc__name='dd')
         dd.lcopy_supported = True
         dd.link_supported = False
         dd.save()
@@ -83,7 +77,7 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
 
     def test_link_nolcopy(self):
         from yabiadmin.yabi import models
-        dd = models.Tool.objects.get(name='dd')
+        dd = models.Tool.objects.get(desc__name='dd')
         dd.lcopy_supported = False
         dd.link_supported = True
         dd.save()
@@ -91,7 +85,7 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
 
     def _test_dd(self):
         result = self.yabi.run(['dd', 'if=%s'%self.filename, 'of=output_file'])
-        self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
+        self.assertEqual(result.status, 0, "Yabish command shouldn't return error!")
 
         expected_cksum, expected_size = self.run_cksum_locally(self.filename)
         copy_cksum, copy_size = self.run_cksum_locally('output_file')
@@ -107,7 +101,7 @@ class FileUploadSmallFilesTest(YabiTestCase, FileUtils):
         from yabiadmin.yabi import models
         admin.create_tool('tar')
         admin.add_tool_to_all_tools('tar')
-        tool = models.Tool.objects.get(name='tar')
+        tool = models.ToolDesc.objects.get(name='tar')
         tool.accepts_input = True
 
         value_only = models.ParameterSwitchUse.objects.get(display_text='valueOnly')
@@ -125,7 +119,7 @@ class FileUploadSmallFilesTest(YabiTestCase, FileUtils):
 
     def tearDownAdmin(self):
         from yabiadmin.yabi import models
-        models.Tool.objects.get(name='tar').delete()
+        models.Tool.objects.get(desc__name='tar').delete()
 
     def setUp(self):
         YabiTestCase.setUp(self)
@@ -172,4 +166,3 @@ class FileUploadSmallFilesTest(YabiTestCase, FileUtils):
         actual_cksum, actual_size = self.run_cksum_locally(file2)
         self.assertEqual(expected_cksum, actual_cksum)
         self.assertEqual(expected_size, actual_size)
-

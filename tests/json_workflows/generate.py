@@ -9,6 +9,7 @@ PRE = """
 
 HOSTNAME = """
             "toolName":"hostname",
+            "backendName":"Local Execution",
             "jobId":%s,
             "valid":true,
             "parameterList":{
@@ -26,7 +27,7 @@ def hostname(how_many):
     while i <= how_many:
         hostnames = (" " * 8 + "},{").join([hostnames, HOSTNAME % i])
         i += 1
-    print("".join([PRE, hostnames, POST]))    
+    print("".join([PRE, hostnames, POST]))
 
 def main():
     count = 1
@@ -36,4 +37,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

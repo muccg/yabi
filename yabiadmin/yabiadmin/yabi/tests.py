@@ -5,7 +5,8 @@ from django.test.client import Client
 from django.contrib.auth.models import User as DjangoUser
 from model_mommy import mommy
 from yabiadmin.yabi.ws_frontend_views import munge_name
-from yabiadmin.yabi.models import Credential, User, Backend, Tool, ToolSet, ToolGroup
+from yabiadmin.yabi.models import User, Credential, Backend, BackendCredential
+from yabiadmin.yabi.models import Tool, ToolDesc, ToolSet, ToolGroup
 from yabiadmin.yabi.forms import BackendForm
 from django.core.cache import cache
 
@@ -99,11 +100,6 @@ class WsMenuTest(unittest.TestCase):
         cache.clear()
         self.login_fe('admin')
 
-    def tearDown(self):
-        if self.tool:
-            ToolSet.objects.get(name='test').delete()
-            Tool.objects.get(name='new-tool').delete()
-
     def test_menu_is_returned(self):
         response = self.client.get('/ws/menu/')
         self.assertEqual(response.status_code, 200, 'Should be able to get menu')
@@ -111,8 +107,9 @@ class WsMenuTest(unittest.TestCase):
         self.assertEqual(len(menu['toolsets']), 1, 'Should have 1 toolset')
         toolset = menu['toolsets'][0]
         self.assertEqual(toolset['name'], 'all_tools', "Toolset should be 'all_tools'")
+        self.assertEqual(len(toolset["toolgroups"]), 1)
         tools = toolset['toolgroups'][0]['tools']
-        self.assertEqual(len(tools), 1, "Should have 1 tool (fileselector)")
+        self.assertEqual(len(tools), 1)  # Should have 1 tool (fileselector)
         self.assertEqual(tools[0]['name'], 'fileselector')
 
     def test_menu_is_cached(self):
@@ -128,10 +125,11 @@ class WsMenuTest(unittest.TestCase):
         response = self.client.get('/ws/menu')
         menu = json.loads(response.content)['menu']
         toolset = menu['toolsets'][0]
+        print "menu is %s" % str(menu)
         tools = toolset['toolgroups'][0]['tools']
-        self.assertEqual(len(tools), 2, "Should have 2 tools")
+        self.assertEqual(len(tools), 2)
         tool_names = [t['name'] for t in tools]
-        self.assertTrue('new-tool' in tool_names, 'Should return new tool')
+        self.assertIn('new-tool', tool_names)
 
     def test_menu_isnt_returned_from_cache_for_other_user(self):
         self.tool = self.add_new_tool()
@@ -143,16 +141,32 @@ class WsMenuTest(unittest.TestCase):
                             "Shouldn't get the same response from cache")
 
     def add_new_tool(self):
-        null_backend = Backend.objects.get(name='nullbackend')
-        tool = Tool.objects.create(
-            name='new-tool', display_name='new_tool',
-            backend=null_backend, fs_backend=null_backend)
-        test_tset = ToolSet.objects.create(name='test')
         admin = User.objects.get(name='admin')
+        backend = Backend.objects.get(name='Local Execution')
+        fs_backend = Backend.objects.get(name='nullbackend')
+        cred, cred_created = Credential.objects.get_or_create(description="test",
+                                                              user=admin, username="admin")
+        bc, bc_created = BackendCredential.objects.get_or_create(backend=backend, credential=cred)
+        bc2, bc2_created = BackendCredential.objects.get_or_create(backend=fs_backend, credential=cred)
+        desc, created = ToolDesc.objects.get_or_create(name='new-tool', display_name='new_tool')
+        tool = Tool.objects.create(desc=desc, backend=backend, fs_backend=fs_backend)
+        test_tset = ToolSet.objects.create(name='test')
         test_tset.users.add(admin)
         select_data = ToolGroup.objects.get(name='select data')
-        select_data.toolgrouping_set.create(tool_set=test_tset, tool=tool)
-        return tool
+        select_data.toolgrouping_set.create(tool_set=test_tset, tool=desc)
+
+        def cleanup():
+            tool.delete()
+            desc.delete()
+            test_tset.delete()
+            ToolSet.objects.filter(name='test').delete()
+            if cred_created:
+                cred.delete()
+            if bc_created:
+                bc.delete()
+        self.addCleanup(cleanup)
+
+        return desc
 
     def login_fe(self, user, password=None):
         if password is None:

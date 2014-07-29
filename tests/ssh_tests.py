@@ -34,13 +34,13 @@ class ManySSHJobsTest(YabiTestCase, SSHBackend):
         SSHBackend.setUp(self)
 
         # hostname is already in the db, so remove it and re-add to exploding backend
-        models.Tool.objects.get(name='hostname').delete()
+        models.Tool.objects.get(desc__name='hostname').delete()
 
         admin.create_tool('hostname', ex_backend_name='SSH Backend')
         admin.add_tool_to_all_tools('hostname')
 
     def tearDown(self):
-        models.Tool.objects.get(name='hostname').delete()
+        models.Tool.objects.get(desc__name='hostname').delete()
 
         # put normal hostname back to restore order
         admin.create_tool('hostname')
@@ -49,7 +49,8 @@ class ManySSHJobsTest(YabiTestCase, SSHBackend):
         YabiTestCase.tearDown(self)
 
     def test_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
+        result = self.yabi.run(['submitworkflow', '--backend', 'SSH Backend',
+                                json_path('hostname_hundred_times')])
         wfl_id = result.id
         jobs_running = True
         while jobs_running:
@@ -78,13 +79,14 @@ class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
         self.filename = self.create_tempfile()
 
     def tearDown(self):
-        models.Tool.objects.get(name='dd').delete()
+        models.Tool.objects.get(desc__name='dd').delete()
         FileUtils.tearDown(self)
         SSHBackend.tearDown(self)
         YabiTestCase.tearDown(self)
 
     def test_dd(self):
-        result = self.yabi.run(['dd', 'if=%s' % self.filename, 'of=output_file'])
+        result = self.yabi.run(['dd', 'if=%s' % self.filename, 'of=output_file',
+                                '--backend', 'SSH Backend'])
         self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 
         expected_cksum, expected_size = self.run_cksum_locally(self.filename)
@@ -158,4 +160,3 @@ class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
         logger.debug(many_files_cp_duration)
 
         self.assertTrue(many_files_cp_duration < expected, "Expected copy of many files to last less than %s seconds but it lasted %s seconds" % (expected, many_files_cp_duration))
-
