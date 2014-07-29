@@ -32,10 +32,12 @@ from urlparse import urlparse, urlunparse
 from collections import OrderedDict
 
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabi.models import User, ToolGrouping, Tool, ToolDesc, Credential, BackendCredential
+from yabiadmin.yabi.models import User, Credential, BackendCredential
+from yabiadmin.yabi.models import ToolGrouping, Tool, ToolDesc, Backend
 from django.utils import simplejson as json
 from django.conf import settings
 from django.views.decorators.cache import cache_page
@@ -101,9 +103,9 @@ def menu_saved_workflows(request):
 
 def menu_all_tools_toolset(user):
     creds = BackendCredential.objects.filter(credential__user__user=user)
-    backends = creds.values_list("backend", flat=True)
-    user_tools = Tool.objects.filter(enabled=True, backend__in=backends,
-                                     fs_backend__in=backends)
+    backends = list(creds.values_list("backend", flat=True))
+    backends.append(Backend.objects.get(name="nullbackend").id)
+    user_tools = Tool.objects.filter(enabled=True, backend__in=backends, fs_backend__in=backends)
 
     qs = ToolGrouping.objects.filter(tool_set__users=user)
     qs = qs.filter(tool__in=user_tools.values_list("desc", flat=True))
@@ -394,8 +396,9 @@ def _preprocess_workflow_json(yabiuser, received_json):
     # convert backendName and toolName into toolId
     for job_dict in workflow_dict.get("jobs", []):
         if "toolId" not in job_dict and "backendName" in job_dict:
-            tool = Tool.objects.filter(desc__name=job_dict.get("toolName", ""),
-                                       backend__name=job_dict["backendName"])[:1]
+            tool = Tool.objects.filter(desc__name=job_dict.get("toolName", ""))
+            tool = tool.filter(Q(backend__name=job_dict["backendName"]) |
+                               Q(backend__name="nullbackend"))[:1]
             if len(tool) > 0:
                 job_dict["toolId"] = tool[0].id
                 del job_dict["backendName"]
