@@ -58,20 +58,12 @@ def create_backend(job, be_type):
         return
 
     logger.info("Creating dynamic backend %s for job %s", be, job.pk)
-    config = prepare_config(be.dynamic_backend_configuration)
+    config = _prepare_config(be.dynamic_backend_configuration)
     instance = cloud.start_up_instance(config)
 
-    dbinstance = create_dynamic_backend_in_db(instance, be, job, be_type,
+    dbinstance = _create_dynamic_backend_in_db(instance, be, job, be_type,
                                               be.dynamic_backend_configuration)
     _update_backend_uri_on_job_in_db(job, be_type, dbinstance)
-
-
-def _update_backend_uri_on_job_in_db(job, be_type, db_instance):
-    if be_type == 'fs':
-        job.fs_backend = job.fs_credential.get_homedir_uri(db_instance.hostname)
-    if be_type == 'ex':
-        job.exec_backend = job.exec_credential.get_homedir_uri(db_instance.hostname)
-    job.save()
 
 
 def use_fs_backend_for_execution(job):
@@ -94,7 +86,7 @@ def destroy_backend(dbinstance):
     Accepts the DynamicBackendInstance that was created on BE creation.
     """
     logger.info("Destroying dynamic backend %s", dbinstance.hostname)
-    config = prepare_config(dbinstance.configuration)
+    config = _prepare_config(dbinstance.configuration)
     cloud.destroy_instance(dbinstance.instance_handle, config)
 
     dbinstance.destroyed_on = datetime.now()
@@ -104,7 +96,15 @@ def destroy_backend(dbinstance):
 # Implementation
 
 
-def prepare_config(dynbe_config):
+def _update_backend_uri_on_job_in_db(job, be_type, db_instance):
+    if be_type == 'fs':
+        job.fs_backend = job.fs_credential.get_homedir_uri(db_instance.hostname)
+    if be_type == 'ex':
+        job.exec_backend = job.exec_credential.get_homedir_uri(db_instance.hostname)
+    job.save()
+
+
+def _prepare_config(dynbe_config):
     config_dict = json.loads(dynbe_config.configuration)
     if config_dict.get('instance_class') == 'ec2':
         if not (settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
@@ -116,7 +116,7 @@ def prepare_config(dynbe_config):
     return config_dict
 
 
-def create_dynamic_backend_in_db(instance, be, job, be_type, config):
+def _create_dynamic_backend_in_db(instance, be, job, be_type, config):
     dynbe_inst = DynamicBackendInstance.objects.create(
         created_for_job=job,
         configuration=config,
