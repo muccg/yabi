@@ -20,56 +20,7 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-#
-
-import logging
-from cloudseeder import InstanceHandle, InstanceConfig, CloudSeeder
-from .exceptions import IncorrectConfigurationError
-from .ec2 import EC2Handler
-from .ec2spot import EC2SpotHandler
 
 
-logger = logging.getLogger(__name__)
-
-
-registry = {
-        'ec2': EC2Handler,
-        'ec2spot': EC2SpotHandler,
-    }
-
-
-def start_up_instance(configuration):
-    config = InstanceConfig("yabi_config", configuration)
-    node = create_node(config)
-    return node
-    seeder = CloudSeeder()
-    instance = seeder.instance(config)
-    instance.start()
-
-    return instance
-
-
-def destroy_instance(handle, configuration):
-    seeder = CloudSeeder()
-    config = InstanceConfig("yabi_config", configuration)
-    handle = InstanceHandle.from_json(handle)
-    instance = seeder.get_instance(handle, config=config)
-    instance.destroy()
-
-
-def create_node(config):
-    instance_type = config.get('instance_type')
-    if instance_type is None:
-        raise IncorrectConfigurationError("'instance_type' missing from configuration")
-    handler = get_handler(instance_type)
-    node = handler.create_node(config)
-
-    return node
-
-
-def get_handler(instance_type):
-    handler= registry.get(instance_type)
-    if handler is None:
-        raise IncorrectConfigurationError("Unknown 'instance_type' '%s'", instance_type)
-
-    return handler
+class IncorrectConfigurationError(Exception):
+    pass
