@@ -344,24 +344,40 @@ class YabiArgumentParser(object):
             raise ParsingError('Mandatory option: %s not passed in.' % ','.join(missing_params))
 
 
-def extract_tools_and_params(request):
-    toolname = request.POST.get('name')
-    backendname = request.POST.get('backend', None) or None
-    tooldesc = models.ToolDesc.objects.filter(display_name=toolname, toolgrouping__tool_set__users__name=request.user.username)
-    if len(tooldesc) == 0:
+def get_tool_from_request(username, post):
+    toolname = post.get('name')
+    backendname = post.get('backend', None) or None
+    tooldesc = models.ToolDesc.objects.filter(name=toolname,
+                                              toolgrouping__tool_set__users__name=username)[:1]
+
+    if len(tooldesc) > 0:
+        tooldesc = tooldesc[0]
+        tools = tooldesc.tool_set.all()
+
+        if backendname:
+            # Select the tool for the given backend. Supports searching
+            # for all backends starting with a string. If more than one
+            # backend matches (not useful), then do an exact match instead.
+            tools = tools.filter(backend__name__istartswith=backendname)
+            if tools.count() > 1:
+                tools = tools.filter(backend__name__iexact=backendname)
+
+            if len(tools) == 0:
+                raise YabiError("Tool \"%s\" doesn't exist on "
+                                "backend \"%s\"" % (toolname, backendname))
+        elif len(tools) == 0:
+            raise YabiError('Unknown tool "%s"' % toolname)
+    else:
         raise YabiError('Unknown tool name "%s"' % toolname)
-    tooldesc = tooldesc[0]
+
+    return tooldesc, tools
+
+
+def extract_tools_and_params(request):
+    tooldesc, tools = get_tool_from_request(request.user.username, request.POST)
+
     argparser = YabiArgumentParser(tooldesc)
     params = create_params(request, argparser)
-    tools = tooldesc.tool_set.all()
-
-    if backendname:
-        # Select the tool for the given backend. Supports searching
-        # for all backends starting with a string. If more than one
-        # backend matches (not useful), then do an exact match instead.
-        tools = tools.filter(backend__name__istartswith=backendname)
-        if tools.count() > 1:
-            tools = tools.filter(backend__name__iexact=backendname)
 
     return tools, params
 
