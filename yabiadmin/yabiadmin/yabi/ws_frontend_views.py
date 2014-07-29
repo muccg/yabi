@@ -98,7 +98,7 @@ def menu_saved_workflows(request):
 
 
 def menu_all_tools_toolset(user):
-    qs = ToolGrouping.objects.filter(tool_set__users=user)
+    qs = ToolGrouping.objects.filter(tool_set__users__user=user)
     qs = qs.filter(tool__enabled=True)  # only include tools that are enabled
     qs = qs.order_by("tool_group__name", "tool__name")
     qs = qs.select_related("tool_group", "tool")
@@ -137,7 +137,7 @@ def menu_saved_workflows_toolset(user):
             "json": json.loads(wf.json),
         }
 
-    qs = SavedWorkflow.objects.filter(creator=user).order_by("created_on")
+    qs = SavedWorkflow.objects.filter(creator__user=user).order_by("created_on")
     qs = qs.select_related("creator")
 
     toolgroups = [{
