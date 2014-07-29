@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from datetime import datetime
 import six
+from collections import OrderedDict
+from itertools import takewhile
 
 
 class Settings:
@@ -286,3 +288,68 @@ def yabi_fileextension(pattern, user=None, orm=None):
     fileextension.created_on = datetime.now()
     fileextension.pattern = pattern
     return fileextension
+
+#from yabiadmin.yabi.models import Tool, ToolDesc
+
+
+def deduplicate_tool_descs(ToolDesc, Tool):
+    def tool_key(tool):
+        # Important fields for the tool desc are path, description.
+        # name and display name will change depending on backend.
+        # Parameters and extensions are important, but the tool
+        # groupings aren't.
+        return (tool.path, tool.description, tool.accepts_input,
+                tuple(map(param_key, tool.toolparameter_set.order_by("id"))),
+                tuple(map(ext_key, tool.tooloutputextension_set.order_by("id"))))
+
+    def param_key(param):
+        return (param.switch, param.switch_use, param.rank, param.fe_rank,
+                param.mandatory, param.common, param.sensitive_data,
+                param.hidden, param.output_file, param.possible_values,
+                param.default_value, param.batch_bundle_files,
+                param.file_assignment)
+
+    def ext_key(ext):
+        return (ext.file_extension.pattern, ext.must_exist, ext.must_be_larger_than)
+
+    # a mapping of tool "key" to ToolDesc.id
+    tooldescs = OrderedDict()
+    # a mapping of duplicate ToolDesc ids to first ToolDesc.id
+    remap = OrderedDict()
+
+    for desc in ToolDesc.objects.order_by("created_on"):
+        key = tool_key(desc)
+        if key in tooldescs:
+            remap[desc.id] = tooldescs[key]
+        else:
+            tooldescs[key] = desc.id
+
+    def attr_common_prefix(qs, attr):
+        return reduce(common_prefix, qs.values_list(attr, flat=True), None)
+
+    # for each set of duplicates, try to find common prefix of name and display_name
+    for desc_id, key in remap.iteritems():
+        first = ToolDesc.objects.get(id=desc_id)
+        group_ids = [desc_id] + [id for (id, k) in remap.items() if k == key]
+        descs = ToolDesc.objects.filter(id__in=group_ids)
+        first.name = attr_common_prefix(descs, "name") or first.name
+        first.display_name = attr_common_prefix(descs, "display_name") or first.display_name
+        first.save()
+
+    # update tools to point to first ToolDesc
+    for tool in Tool.objects.filter(desc_id__in=remap.keys()):
+        tool.desc_id = remap[tool.desc_id]
+        tool.save()
+
+    # clean up the duplicates, will cascade delete parameters, etc
+    ToolDesc.objects.filter(id__in=remap.keys()).delete()
+
+
+def common_prefix(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    same = lambda (p, q): p == q
+    length = len(takewhile(same, six.zip(a, b)))
+    return a[:length]
