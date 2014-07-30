@@ -36,7 +36,6 @@ install_requires = [
     'yaphc==0.1.5',
     'six>=1.5,<1.6',
     'flower>=0.7.0',
-    'cloudseeder==1.2.4',
     'apache-libcloud==0.15.1',
 ]
 
