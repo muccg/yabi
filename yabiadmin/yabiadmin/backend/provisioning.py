@@ -110,8 +110,8 @@ def prepare_config(dynbe_config):
         if not (settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
             raise ImproperlyConfigured("Please set 'AWS_ACCESS_KEY_ID' and 'AWS_SECRET_ACCESS_KEY' in your settings file.")
         config_dict.update({
-            'aws_access_key_id': settings.AWS_ACCESS_KEY_ID,
-            'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY})
+            'access_id': settings.AWS_ACCESS_KEY_ID,
+            'secret_key': settings.AWS_SECRET_ACCESS_KEY})
 
     return config_dict
 
@@ -120,7 +120,7 @@ def create_dynamic_backend_in_db(instance, be, job, be_type, config):
     dynbe_inst = DynamicBackendInstance.objects.create(
         created_for_job=job,
         configuration=config,
-        instance_handle=instance.handle.to_json(),
+        instance_handle=instance.handle,
         hostname=instance.ip_address)
 
     JobDynamicBackend.objects.create(

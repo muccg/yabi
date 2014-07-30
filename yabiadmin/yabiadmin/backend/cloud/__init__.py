@@ -23,7 +23,6 @@
 #
 
 import logging
-from cloudseeder import InstanceHandle, InstanceConfig, CloudSeeder
 from .exceptions import IncorrectConfigurationError
 from .ec2 import EC2Handler
 from .ec2spot import EC2SpotHandler
@@ -33,43 +32,42 @@ logger = logging.getLogger(__name__)
 
 
 registry = {
-        'ec2': EC2Handler,
-        'ec2spot': EC2SpotHandler,
-    }
+    'ec2': EC2Handler,
+    'ec2spot': EC2SpotHandler,
+}
 
 
-def start_up_instance(configuration):
-    config = InstanceConfig("yabi_config", configuration)
-    node = create_node(config)
-    return node
-    seeder = CloudSeeder()
-    instance = seeder.instance(config)
-    instance.start()
-
-    return instance
-
-
-def destroy_instance(handle, configuration):
-    seeder = CloudSeeder()
-    config = InstanceConfig("yabi_config", configuration)
-    handle = InstanceHandle.from_json(handle)
-    instance = seeder.get_instance(handle, config=config)
-    instance.destroy()
-
-
-def create_node(config):
-    instance_type = config.get('instance_type')
-    if instance_type is None:
-        raise IncorrectConfigurationError("'instance_type' missing from configuration")
-    handler = get_handler(instance_type)
-    node = handler.create_node(config)
+def start_up_instance(config):
+    handler = _get_handler_from_config(config)
+    node = handler.create_node()
 
     return node
 
 
-def get_handler(instance_type):
-    handler= registry.get(instance_type)
+def is_node_ready(instance_handle, config):
+    handler = _get_handler_from_config(config)
+
+    return handler.is_node_ready(instance_handle)
+
+
+def destroy_instance(instance_handle, config):
+    handler = _get_handler_from_config(config)
+
+    handler.destroy_node(instance_handle)
+
+
+def _get_handler_from_config(config):
+    instance_class = config.get('instance_class')
+    if instance_class is None:
+        raise IncorrectConfigurationError("'instance_class' missing from configuration.")
+    cls = _get_handler_class(instance_class)
+
+    return cls(config=config)
+
+
+def _get_handler_class(instance_class):
+    handler = registry.get(instance_class)
     if handler is None:
-        raise IncorrectConfigurationError("Unknown 'instance_type' '%s'", instance_type)
+        raise IncorrectConfigurationError("Unknown 'instance_class' '%s'.", instance_class)
 
     return handler

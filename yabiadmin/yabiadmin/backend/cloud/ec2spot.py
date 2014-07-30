@@ -33,6 +33,8 @@ from .exceptions import IncorrectConfigurationError
 logger = logging.getLogger(__name__)
 
 
+# TODO this is a copy of ec2.py, implement, DRY etc.
+
 # TODO We can probably move away from having an instance
 # Just return handle and work with the handle
 # Add a service method for getting the IP to the Handler
@@ -51,9 +53,7 @@ class CloudInstance(object):
             return self.ip_addresses[0]
 
 
-# TODO create Handler "interface"
-class EC2Handler(object):
-    INSTANCE_NAME = 'yabi-dynbe-instance'
+class EC2SpotHandler(object):
     MANDATORY_CONFIG_KEYS = (
         'access_id', 'secret_key', 'region', 'size_id', 'ami_id', 'keypair_name')
     # In addition accepts
@@ -75,7 +75,7 @@ class EC2Handler(object):
         if 'security_group_names' in self.config:
             extra_args['ex_securitygroup'] = self.config['security_group_names']
 
-        node = self.driver.create_node(name=self.INSTANCE_NAME,
+        node = self.driver.create_node(name='yabi-dynbe-instance',
                                        image=image, size=size,
                                        ex_keyname=self.config['keypair_name'],
                                        **extra_args)
