@@ -132,15 +132,15 @@ class Workflow(models.Model, Editable, Status):
         jobs_errored = [STATUS_ERROR == status for status in job_statuses]
 
         if not all(jobs_finished):
-            # Handles transition from READY to RUNNING
-            # TODO Could be clearer than this
-            if self.status == STATUS_READY:
-                if any([status in (STATUS_RUNNING, STATUS_COMPLETE) for status in job_statuses]):
-                    self.status = STATUS_RUNNING
-                    self.save()
             if any(jobs_errored):
                 self.status = STATUS_ERROR
                 self.save()
+            # Handles transition from READY to RUNNING
+            # TODO Could be clearer than this
+            elif self.status == STATUS_READY:
+                if any([status in (STATUS_RUNNING, STATUS_COMPLETE) for status in job_statuses]):
+                    self.status = STATUS_RUNNING
+                    self.save()
             return self.status
 
         # All jobs should be finished (either completed, errored or aborted) at this point
