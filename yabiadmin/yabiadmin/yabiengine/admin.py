@@ -179,6 +179,16 @@ class StageInAdmin(BaseModelAdmin):
     raw_id_fields = ['task']
 
 
+class DynamicBackendInstanceAdmin(BaseModelAdmin):
+    def job_link(self, dynbeinst):
+        job = dynbeinst.created_for_job
+        job_url = urlresolvers.reverse('admin:yabiengine_job_change', args=(job.pk,))
+        return 'Created for job <a href="%s">%s</a>' % (job_url, job)
+    job_link.allow_tags = True
+
+    list_display = ['hostname', 'instance_handle', 'job_link', 'created_on', 'destroyed_on'] 
+
+
 def register(site):
     site.register(EngineWorkflow, WorkflowAdmin)
     site.register(QueuedWorkflow, QueuedWorkflowAdmin)
@@ -186,3 +196,4 @@ def register(site):
     site.register(Job, JobAdmin)
     site.register(Task, TaskAdmin)
     site.register(StageIn, StageInAdmin)
+    site.register(DynamicBackendInstance, DynamicBackendInstanceAdmin)
