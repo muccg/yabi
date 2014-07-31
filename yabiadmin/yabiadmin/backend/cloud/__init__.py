@@ -37,9 +37,9 @@ handler_registry = {
 
 def start_up_instance(config):
     handler = _create_handler_from_config(config)
-    node = handler.create_node()
+    instance_handle = handler.create_node()
 
-    return node
+    return instance_handle
 
 
 def is_instance_ready(instance_handle, config):

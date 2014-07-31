@@ -35,24 +35,6 @@ from .exceptions import IncorrectConfigurationError, CloudError
 logger = logging.getLogger(__name__)
 
 
-# TODO We can probably move away from having an instance
-# Just return handle and work with the handle
-# Add a service method for getting the IP to the Handler
-class CloudInstance(object):
-    def __init__(self, node_id, ip_addresses):
-        self.node_id = node_id
-        self.ip_addresses = ip_addresses
-
-    @property
-    def handle(self):
-        return self.node_id
-
-    @property
-    def ip_address(self):
-        if len(self.ip_addresses) > 0:
-            return self.ip_addresses[0]
-
-
 class EC2Handler(CloudHandler):
     INSTANCE_NAME = 'yabi-dynbe-instance'
     MANDATORY_CONFIG_KEYS = (
@@ -81,7 +63,7 @@ class EC2Handler(CloudHandler):
                                        ex_keyname=self.config['keypair_name'],
                                        **extra_args)
 
-        return CloudInstance(node.id, [])
+        return node.id
 
     def is_node_ready(self, instance_handle):
         TIMEOUT = 1

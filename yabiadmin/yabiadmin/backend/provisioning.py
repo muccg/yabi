@@ -60,10 +60,10 @@ def create_backend(job, be_type):
     logger.info("Creating dynamic backend %s for job %s", be, job.pk)
     config_json = be.dynamic_backend_configuration.configuration
     config = _prepare_config(config_json)
-    instance = cloud.start_up_instance(config)
+    instance_handle = cloud.start_up_instance(config)
 
-    dbinstance = _create_dynamic_backend_in_db(instance, be, job, be_type,
-                                               config_json)
+    dbinstance = _create_dynamic_backend_in_db(
+        instance_handle, be, job, be_type, config_json)
     _update_backend_uri_on_job_in_db(job, be_type, dbinstance)
 
 
@@ -135,11 +135,11 @@ def _prepare_config(config_json):
     return config_dict
 
 
-def _create_dynamic_backend_in_db(instance, be, job, be_type, config):
+def _create_dynamic_backend_in_db(handle, be, job, be_type, config):
     dynbe_inst = DynamicBackendInstance.objects.create(
         created_for_job=job,
         configuration=config,
-        instance_handle=instance.handle)
+        instance_handle=handle)
 
     JobDynamicBackend.objects.create(
         job=job,
