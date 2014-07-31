@@ -479,7 +479,7 @@ class Task(models.Model, Editable, Status):
 class DynamicBackendInstance(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
     created_for_job = models.ForeignKey(Job)
-    configuration = models.ForeignKey(DynamicBackendConfiguration)
+    configuration = models.TextField()
     instance_handle = models.CharField(max_length=256)
     hostname = models.CharField(max_length=512)
     destroyed_on = models.DateTimeField(blank=True, null=True)

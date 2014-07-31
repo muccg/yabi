@@ -58,11 +58,12 @@ def create_backend(job, be_type):
         return
 
     logger.info("Creating dynamic backend %s for job %s", be, job.pk)
-    config = _prepare_config(be.dynamic_backend_configuration)
+    config_json = be.dynamic_backend_configuration.configuration
+    config = _prepare_config(config_json)
     instance = cloud.start_up_instance(config)
 
     dbinstance = _create_dynamic_backend_in_db(instance, be, job, be_type,
-                                               be.dynamic_backend_configuration)
+                                               config_json)
     _update_backend_uri_on_job_in_db(job, be_type, dbinstance)
 
 
@@ -104,8 +105,8 @@ def _update_backend_uri_on_job_in_db(job, be_type, db_instance):
     job.save()
 
 
-def _prepare_config(dynbe_config):
-    config_dict = json.loads(dynbe_config.configuration)
+def _prepare_config(config_json):
+    config_dict = json.loads(config_json)
     if config_dict.get('instance_class') == 'ec2':
         if not (settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
             raise ImproperlyConfigured("Please set 'AWS_ACCESS_KEY_ID' and 'AWS_SECRET_ACCESS_KEY' in your settings file.")
