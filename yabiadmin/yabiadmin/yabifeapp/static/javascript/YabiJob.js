@@ -575,12 +575,16 @@ YabiJob.prototype.solidify = function(obj) {
         .set("text", text);
     };
 
+    var addExt = function(text) {
+      extList.append(acceptedExtension(text))
+        .append(document.createTextNode(" "));
+    };
+
     if (extensions.length === 0) {
-      extList.append(acceptedExtension("user input")).append(" ");
+      addExt("user input");
     } else {
       _.forEach(extensions, function(ext) {
-        var text = ext.file_extension__pattern || ext;
-        extList.append(acceptedExtension(text)).append(" ");
+        addExt(ext.file_extension__pattern || ext);
       });
     }
     return node;

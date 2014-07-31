@@ -17,7 +17,7 @@ function YabiTool(tooldef, collection, groupNode) {
 
     _.forEach(exts, function(ext) {
       var span = Y.Node.create('<span class="acceptedExtension"/>').set("text", ext);
-      accepted.append(span).append(" ");
+      accepted.append(span).append(document.createTextNode(" "));
     });
 
     return node;
