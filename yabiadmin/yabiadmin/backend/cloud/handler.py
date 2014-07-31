@@ -21,51 +21,22 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
-from .exceptions import IncorrectConfigurationError
-from .ec2 import EC2Handler
-from .ec2spot import EC2SpotHandler
 
 
-handler_registry = {
-    'ec2': EC2Handler,
-    'ec2spot': EC2SpotHandler,
-}
+class CloudHandler(object):
+    """Interface expected to be implemented by Handler classes.
 
+    Handler classes are a facade to the libcloud API."""
 
-# Convenience methods for easier usage and also dealing with the
-# instance <-> node terminology difference
+    def __init__(self, config):
+        """Expects a dictionary of handler specific configuration"""
+        pass
 
-def start_up_instance(config):
-    handler = _create_handler_from_config(config)
-    node = handler.create_node()
+    def create_node(self):
+        raise NotImplementedError()
 
-    return node
+    def is_node_ready(self, instance_handle):
+        raise NotImplementedError()
 
-
-def is_instance_ready(instance_handle, config):
-    handler = _create_handler_from_config(config)
-
-    return handler.is_node_ready(instance_handle)
-
-
-def destroy_instance(instance_handle, config):
-    handler = _create_handler_from_config(config)
-
-    handler.destroy_node(instance_handle)
-
-
-def _create_handler_from_config(config):
-    instance_class = config.get('instance_class')
-    if instance_class is None:
-        raise IncorrectConfigurationError("'instance_class' missing from configuration.")
-    cls = _get_handler_class(instance_class)
-
-    return cls(config=config)
-
-
-def _get_handler_class(instance_class):
-    handler = handler_registry.get(instance_class)
-    if handler is None:
-        raise IncorrectConfigurationError("Unknown 'instance_class' '%s'.", instance_class)
-
-    return handler
+    def destroy_node(self, instance_handle):
+        raise NotImplementedError()

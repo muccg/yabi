@@ -27,6 +27,7 @@ from functools import partial
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
+from .handler import CloudHandler
 from .exceptions import IncorrectConfigurationError
 
 
@@ -51,8 +52,7 @@ class CloudInstance(object):
             return self.ip_addresses[0]
 
 
-# TODO create Handler "interface"
-class EC2Handler(object):
+class EC2Handler(CloudHandler):
     INSTANCE_NAME = 'yabi-dynbe-instance'
     MANDATORY_CONFIG_KEYS = (
         'access_id', 'secret_key', 'region', 'size_id', 'ami_id', 'keypair_name')

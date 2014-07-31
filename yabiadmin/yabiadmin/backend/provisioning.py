@@ -62,7 +62,7 @@ def create_backend(job, be_type):
     instance = cloud.start_up_instance(config)
 
     dbinstance = _create_dynamic_backend_in_db(instance, be, job, be_type,
-                                              be.dynamic_backend_configuration)
+                                               be.dynamic_backend_configuration)
     _update_backend_uri_on_job_in_db(job, be_type, dbinstance)
 
 
