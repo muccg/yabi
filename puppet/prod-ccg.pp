@@ -57,8 +57,6 @@ node default {
       Django::Config['yabiadmin'] ]
   }
 
-  package {'yabi-shell': provider => yum_nogpgcheck}
-
   service { 'rabbitmq-server':
     ensure     => 'running',
     enable     => true,
