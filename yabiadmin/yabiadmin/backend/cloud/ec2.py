@@ -28,7 +28,7 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
 from .handler import CloudHandler
-from .exceptions import IncorrectConfigurationError
+from .exceptions import IncorrectConfigurationError, CloudError
 
 
 logger = logging.getLogger(__name__)
@@ -127,5 +127,5 @@ class EC2Handler(CloudHandler):
         ournode_or_empty = filter(matches_id, self.driver.list_nodes())
         if len(ournode_or_empty) == 0:
             # TODO proper type
-            raise StandardError("Node '%s' not found", node_id)
+            raise CloudError("Node '%s' not found", node_id)
         return ournode_or_empty[0]

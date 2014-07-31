@@ -22,5 +22,9 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 
+class CloudError(Exception):
+    pass
+
+
 class IncorrectConfigurationError(Exception):
     pass
