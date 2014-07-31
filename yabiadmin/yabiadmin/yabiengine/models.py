@@ -23,7 +23,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
 from django.db import models
-from yabiadmin.yabi.models import User, Backend, BackendCredential, Tool, DynamicBackendConfiguration
+from yabiadmin.yabi.models import User, Backend, BackendCredential, Tool
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 from ccg_django_utils import webhelpers
