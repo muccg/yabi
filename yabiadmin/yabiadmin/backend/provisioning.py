@@ -78,7 +78,17 @@ def use_fs_backend_for_execution(job):
         job=job,
         instance=fs_dbinstance,
         be_type='ex')
-    _update_backend_uri_on_job_in_db(job, 'ex', fs_dbinstance)
+
+
+def is_instance_ready(dbinstance):
+    """Is instance running and has a public IP"""
+    config = _prepare_config(dbinstance.configuration)
+    return cloud.is_instance_ready(dbinstance.instance_handle, config)
+
+
+def update_dynbe_ip_addresses(job):
+    for jdb in job.jobdynamicbackend_set.all():
+        _fetch_and_update_ip_address(job, jdb.instance, jdb.be_type)
 
 
 def destroy_backend(dbinstance):
@@ -95,6 +105,14 @@ def destroy_backend(dbinstance):
 
 
 # Implementation
+
+
+def _fetch_and_update_ip_address(job, dbinstance, be_type):
+    config = _prepare_config(dbinstance.configuration)
+    ip_address = cloud.fetch_ip_address(dbinstance.instance_handle, config)
+    dbinstance.hostname = ip_address
+    dbinstance.save()
+    _update_backend_uri_on_job_in_db(job, be_type, dbinstance)
 
 
 def _update_backend_uri_on_job_in_db(job, be_type, db_instance):
@@ -121,8 +139,7 @@ def _create_dynamic_backend_in_db(instance, be, job, be_type, config):
     dynbe_inst = DynamicBackendInstance.objects.create(
         created_for_job=job,
         configuration=config,
-        instance_handle=instance.handle,
-        hostname=instance.ip_address)
+        instance_handle=instance.handle)
 
     JobDynamicBackend.objects.create(
         job=job,

@@ -24,6 +24,7 @@
 
 import logging
 from functools import partial
+from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
@@ -80,19 +81,29 @@ class EC2Handler(CloudHandler):
                                        ex_keyname=self.config['keypair_name'],
                                        **extra_args)
 
-        # TODO this code should go to is_node_ready
-        # node_id will be set by create_node
-        # ip_address will be set by is_node_ready
-        result = self.driver.wait_until_running((node,), timeout=1200)
-        if len(result) == 0:
-            # TODO wrong type but this code will go away anyways
-            raise StandardError("Node '%s' still not running!", node.id)
-        node, ip_addresses = result[0]
-
-        return CloudInstance(node.id, ip_addresses)
+        return CloudInstance(node.id, [])
 
     def is_node_ready(self, instance_handle):
-        pass
+        TIMEOUT = 1
+        node = self._find_node(node_id=instance_handle)
+        try:
+            # We want to try just once, no retries
+            # Therefore setting both wait_period and timeout to the same value
+            self.driver.wait_until_running((node,),
+                                           wait_period=TIMEOUT, timeout=TIMEOUT)
+
+            return True
+
+        except LibcloudError as e:
+            if e.value.startswith('Timed out after %s seconds' % TIMEOUT):
+                return False
+            else:
+                raise
+
+    def fetch_ip_address(self, instance_handle):
+        node = self._find_node(node_id=instance_handle)
+        if len(node.public_ips) > 0:
+            return node.public_ips[0]
 
     def destroy_node(self, instance_handle):
         node = self._find_node(node_id=instance_handle)

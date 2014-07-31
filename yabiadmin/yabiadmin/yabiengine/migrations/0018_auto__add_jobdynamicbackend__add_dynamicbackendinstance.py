@@ -25,7 +25,7 @@ class Migration(SchemaMigration):
             ('created_for_job', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabiengine.Job'])),
             ('configuration', self.gf('django.db.models.fields.TextField')()),
             ('instance_handle', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('hostname', self.gf('django.db.models.fields.CharField')(max_length=512)),
+            ('hostname', self.gf('django.db.models.fields.CharField')(max_length=512, blank=True)),
             ('destroyed_on', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
         ))
         db.send_create_signal(u'yabiengine', ['DynamicBackendInstance'])
@@ -234,7 +234,7 @@ class Migration(SchemaMigration):
             'created_for_job': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Job']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'destroyed_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'hostname': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
+            'hostname': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'instance_handle': ('django.db.models.fields.CharField', [], {'max_length': '256'})
         },

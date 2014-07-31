@@ -48,6 +48,12 @@ def is_instance_ready(instance_handle, config):
     return handler.is_node_ready(instance_handle)
 
 
+def fetch_ip_address(instance_handle, config):
+    handler = _create_handler_from_config(config)
+
+    return handler.fetch_ip_address(instance_handle)
+
+
 def destroy_instance(instance_handle, config):
     handler = _create_handler_from_config(config)
 

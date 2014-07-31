@@ -481,7 +481,7 @@ class DynamicBackendInstance(models.Model):
     created_for_job = models.ForeignKey(Job)
     configuration = models.TextField()
     instance_handle = models.CharField(max_length=256)
-    hostname = models.CharField(max_length=512)
+    hostname = models.CharField(max_length=512, blank=True)
     destroyed_on = models.DateTimeField(blank=True, null=True)
 
 

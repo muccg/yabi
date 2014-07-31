@@ -38,5 +38,8 @@ class CloudHandler(object):
     def is_node_ready(self, instance_handle):
         raise NotImplementedError()
 
+    def fetch_ip_address(self, instance_handle):
+        raise NotImplementedError()
+
     def destroy_node(self, instance_handle):
         raise NotImplementedError()

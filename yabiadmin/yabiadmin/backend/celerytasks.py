@@ -23,10 +23,9 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from functools import wraps
+from functools import partial, wraps
 from django.db import transaction
 from datetime import datetime
-from functools import partial
 from celery import chain
 from celery.utils.log import get_task_logger
 from six.moves import filter
@@ -109,6 +108,7 @@ def _process_job(job):
         return chain(
             provision_fs_be.s(job_id),
             provision_ex_be.s(),
+            poll_until_dynbes_ready.s(),
             create_db_tasks.s(),
             spawn_ready_tasks.s())
         # clean_up_dynamic_backends() happens on_job_completed()
@@ -186,6 +186,26 @@ def provision_ex_be(job_id):
         job_logger.exception("Exception in provision_ex_be for job {0}".format(job_id))
         mark_job_as_error(job_id)
         raise
+
+
+@app.task(max_retries=None, default_retry_delay=15)
+@log_it('job')
+def poll_until_dynbes_ready(job_id):
+    job = EngineJob.objects.get(pk=job_id)
+    if job.is_workflow_aborting:
+        abort_job(job)
+        return None
+
+    job_dynbes = job.dynamic_backends.distinct()
+    instances_ready = map(provisioning.is_instance_ready, job_dynbes)
+
+    if not all(instances_ready):
+        raise get_current_celery_task().retry()
+
+    for dynbe in job_dynbes:
+        provisioning.update_dynbe_ip_addresses(job)
+
+    return job_id
 
 
 @app.task(max_retries=None)
