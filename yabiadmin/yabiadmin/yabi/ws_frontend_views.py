@@ -32,7 +32,8 @@ from urlparse import urlparse, urlunparse
 from collections import OrderedDict
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, BackendCredential
 from django.utils import simplejson as json
@@ -51,7 +52,6 @@ from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
 
 import logging
-import six
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d'
@@ -96,8 +96,9 @@ def menu_saved_workflows(request):
     return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}),
                         content_type="application/json")
 
+
 def menu_all_tools_toolset(user):
-    qs = ToolGrouping.objects.filter(tool_set__users=user)
+    qs = ToolGrouping.objects.filter(tool_set__users__user=user)
     qs = qs.filter(tool__enabled=True)  # only include tools that are enabled
     qs = qs.order_by("tool_group__name", "tool__name")
     qs = qs.select_related("tool_group", "tool")
@@ -136,7 +137,7 @@ def menu_saved_workflows_toolset(user):
             "json": json.loads(wf.json),
         }
 
-    qs = SavedWorkflow.objects.filter(creator=user).order_by("created_on")
+    qs = SavedWorkflow.objects.filter(creator__user=user).order_by("created_on")
     qs = qs.select_related("creator")
 
     toolgroups = [{
@@ -422,6 +423,7 @@ def save_workflow(request):
     )
 
     return json_response({"saved_workflow_id": workflow.pk})
+
 
 @authentication_required
 def delete_saved_workflow(request):

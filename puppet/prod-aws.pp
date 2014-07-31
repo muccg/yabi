@@ -13,7 +13,7 @@ node default {
 
   $django_config = {
     deployment  => 'prod',
-    release     => '7.2.6-1',
+    release     => '7.2.7-3',
     dbdriver    => 'django.db.backends.postgresql_psycopg2',
     dbserver    => $globals::dbhost_rds_syd_postgresql_prod,
     dbhost      => $globals::dbhost_rds_syd_postgresql_prod,
@@ -29,8 +29,13 @@ node default {
   $packages = ['python27-psycopg2', 'rabbitmq-server']
   package {$packages: ensure => installed}
 
-  package {'yabi-admin': 
-    ensure => $django_config['release'], 
+  package {'yabi-admin':
+    ensure => $django_config['release'],
+    provider => 'yum_nogpgcheck'
+  }
+
+  package {'yabi-shell':
+    ensure => $django_config['release'],
     provider => 'yum_nogpgcheck'
   }
 
@@ -78,9 +83,9 @@ node default {
     compress      => true,
     delaycompress => true,
     ifempty       => true,
-    create        => true,  
-    create_mode   => '0664',  
-    create_owner  => 'celery',  
+    create        => true,
+    create_mode   => '0664',
+    create_owner  => 'celery',
     create_group  => 'celery',
   }
 }

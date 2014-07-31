@@ -192,7 +192,7 @@ jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
-        ${VIRTUALENV}/bin/gjslint --nojsdoc $JS
+        ${VIRTUALENV}/bin/gjslint --disable 0131 --max_line_length 100 --nojsdoc $JS
     done
 }
 

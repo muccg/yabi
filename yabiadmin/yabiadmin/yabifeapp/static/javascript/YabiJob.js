@@ -192,6 +192,9 @@ YabiJob.prototype.checkValid = function(propagate) {
     this.propagateFiles();
     this.workflow.onJobChanged(this);
   }
+  if (this.valid) {
+    this.valid = this.payload.tool.enabled;
+  }
 };
 
 
@@ -395,8 +398,8 @@ YabiJob.prototype.renderJobStatus = function() {
  */
 YabiJob.prototype.renderJobStatusError = function() {
   this.statusLoading.destroy();
-  this.statusList.hide()
-  this.statusError.show()
+  this.statusList.hide();
+  this.statusError.show();
 };
 
 
@@ -491,7 +494,7 @@ YabiJob.prototype.renderProgress = function(status, is_retrying, completed,
   this.progressNode.setStyle("width", this.progress + '%');
 
   //change color if in error
-  this.progressNode.addClass('errorBar', status == 'error');
+  this.progressNode.toggleClass('errorBar', status == 'error');
 
   //and hide the progress bar if the progress is 100%
   this.progressContainer.toggleView(this.progress < 100);
@@ -553,6 +556,11 @@ YabiJob.prototype.solidify = function(obj) {
 
   this.titleNode.set("text", this.payload.tool.display_name);
   this.displayName = this.payload.tool.display_name;
+  if (!this.payload.tool.enabled) {
+      this.displayName = 'Disabled Tool: ' + this.displayName;
+      this.valid = false;
+      this.jobNode.addClass("disabled");
+  }
 
   var setupExtensions = function(title, node, extensions) {
     node.empty();
@@ -567,12 +575,16 @@ YabiJob.prototype.solidify = function(obj) {
         .set("text", text);
     };
 
+    var addExt = function(text) {
+      extList.append(acceptedExtension(text))
+        .append(document.createTextNode(" "));
+    };
+
     if (extensions.length === 0) {
-      extList.append(acceptedExtension("user input")).append(" ");
+      addExt("user input");
     } else {
       _.forEach(extensions, function(ext) {
-        var text = ext.file_extension__pattern || ext;
-        extList.append(acceptedExtension(text)).append(" ");
+        addExt(ext.file_extension__pattern || ext);
       });
     }
     return node;
