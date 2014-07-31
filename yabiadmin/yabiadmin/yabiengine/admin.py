@@ -186,7 +186,7 @@ class DynamicBackendInstanceAdmin(BaseModelAdmin):
         return 'Created for job <a href="%s">%s</a>' % (job_url, job)
     job_link.allow_tags = True
 
-    list_display = ['hostname', 'instance_handle', 'job_link', 'created_on', 'destroyed_on'] 
+    list_display = ['hostname', 'instance_handle', 'job_link', 'created_on', 'destroyed_on']
 
 
 def register(site):
