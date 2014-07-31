@@ -1,34 +1,20 @@
-.*\.pyc$
-.*\.log$
-.*\.pid$
-.*\.swp$
-^.idea
+syntax: glob
 
-^yabiadmin/yabiadmin/build
-^yabiadmin/yabiadmin/.yabi
-^yabiadmin/yabiadmin/celerybeat-schedule
-^yabiadmin/yabiadmin/yabiadmin.*\.sqlite3
-^yabiadmin/yabiadmin/scratch
-^yabiadmin/yabiadmin/appsettings
-^yabiadmin/yabiadmin/appsettings_dir/testdb
-^yabiadmin/build/
-^yabiadmin/scratch/
-^yabiadmin/static/
-^yabiadmin/yabiadmin.egg-info/
+*.pyc
+*.log
+*.pid
 
-^yabibe/build/
-^yabibe/yabibe.egg-info/
+yabiadmin/yabiadmin/build
+yabiadmin/yabiadmin/scratch
+yabiadmin/build/
+yabiadmin/scratch/
+yabiadmin/static/
+yabiadmin/log/
+yabiadmin/yabiadmin.egg-info/
 
-^yabish/virt_yabish
-^yabish/build/
-^yabish/yabish.egg-info/
+yabish/build/
+yabish/yabish.egg-info/
 
-^yabitests/.httplib2_workdir
-^virt_yabi
-^docs/virt_docs
-^docs/_build
-
-^bootstrap/
-^.ccgplatform
-^.ipaddress
-^puppet-vm-share
+virt_yabi/
+docs/virt_docs
+docs/_build

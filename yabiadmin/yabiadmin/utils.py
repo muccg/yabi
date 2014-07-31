@@ -36,11 +36,11 @@ def json_response(data):
     return HttpResponse(json.dumps({
         'status': 'success',
         'data': data,
-    }))
+    }), content_type="application/json")
 
 
-def json_error_response(message):
+def json_error_response(message, **response_kwargs):
     return HttpResponse(json.dumps({
         'status': 'error',
         'message': message,
-    }))
+    }), content_type="application/json", **response_kwargs)

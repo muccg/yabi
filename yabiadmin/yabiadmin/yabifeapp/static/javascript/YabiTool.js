@@ -4,87 +4,125 @@
  * YabiTool
  * render a single yabi tool
  */
-function YabiTool(obj, collection, groupEl) {
-
-  this.payload = obj;
+function YabiTool(tooldef, collection, groupNode) {
+  this.payload = tooldef;
   this.collection = collection;
-  this.groupEl = groupEl;
+  this.groupNode = groupNode;
 
-  this.el = document.createElement('div');
-  this.el.style.position = 'relative';
+  this.node = Y.Node.create("<div/>").setStyle("position", "relative");
 
-  this.toolEl = document.createElement('div');
-  this.toolEl.className = 'tool';
-  this.toolEl.appendChild(document.createTextNode(this.payload.displayName));
+  var filetypesNode = function(title, exts) {
+    var node = Y.Node.create('<div class="toolHelp"/>').set("text", title + ': ');
+    var accepted = Y.Node.create('<span class="acceptedExtensionList"/>').appendTo(node);
 
-  this.el.appendChild(this.toolEl);
+    _.forEach(exts, function(ext) {
+      var span = Y.Node.create('<span class="acceptedExtension"/>').set("text", ext);
+      accepted.append(span).append(document.createTextNode(" "));
+    });
 
-  var addEl = document.createElement('div');
-  addEl.className = 'addLink';
-  Y.one(addEl).on('click', collection.addCallback, null, this.payload.name);
-  this.el.appendChild(addEl);
+    return node;
+  };
 
-  this.descriptionEl = document.createElement('div');
-  this.descriptionEl.className = 'toolDescription';
+  var descNode = Y.Node.create('<div class="toolDescription"/>').hide();
 
-  this.descriptionEl.appendChild(document.createTextNode(
-      this.payload.description));
+  this.setupDescNode(descNode);
 
-  //input filetypes
-  this.inputsEl = document.createElement('div');
-  this.inputsEl.className = 'toolHelp';
-  this.inputsEl.appendChild(document.createTextNode('accepts: '));
-  this.acceptedExtensionEl = document.createElement('span');
-  this.acceptedExtensionEl.setAttribute('class', 'acceptedExtensionList');
-  this.inputsEl.appendChild(this.acceptedExtensionEl);
-
-  if (!Y.Lang.isArray(this.payload.inputExtensions)) {
-    this.payload.inputExtensions = [this.payload.inputExtensions];
+  if (tooldef.inputExtensions) {
+    descNode.append(filetypesNode("accepts", tooldef.inputExtensions));
+  }
+  if (tooldef.outputExtensions) {
+    descNode.append(filetypesNode("outputs", tooldef.outputExtensions));
   }
 
-  for (index in this.payload.inputExtensions) {
-    ext = document.createTextNode(this.payload.inputExtensions[index]);
-    spanEl = document.createElement('span');
-    spanEl.setAttribute('class', 'acceptedExtension');
-    spanEl.appendChild(ext);
-    this.acceptedExtensionEl.appendChild(spanEl);
+  var addLink = Y.Node.create('<div class="addLink"/>');
+  addLink.on('click', function() { collection.addToolToWorkflow(this); }, this);
 
+  this.setupFootNode().appendTo(descNode);
 
-    this.acceptedExtensionEl.appendChild(document.createTextNode(' '));
-  }
-
-  //output filetypes
-  this.outputsEl = document.createElement('div');
-  this.outputsEl.className = 'toolHelp';
-  this.outputsEl.appendChild(document.createTextNode('outputs: '));
-  this.outputExtensionEl = document.createElement('span');
-  this.outputExtensionEl.setAttribute('class', 'acceptedExtensionList');
-  this.outputsEl.appendChild(this.outputExtensionEl);
-
-  if (! Y.Lang.isUndefined(this.payload.outputExtensions)) {
-
-    if (!Y.Lang.isArray(this.payload.outputExtensions)) {
-      this.payload.outputExtensions = [this.payload.outputExtensions];
-    }
-
-    for (index in this.payload.outputExtensions) {
-      ext = document.createTextNode(this.payload.outputExtensions[index]);
-      spanEl = document.createElement('span');
-      spanEl.setAttribute('class', 'acceptedExtension');
-      spanEl.appendChild(ext);
-      this.outputExtensionEl.appendChild(spanEl);
-
-      this.outputExtensionEl.appendChild(document.createTextNode(' '));
-    }
-  }
-
-  this.descriptionEl.appendChild(this.inputsEl);
-  this.descriptionEl.appendChild(this.outputsEl);
-
-  this.toolEl.appendChild(this.descriptionEl);
-
-  Y.one(this.toolEl).on('click', this.descriptionCallback, null, this);
+  Y.Node.create('<div class="tool"/>')
+    .set("text", this.payload.displayName)
+    .append(addLink)
+    .append(descNode)
+    .appendTo(this.node)
+    .on('click', function() { descNode.toggleView(); });
 }
+
+YabiTool.prototype.isSavedWorkflow = function() {
+  return this.payload.json ? true : false;
+};
+
+YabiTool.prototype.getWorkflowJobs = function() {
+  return this.payload.json.jobs;
+};
+
+YabiTool.prototype.getTitle = function() {
+  return this.payload.displayName;
+};
+
+YabiTool.prototype.setupDescNode = function(descNode) {
+  if (this.isSavedWorkflow()) {
+    var list = Y.Node.create("<ul/>").appendTo(descNode);
+    _.forEach(this.getWorkflowJobs(), function(job) {
+      Y.Node.create("<li/>")
+        .set("text", job.jobId + ". " + job.displayName)
+        .appendTo(list);
+    });
+  } else {
+    descNode.set("text", this.payload.description);
+  }
+};
+
+YabiTool.prototype.setupFootNode = function() {
+  var node = Y.Node.create('<div class="toolFooter"/>');
+
+  if (this.isSavedWorkflow()) {
+    var creator = this.payload.creator;
+    var created = this.payload.created_on;
+    var del = Yabi.util.fakeButton("delete").addClass("delButton").appendTo(node);
+    var yes = Yabi.util.fakeButton("Yes"), no = Yabi.util.fakeButton("No");
+    var confirm = Y.Node.create('<span class="confirm">Sure?</span>')
+        .append(yes).append(no).appendTo(node).hide();
+    Y.Node.create("<span>creator: " + creator + "<br/>" +
+                  "last modified: " + created + "</span>").appendTo(node);
+
+    del.toggleView(creator === YAHOO.ccgyabi.username);
+
+    var ask = function(e) {
+      e.halt();
+      del.toggleView();
+      confirm.toggleView();
+    };
+
+    var self = this;
+    var removeFromCollection = function() {
+      self.node.hide();
+      _.pull(self.collection.tools, self);
+    };
+
+    del.on("click", ask);
+    no.on("click", ask);
+    yes.on("click", function(e) {
+      ask(e);
+
+      Y.io(appURL + "ws/workflows/delete_saved/", {
+        method: 'POST',
+        on: {
+          success: function(transId, obj, args) {
+            removeFromCollection();
+            YAHOO.ccgyabi.widget.YabiMessage.success("Deleted");
+          },
+          failure: function(transId, obj) {
+            YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to delete");
+          }
+        },
+        data: { id: this.payload.savedWorkflowId }
+      });
+
+    }, this);
+  }
+
+  return node.toggleView(this.isSavedWorkflow());
+};
 
 YabiTool.prototype.toString = function() {
   return this.payload.name;
@@ -145,21 +183,6 @@ YabiTool.prototype.matchesFilter = function(needle) {
   return false;
 };
 
-YabiTool.prototype.toggleDescription = function() {
-  if (this.descriptionEl.style.display !== 'block') {
-    this.descriptionEl.style.display = 'block';
-  } else {
-    this.descriptionEl.style.display = 'none';
-  }
-};
-
-
-//  CALLBACKS
-
-YabiTool.prototype.descriptionCallback = function(e, target) {
-  target.toggleDescription();
-};
-
 
 /**
  * A singleton object that exposes a get() method that implements asynchronous
@@ -171,7 +194,7 @@ var YabiToolCache = (function() {
   return {
     get: function(name, success, failure) {
       if (name in tools) {
-        success(tools[name]);
+        window.setTimeout(function() { success(tools[name]); }, 0);
       } else {
         var url = appURL + 'ws/tool/' + escape(name);
         var callbacks = {

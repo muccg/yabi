@@ -60,8 +60,6 @@ class LocalExecBackend(ExecBackend):
         For local exec submitting a task executes the task and blocks
         the current process. It is not intended for large scale real world usage.
         """
-        self.create_local_remnants_dir()
-
         exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
         working_scheme, working_parts = uriparse(self.working_output_dir_uri())
 

@@ -34,4 +34,8 @@ CELERYD_GROUP="celery"
 # and owned by the userid/group configured.
 CELERY_CREATE_DIRS=0
 
+# If set the celeryd processes will be started with this niceness.
+# Choose a value between -20 (nastiest) and 20 (nicest).
+CELERY_NICENESS=10
+
 export PYTHONPATH="/usr/local/webapps/yabiadmin/lib/python2.7/site-packages"

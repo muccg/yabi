@@ -251,19 +251,19 @@ class TestWorkflowNameMunging(unittest.TestCase):
             w.delete()
 
     def test_unique_name_does_not_get_munged(self):
-        name = munge_name(self.user.name, 'does not exist yet')
+        name = munge_name(self.user.workflow_set, 'does not exist yet')
         self.assertEquals('does not exist yet', name)
 
     def test_unmunged_unique_workflow_name(self):
-        name = munge_name(self.user.name, 'Unmunged yet')
+        name = munge_name(self.user.workflow_set, 'Unmunged yet')
         self.assertEquals('Unmunged yet (1)', name)
 
     def test_already_munged_called_with_basename(self):
-        name = munge_name(self.user.name, 'Munged')
+        name = munge_name(self.user.workflow_set, 'Munged')
         self.assertEquals('Munged (3)', name)
 
     def test_already_munged_called_with_munged_name(self):
-        name = munge_name(self.user.name, 'Munged (1)')
+        name = munge_name(self.user.workflow_set, 'Munged (1)')
         self.assertEquals('Munged (3)', name)
 
 

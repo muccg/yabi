@@ -29,6 +29,8 @@ urlpatterns = patterns(
     'yabiadmin.yabi.ws_frontend_views',
     url(r'^tool/(?P<toolname>[^/]+)[/]*$', 'tool', name='tool'),
     url(r'^menu[/]*$', 'menu', name='menu'),
+    url(r'^menu_saved_workflows[/]*$',
+        'menu_saved_workflows', name='menu_saved_workflows'),
 
     url(r'^fs/ls[/]*$', 'ls', name='ls'),
     url(r'^fs/get[/]*$', 'get', name='get'),
@@ -40,6 +42,8 @@ urlpatterns = patterns(
     url(r'^fs/mkdir/?$', 'mkdir', name='mkdir'),
 
     url(r'^workflows/submit[/]*$', 'submit_workflow'),
+    url(r'^workflows/save[/]*$', 'save_workflow'),
+    url(r'^workflows/delete_saved[/]*$', 'delete_saved_workflow'),
     url(r'^workflows/get/(?P<workflow_id>\d+)[/]*$', 'get_workflow'),
     url(r'^workflows/datesearch[/]*$', 'workflow_datesearch'),
     url(r'^workflows/(?P<id>\d+)/tags[/]*$', 'workflow_change_tags'),

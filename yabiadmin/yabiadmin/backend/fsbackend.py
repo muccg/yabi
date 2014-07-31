@@ -33,14 +33,12 @@ from yabiadmin.constants import ENVVAR_FILENAME
 import dateutil.parser
 import logging
 import traceback
-import shutil
 import threading
 import Queue
 from six.moves import map
+
+
 logger = logging.getLogger(__name__)
-
-
-CP_PATH = '/bin/cp'
 
 
 def stream_watcher(identifier, stream):
@@ -289,7 +287,6 @@ class FSBackend(BaseBackend):
         self.mkdir(self.working_dir_uri())
         self.mkdir(self.working_input_dir_uri())
         self.mkdir(self.working_output_dir_uri())
-        self.create_local_remnants_dir()
 
         stageins = self.task.get_stageins()
         task_logger.info("About to stagein %d stageins", len(stageins))
@@ -321,16 +318,12 @@ class FSBackend(BaseBackend):
     def stage_out_files(self):
         """
         Stage out files from fs backend to stageout area.
-        Also upload any local remnants of the task to the stageout area
         """
         task_logger = create_task_logger(logger, self.task.pk)
         # first we need a stage out directory
         task_logger.info("Stageout to %s", self.task.stageout)
         backend_for_stageout = FSBackend.urifactory(self.yabiusername, self.task.stageout)
         backend_for_stageout.mkdir(self.task.stageout)
-
-        # deal with any remnants from local commands
-        self.stage_out_local_remnants()
 
         # now the stageout proper
         method = self.task.job.preferred_stageout_method
@@ -349,42 +342,6 @@ class FSBackend(BaseBackend):
 
         raise RuntimeError("Invalid stageout method %s for task %s" % (method, self.task.pk))
 
-    def stage_out_local_remnants(self):
-        """
-        stage out any local remanants
-        some tasks/backends will leave remnants (STDERR/STDOUT) locally so we
-        need to upload them to the stageout area
-        """
-        logger.debug('stage_out_local_remnants from {0}'.format(self.local_remnants_dir()))
-        logger.debug('stage_out_local_remnants to {0}'.format(self.task.stageout))
-        # stage out local remnants
-        remnants_dir = self.local_remnants_dir()
-        for (dirpath, dirnames, filenames) in os.walk(remnants_dir):
-            for filename in filenames:
-                # get a fifo to remote file
-                uri = url_join(self.task.stageout, dirpath[len(remnants_dir):])
-                logger.debug('uploading {0} to {1}'.format(filename, uri))
-                upload_as_fifo, queue = FSBackend.remote_file_upload(self.yabiusername, filename, uri)
-                try:
-                    # write our remnant to the fifo
-                    with open(os.path.join(dirpath, filename), "rb") as remnant:
-                        shutil.copyfileobj(remnant, upload_as_fifo)
-                except Exception as exc:
-                    logger.error('copy to upload fifo failed')
-                    raise RetryException(exc, traceback.format_exc())
-                finally:
-                    upload_as_fifo.close()
-
-                # check exit status at other end of pipe
-                if not queue.get():
-                    raise RetryException('copy to upload fifo failed')
-
-            for dirname in dirnames:
-                # any directories we encounter we create in the stageout area
-                os.path.join(dirpath, dirname)
-                uri = url_join(self.task.stageout, dirpath[len(remnants_dir):], dirname)
-                self.mkdir(uri)
-
     # TODO review later: maybe this should be static method or similar
     # feels strange we create the FSBackend with a factory based on task but then
     # we need to create another backend for the working_dir
@@ -392,8 +349,6 @@ class FSBackend(BaseBackend):
         # remove working directory
         working_dir_backend = FSBackend.urifactory(self.yabiusername, self.working_dir_uri())
         working_dir_backend.rm(self.working_dir_uri())
-        # remove local remnants directory
-        shutil.rmtree(self.local_remnants_dir())
 
     def ls_recursive(self, uri):
         result = self.ls(uri)

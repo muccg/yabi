@@ -136,14 +136,20 @@ class EngineWorkflow(Workflow):
 
             raise
 
+    def _filter_jobs(self, predicate=lambda x: True, **kwargs):
+        qs = EngineJob.objects.filter(workflow=self).order_by("order")
+        return list(filter(predicate, qs.filter(**kwargs)))
+
     def jobs_that_wait_for_dependencies(self):
-        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and j.status == STATUS_PENDING]
+        return self._filter_jobs(lambda j: j.total_tasks() == 0,
+                                 status=STATUS_PENDING)
 
     def jobs_that_need_processing(self):
-        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies() and j.status == STATUS_PENDING]
+        f = lambda j: j.total_tasks() == 0 and not j.has_incomplete_dependencies()
+        return self._filter_jobs(f, status=STATUS_PENDING)
 
     def has_jobs_to_process(self):
-        return (len(self.jobs_that_need_processing()) > 0)
+        return len(self.jobs_that_need_processing()) > 0
 
     def change_tags(self, taglist):
         current_tags = [wft.tag.value for wft in self.workflowtag_set.all()]
@@ -237,8 +243,8 @@ class EngineJob(Job):
         return self.update_dependencies() != 0
 
     def make_tasks_ready(self):
-        tasks = EngineTask.objects.filter(job=self)
-        for task in tasks:
+        for task in EngineTask.objects.filter(job=self):
+            # status is a property not an individual model field
             task.status = STATUS_READY
             task.save()
 
@@ -343,10 +349,13 @@ class EngineJob(Job):
 
         self.task_total = len(input_files)
 
-        for task_num, input_file in enumerate(input_files):
-            task = EngineTask(job=self, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be, task_num=task_num + 1)
+        for task_num, input_file in enumerate(input_files, 1):
+            task = EngineTask(job=self, status=STATUS_PENDING,
+                              start_time=datetime.datetime.now(),
+                              execution_backend_credential=be,
+                              task_num=task_num)
 
-            task_name = left_padded_with_zeros.format(task_num + 1) if count > 1 else ""
+            task_name = left_padded_with_zeros.format(task_num) if count > 1 else ""
             task.add_task(input_file, task_name)
 
     def progress_score(self):

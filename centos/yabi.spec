@@ -4,9 +4,9 @@
 %define pyver 27
 %define pybasever 2.7
 
-%define version 7.2.6
-%define unmangled_version 7.2.6
-%define release 1
+%define version 7.2.7
+%define unmangled_version 7.2.7
+%define release 3
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
 %define shellname yabish

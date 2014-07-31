@@ -10,10 +10,6 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.displayName = toolName; //temporary while loading
   this.jobId = jobId;
   this.payload = {};
-  this.preloadValues = preloadValues;
-  if (this.preloadValues !== null && !Y.Lang.isArray(this.preloadValues)) {
-    this.preloadValues = [this.preloadValues];
-  }
   this.params = [];
   this.valid = false;
   this.acceptsInput = false;
@@ -24,66 +20,60 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.progress = 0;
   this.workflow = null; //set later by the workflow
   this.batchParameter = null;
+  this.nameDependents = [];
+  this.errorNode = null;
 
-  //___CONTAINER EL___
+  // make preloadValues a map from switch name to switch value
+  var listify = function(ob) { return Y.Lang.isArray(ob) ? ob : [ob]; };
+  this.preloadValues = _(preloadValues ? listify(preloadValues) : [])
+    .indexBy("switchName").mapValues("value").value();
+
+  //___CONTAINER NODE___
   // this is used to retain the job's position in a workflow while
   // allowing us to replace the jobEl
-  this.containerEl = document.createElement('div');
-  this.containerEl.className = 'jobSuperContainer';
+  this.container = Y.Node.create('<div class="jobSuperContainer"/>');
 
-  //___JOB EL___
-  this.jobEl = document.createElement('div');
-  this.jobEl.setAttribute('class', 'jobContainer');
+  //___JOB NODE___
+  this.jobNode = Y.Node.create('<div class="jobContainer"/>')
+    .appendTo(this.container);
+  this.titleNode = Y.Node.create('<h1>loading...</h1>')
+    .appendTo(this.jobNode);
 
-  this.titleEl = document.createElement('h1');
-  this.titleEl.appendChild(document.createTextNode('loading...'));
-  this.jobEl.appendChild(this.titleEl);
+  this.inputsNode = Y.Node.create('<div class="jobInputs">accepts: *</div>')
+    .appendTo(this.jobNode);
+  this.outputsNode = Y.Node.create('<div class="jobOutputs">outputs: *</div>')
+    .appendTo(this.jobNode);
 
-  this.inputsEl = document.createElement('div');
-  this.inputsEl.className = 'jobInputs';
-  this.inputsEl.appendChild(document.createTextNode('accepts: *'));
-  this.jobEl.appendChild(this.inputsEl);
+  //___OPTIONS NODE___
+  this.optionsNode = Y.Node.create('<div class="jobOptionsContainer"/>');
 
-  this.outputsEl = document.createElement('div');
-  this.outputsEl.className = 'jobOutputs';
-  this.outputsEl.appendChild(document.createTextNode('outputs: *'));
-  this.jobEl.appendChild(this.outputsEl);
+  this.optionsToggle = Y.Node.create('<div class="optionsToggle fakeButton">show all options</div>')
+    .appendTo(this.optionsNode);
+  this.optionsToggle.on('click', function(e, job) {
+    job.nonMandatoryOptionsShown = !job.nonMandatoryOptionsShown;
+    _.forEach(job.params, function(param) {
+      param.toggleDisplay(job.nonMandatoryOptionsShown);
+    });
 
-  //add the job el to the container
-  this.containerEl.appendChild(this.jobEl);
+    this.set("text", job.nonMandatoryOptionsShown ?
+             'hide non-mandatory and uncommon options' :
+             'show all options');
+  }, null, this);
 
-  //___OPTIONS EL___
-  this.optionsEl = document.createElement('div');
-  this.optionsEl.setAttribute('class', 'jobOptionsContainer');
+  this.optionsTitle = Y.Node.create("<h1>Options for ...</h1>")
+    .appendTo(this.optionsNode);
 
-  this.optionsToggleEl = document.createElement('div');
-  this.optionsToggleEl.className = 'optionsToggle fakeButton';
-  this.optionsToggleEl.appendChild(document.createTextNode('show all options'));
-  Y.one(this.optionsToggleEl).on('click',
-      this.toggleOptionsCallback, null, this);
-  this.optionsEl.appendChild(this.optionsToggleEl);
+  //___STATUS NODE___
+  this.statusNode = Y.Node.create('<div class="jobStatus"/>');
 
-  this.optionsTitlePlaceholderEl = document.createTextNode('...');
-  this.optionsTitleEl = document.createElement('h1');
-  this.optionsTitleEl.appendChild(document.createTextNode('Options for '));
-  this.optionsTitleEl.appendChild(this.optionsTitlePlaceholderEl);
-  this.optionsEl.appendChild(this.optionsTitleEl);
+  this.statusTitle = Y.Node.create('<h1>Remote status</h1>')
+    .appendTo(this.statusNode);
 
-  //___STATUS EL___
-  this.statusEl = document.createElement('div');
-  this.statusEl.className = 'jobStatus';
+  this.statusError = Y.Node.create('<div/>')
+    .set("text", 'No status information is available for this job.')
+    .appendTo(this.statusNode);
 
-  this.statusTitleEl = document.createElement('h1');
-  this.statusTitleEl.appendChild(document.createTextNode('Remote status'));
-  this.statusEl.appendChild(this.statusTitleEl);
-
-  this.statusErrorEl = document.createElement('div');
-  this.statusErrorEl.appendChild(document.createTextNode(
-      'No status information is available for this job.'));
-  this.statusEl.appendChild(this.statusErrorEl);
-
-  this.statusListEl = document.createElement('dl');
-  this.statusEl.appendChild(this.statusListEl);
+  this.statusList = Y.Node.create('<dl/>').appendTo(this.statusNode);
 }
 
 
@@ -97,20 +87,17 @@ YabiJob.prototype.emittedFiles = function() {
   var subFiles;
 
   if (this.valid) {
-    //console.log("valid");
-    for (var index in this.params) {
-      subFiles = this.params[index].emittedFiles();
+    _.forEach(this.params, function(param) {
+      subFiles = param.emittedFiles();
       if (subFiles.length > 0) {
         files = files.concat(subFiles.slice());
       }
-    }
+    });
   }
 
   // append the job to the end, so that any valid outputs take
   // precedence over inputs
   files.push(this);
-
-  //console.log(this + " emitting " + files);
 
   return files;
 };
@@ -175,24 +162,18 @@ YabiJob.prototype.hydrate = function() {
 YabiJob.prototype.updateTitle = function() {
   // TODO update this to use sequence instead of jobId
   var updatedTitle = this.toString();
-  var updatedEl = document.createTextNode(updatedTitle);
 
-  this.optionsTitleEl.replaceChild(updatedEl, this.optionsTitlePlaceholderEl);
-  this.optionsTitlePlaceholderEl = updatedEl;
+  this.optionsTitle.set("text", "Options for " + updatedTitle);
 
   // update job title too
-  this.titleEl.replaceChild(document.createTextNode(updatedTitle),
-                            this.titleEl.firstChild);
+  this.titleNode.set("text", updatedTitle);
 
   // update our name dependents and clear them
-  if (!Y.Lang.isUndefined(this.nameDependents)) {
-    for (var index in this.nameDependents) {
-      this.nameDependents[index].appendChild(
-          document.createTextNode(updatedTitle));
-    }
+  _.forEach(this.nameDependents, function(dep) {
+    Y.Node.create(updatedTitle).appendTo(dep);
+  });
 
-    this.nameDependents = [];
-  }
+  this.nameDependents = [];
 };
 
 
@@ -202,29 +183,14 @@ YabiJob.prototype.updateTitle = function() {
  * iterates over params and checks their .valid flag
  */
 YabiJob.prototype.checkValid = function(propagate) {
-  this.valid = true;
+  this.valid = _.every(this.params, "valid");
 
-  for (var param in this.params) {
-    if (!this.params[param].valid) {
-      this.valid = false;
-    }
-  }
-
-  if (!this.valid) {
-    //        this.inputsEl.style.backgroundColor = "#ffefef";
-    this.inputsEl.removeChild(this.acceptedExtensionEl);
-    this.acceptedExtensionEl.setAttribute('class',
-                                          'invalidAcceptedExtensionList');
-    this.inputsEl.appendChild(this.acceptedExtensionEl);
-  } else {
-    //        this.inputsEl.style.backgroundColor = "transparent";
-    this.inputsEl.removeChild(this.acceptedExtensionEl);
-    this.acceptedExtensionEl.setAttribute('class', 'acceptedExtensionList');
-    this.inputsEl.appendChild(this.acceptedExtensionEl);
-  }
+  this.inputsNode.all(".acceptedExtensionList")
+    .toggleClass("invalidAcceptedExtensionList", !this.valid);
 
   if (propagate) {
     this.propagateFiles();
+    this.workflow.onJobChanged(this);
   }
   if (this.valid) {
     this.valid = this.payload.tool.enabled;
@@ -250,9 +216,9 @@ YabiJob.prototype.optionallyConsumeFiles = function(fileArray, propagate) {
     return;
   }
 
-  for (var index in this.params) {
-    this.params[index].optionallyConsumeFiles(fileArray);
-  }
+  _.forEach(this.params, function(param) {
+    param.optionallyConsumeFiles(fileArray);
+  });
 
   this.checkValid(propagate);
 };
@@ -266,43 +232,23 @@ YabiJob.prototype.selectJob = function() {
     return;
   }
 
-  var child;
-  var newEl = document.createElement('div');
-  newEl.className = 'selectedJobContainer';
-  if (!Y.Lang.isUndefined(this.payload.tool) && !this.payload.tool.enabled) {
-      newEl.className += (' disabled');
-  }
-
-  var count = this.jobEl.childNodes.length;
-  for (var i = 0; i < count; i++) {
-    child = this.jobEl.childNodes[0];
-    this.jobEl.removeChild(child);
-    newEl.appendChild(child);
-  }
-
-  this.containerEl.replaceChild(newEl, this.jobEl);
-
-  this.jobEl = newEl;
+  this.jobNode.addClass("selectedJobContainer");
 
   //show the options panel
   if (this.editable) {
-    this.optionsEl.style.display = 'block';
-    this.statusEl.style.display = 'none';
+    this.optionsNode.show();
+    this.statusNode.hide();
   }
   else {
-    Y.one(this.optionsEl).addClass('active');
-    Y.one(this.statusEl).addClass('active');
+    this.optionsNode.addClass('active');
+    this.statusNode.addClass('active');
   }
 
   //put focus on the first invalid param
-  if (!this.valid) {
-    for (var index in this.params) {
-      if (!this.params[index].valid) {
-        this.params[index].focus();
-        break;
-      }
-    }
-  }
+  _(this.params).reject("valid").forEach(function(param) {
+    param.focus();
+    return false;
+  });
 };
 
 
@@ -314,32 +260,16 @@ YabiJob.prototype.deselectJob = function() {
     return;
   }
 
-  var child;
-  var newEl = document.createElement('div');
-  newEl.className = 'jobContainer';
-  if (!Y.Lang.isUndefined(this.payload.tool) && !this.payload.tool.enabled) {
-      newEl.className += (' disabled');
-  }
-
-  var count = this.jobEl.childNodes.length;
-  for (var i = 0; i < count; i++) {
-    child = this.jobEl.firstChild;
-    this.jobEl.removeChild(child);
-    newEl.appendChild(child);
-  }
-
-  this.containerEl.replaceChild(newEl, this.jobEl);
-
-  this.jobEl = newEl;
+  this.jobNode.removeClass("selectedJobContainer");
 
   //hide the options panel
   if (this.editable) {
-    this.optionsEl.style.display = 'none';
-    this.statusEl.style.display = 'none';
+    this.optionsNode.hide();
+    this.statusNode.hide();
   }
   else {
-    Y.one(this.optionsEl).removeClass('active');
-    Y.one(this.statusEl).removeClass('active');
+    this.optionsNode.removeClass('active');
+    this.statusNode.removeClass('active');
   }
 };
 
@@ -348,28 +278,10 @@ YabiJob.prototype.deselectJob = function() {
  * renderLoadFailJob
  */
 YabiJob.prototype.renderLoadFailJob = function() {
-  var newEl = document.createElement('div');
-  newEl.className = 'loadFailJobContainer';
-
-  var child;
-  var count = this.jobEl.childNodes.length;
-  for (var i = 0; i < count; i++) {
-    child = this.jobEl.childNodes[0];
-    this.jobEl.removeChild(child);
-
-    //skip the inputs and outputs elements as we are rendering this invalid
-    if (child != this.inputsEl && child != this.outputsEl) {
-      newEl.appendChild(child);
-    }
-  }
-
-  this.containerEl.replaceChild(newEl, this.jobEl);
-
-  this.jobEl = newEl;
-
+  this.jobNode.set("class", "loadFailJobContainer");
   //hide the options panel
-  this.optionsEl.style.display = 'none';
-  this.statusEl.style.display = 'none';
+  this.optionsNode.hide();
+  this.statusNode.hide();
 };
 
 
@@ -379,9 +291,7 @@ YabiJob.prototype.renderLoadFailJob = function() {
  * cleans up properly
  */
 YabiJob.prototype.destroy = function() {
-  for (var param in this.params) {
-    this.params[param].destroy();
-  }
+  _.forEach(this.params, function(param) { param.destroy(); });
 };
 
 
@@ -417,28 +327,6 @@ YabiJob.prototype.toJSON = function() {
  */
 YabiJob.prototype.isEqual = function(b) {
   return this == b;
-};
-
-
-/**
- * toggleOptions
- *
- * show/hide all parameters
- */
-YabiJob.prototype.toggleOptions = function() {
-  if (this.nonMandatoryOptionsShown) {
-    this.nonMandatoryOptionsShown = false;
-    this.optionsToggleEl.innerHTML = 'show all options';
-    for (var index in this.params) {
-      this.params[index].toggleDisplay(false);
-    }
-  } else {
-    this.nonMandatoryOptionsShown = true;
-    this.optionsToggleEl.innerHTML = 'hide non-mandatory and uncommon options';
-    for (var bindex in this.params) {
-      this.params[bindex].toggleDisplay(true);
-    }
-  }
 };
 
 
@@ -493,9 +381,9 @@ YabiJob.prototype.renderJobStatus = function() {
     }
   };
 
-  this.statusListEl.style.display = 'none';
-  this.statusErrorEl.style.display = 'none';
-  this.statusLoading = new YAHOO.ccgyabi.widget.Loading(this.statusEl);
+  this.statusList.hide();
+  this.statusError.hide();
+  this.statusLoading = new YAHOO.ccgyabi.widget.Loading(this.statusNode.getDOMNode());
   this.statusLoading.show();
 
   var url = 'engine/job/' + this.workflow.workflowId + '/' + (this.jobId - 1);
@@ -510,8 +398,8 @@ YabiJob.prototype.renderJobStatus = function() {
  */
 YabiJob.prototype.renderJobStatusError = function() {
   this.statusLoading.destroy();
-  this.statusListEl.style.display = 'none';
-  this.statusErrorEl.style.display = 'block';
+  this.statusList.hide();
+  this.statusError.show();
 };
 
 
@@ -521,12 +409,9 @@ YabiJob.prototype.renderJobStatusError = function() {
  * Render job status.
  */
 YabiJob.prototype.renderJobStatusResponse = function(obj) {
-  var self = this;
   var task = obj.tasks[0];
 
-  while (this.statusListEl.childNodes.length) {
-    this.statusListEl.removeChild(this.statusListEl.firstChild);
-  }
+  this.statusList.empty();
 
   if (task && task.remote_info) {
     var keys = [];
@@ -539,27 +424,16 @@ YabiJob.prototype.renderJobStatusResponse = function(obj) {
 
     keys.sort();
 
-    for (var i in keys) {
-      if (keys.hasOwnProperty(i)) {
-        (function() {
-          var key = keys[i];
-
-          var title = document.createElement('dt');
-          title.appendChild(document.createTextNode(key));
-
-          var data = document.createElement('dd');
-          data.appendChild(document.createTextNode(task.remote_info[key]));
-
-          self.statusListEl.appendChild(title);
-          self.statusListEl.appendChild(data);
-        })();
-      }
-    }
+    _.forEach(keys, function(key) {
+      this.statusList
+        .append(Y.Node.create('<dt/>').set("text", key))
+        .append(Y.Node.create('<dd/>').set("text", task.remote_info[key]));
+    }, this);
 
     this.statusLoading.destroy();
 
-    this.statusListEl.style.display = 'block';
-    this.statusErrorEl.style.display = 'none';
+    this.statusList.show();
+    this.statusError.hide();
   }
   else {
     this.renderJobStatusError();
@@ -581,48 +455,26 @@ YabiJob.prototype.renderProgress = function(status, is_retrying, completed,
   if (!this.showingProgress) {
     this.renderStatusBadge(status, is_retrying);
 
-    this.progressContainerEl = document.createElement('div');
-    this.progressContainerEl.className = 'progressBarContainer';
-
-    this.progressEl = document.createElement('div');
-    this.progressEl.className = 'progressBar';
-    this.progressContainerEl.appendChild(this.progressEl);
-
-    this.jobEl.appendChild(this.progressContainerEl);
+    this.progressContainer = Y.Node.create('<div class="progressBarContainer"/>')
+      .appendTo(this.jobNode);
+    this.progressNode = Y.Node.create('<div class="progressBar"/>')
+      .appendTo(this.progressContainer);
 
     this.showingProgress = true;
   }
 
   //update status badge
-  if (this.jobEl.removeChild(this.badgeEl)) {
+  if (this.badgeNode.remove()) {
     this.renderStatusBadge(status, is_retrying);
   }
 
-
   //if error
   if (status == 'error') {
-    if (Y.Lang.isUndefined(message)) {
-      message = '';
-    } else {
-      message = '\n' + message;
-    }
-    if (Y.Lang.isUndefined(this.errorEl)) {
-      this.errorEl = document.createElement('div');
-      this.errorEl.className = 'jobErrorMsg';
-      this.errorEl.appendChild(document.createTextNode(
-          'error running job ' + message));
-      this.jobEl.appendChild(this.errorEl);
-    }
+    this.addErrorMsg('error running job' + (message ? '\n' + message : ''));
   }
 
   if (status == 'aborted') {
-    if (Y.Lang.isUndefined(this.errorEl)) {
-        this.errorEl = document.createElement('div');
-        this.errorEl.className = 'jobErrorMsg';
-        this.errorEl.appendChild(document.createTextNode(
-            'job aborted'));
-        this.jobEl.appendChild(this.errorEl);
-    }
+    this.addErrorMsg('job aborted');
   }
 
   if (Y.Lang.isUndefined(completed) || Y.Lang.isUndefined(total)) {
@@ -639,18 +491,25 @@ YabiJob.prototype.renderProgress = function(status, is_retrying, completed,
   this.progress = 100 * completed / total;
 
   //update progress bar
-  this.progressEl.style.width = this.progress + '%';
+  this.progressNode.setStyle("width", this.progress + '%');
 
   //change color if in error
-  if (status == 'error') {
-    this.progressEl.className = 'progressBar errorBar';
-  }
+  this.progressNode.toggleClass('errorBar', status == 'error');
 
   //and hide the progress bar if the progress is 100%
-  if (this.progress >= 100) {
-    this.progressContainerEl.style.display = 'none';
-  }
+  this.progressContainer.toggleView(this.progress < 100);
+};
 
+/**
+ * addErrorMsg
+ *
+ * Puts red text on the job.
+ */
+YabiJob.prototype.addErrorMsg = function(text) {
+  if (!this.errorNode) {
+    this.errorNode = Y.Node.create('<div class="jobErrorMsg"/>')
+      .set("text", text).appendTo(this.jobNode);
+  }
 };
 
 
@@ -663,13 +522,27 @@ YabiJob.prototype.renderStatusBadge = function(status, is_retrying) {
   if (is_retrying) {
       status = 'retrying';
   }
-  this.badgeEl = document.createElement('img');
-  this.badgeEl.className = 'badge';
-  this.badgeEl.title = 'Job ' + Yabi.util.Status.getStatusDescription(status);
-  this.badgeEl.src = imagesURL + Yabi.util.Status.getStatusImage(status);
-  this.jobEl.appendChild(this.badgeEl);
+  this.badgeNode = Y.Node.create('<img class="badge"/>')
+    .set("title", 'Job ' + Yabi.util.Status.getStatusDescription(status))
+    .set("src", imagesURL + Yabi.util.Status.getStatusImage(status))
+    .appendTo(this.jobNode);
 };
 
+
+YabiJob.prototype.fixPayload = function(obj) {
+  if (!Y.Lang.isArray(obj.tool.inputExtensions)) {
+    obj.tool.inputExtensions = [obj.tool.inputExtensions];
+  }
+  if (Y.Lang.isUndefined(obj.tool.outputExtensions)) {
+    obj.tool.outputExtensions = [];
+  } else if (!Y.Lang.isArray(obj.tool.outputExtensions)) {
+    obj.tool.outputExtensions = [obj.tool.outputExtensions];
+  }
+  if (!Y.Lang.isArray(obj.tool.parameter_list)) {
+    obj.tool.parameter_list = [obj.tool.parameter_list];
+  }
+  return obj;
+};
 
 /**
  * solidify
@@ -677,126 +550,83 @@ YabiJob.prototype.renderStatusBadge = function(status, is_retrying) {
  * takes a json object and uses it to populate/render all the job components
  */
 YabiJob.prototype.solidify = function(obj) {
-  this.payload = obj;
+  this.payload = this.fixPayload(obj);
 
   var ext, spanEl, content, paramObj, index, paramIndex;
 
-  Yabi.util.text(this.titleEl, this.payload.tool.display_name);
+  this.titleNode.set("text", this.payload.tool.display_name);
   this.displayName = this.payload.tool.display_name;
   if (!this.payload.tool.enabled) {
       this.displayName = 'Disabled Tool: ' + this.displayName;
       this.valid = false;
-      this.jobEl.className = this.jobEl.className + ' disabled';
+      this.jobNode.addClass("disabled");
   }
 
-  var label = document.createElement('label');
-  Yabi.util.text(label, 'accepts: ');
-  Yabi.util.replace(this.inputsEl, label);
+  var setupExtensions = function(title, node, extensions) {
+    node.empty();
+    var label = Y.Node.create('<label/>').set("text", title + ": ")
+      .appendTo(node);
 
-  //input filetypes
-  this.acceptedExtensionEl = document.createElement('div');
-  this.acceptedExtensionEl.setAttribute('class', 'acceptedExtensionList');
-  this.inputsEl.appendChild(this.acceptedExtensionEl);
+    var extList = Y.Node.create('<span class="acceptedExtensionList"/>')
+      .appendTo(node);
 
-  if (!Y.Lang.isArray(this.payload.tool.inputExtensions)) {
-    this.payload.tool.inputExtensions = [this.payload.tool.inputExtensions];
-  }
+    var acceptedExtension = function(text) {
+      return Y.Node.create('<span class="acceptedExtension"/>')
+        .set("text", text);
+    };
 
-  for (index in this.payload.tool.inputExtensions) {
-    ext = document.createTextNode(this.payload.tool.inputExtensions[index]);
-    spanEl = document.createElement('span');
-    spanEl.setAttribute('class', 'acceptedExtension');
-    spanEl.appendChild(ext);
-    this.acceptedExtensionEl.appendChild(spanEl);
+    var addExt = function(text) {
+      extList.append(acceptedExtension(text))
+        .append(document.createTextNode(" "));
+    };
 
-    this.acceptedExtensionEl.appendChild(document.createTextNode(' '));
-  }
-
-  if (this.payload.tool.inputExtensions.length === 0) {
-    ext = document.createTextNode('user input');
-    spanEl = document.createElement('span');
-    spanEl.setAttribute('class', 'acceptedExtension');
-    spanEl.appendChild(ext);
-    this.acceptedExtensionEl.appendChild(spanEl);
-
-    this.acceptedExtensionEl.appendChild(document.createTextNode(' '));
-  }
-
-  //output filetypes
-  label = document.createElement('label');
-  Yabi.util.text(label, 'outputs: ');
-  Yabi.util.replace(this.outputsEl, label);
-
-
-  this.outputExtensionEl = document.createElement('div');
-  this.outputExtensionEl.setAttribute('class', 'acceptedExtensionList');
-  this.outputsEl.appendChild(this.outputExtensionEl);
-
-  if (! Y.Lang.isUndefined(this.payload.tool.outputExtensions)) {
-
-    if (!Y.Lang.isArray(this.payload.tool.outputExtensions)) {
-      this.payload.tool.outputExtensions = [this.payload.tool.outputExtensions];
+    if (extensions.length === 0) {
+      addExt("user input");
+    } else {
+      _.forEach(extensions, function(ext) {
+        addExt(ext.file_extension__pattern || ext);
+      });
     }
+    return node;
+  };
 
-    for (index in this.payload.tool.outputExtensions) {
+  setupExtensions("accepts", this.inputsNode, this.payload.tool.inputExtensions);
+  setupExtensions("outputs", this.outputsNode, this.payload.tool.outputExtensions);
 
-      //add to the outputextensionsarray
-      this.outputExtensions.push(
-          this.payload.tool.outputExtensions[index].file_extension__pattern);
-
-      ext = document.createTextNode(
-          this.payload.tool.outputExtensions[index].file_extension__pattern);
-      spanEl = document.createElement('span');
-      spanEl.setAttribute('class', 'acceptedExtension');
-      spanEl.appendChild(ext);
-      this.outputExtensionEl.appendChild(spanEl);
-
-      this.outputExtensionEl.appendChild(document.createTextNode(' '));
-
-    }
-  }
+  //add to the outputextensionsarray
+  this.outputExtensions = _.pluck(this.payload.tool.outputExtensions,
+                                  "file_extension__pattern");
 
   //batch on parameter
-  if (! Y.Lang.isUndefined(this.payload.tool.batch_on_param)) {
-    this.batchParameter = this.payload.tool.batch_on_param;
-  }
+  this.batchParameter = this.payload.tool.batch_on_param || null;
 
   //does it accept inputs?
-  if (this.payload.tool.accepts_input === true) {
-    this.acceptsInput = true;
-  }
+  this.acceptsInput = this.payload.tool.accepts_input ? true : false;
 
   //generate parameter objects
-  var params = this.payload.tool.parameter_list;
-  if (!Y.Lang.isArray(params)) {
-    params = [params];
-  }
-
   var allShown = true;
-  for (paramIndex in params) {
-    var preloadValue = this.preloadValueFor(params[paramIndex]['switch']);
 
-    if (this.editable || preloadValue !== null) {
-      paramObj = new YabiJobParam(this, params[paramIndex],
-            (params[paramIndex]['switch'] == this.batchParameter),
+  _.forEach(this.payload.tool.parameter_list, function(param) {
+    var preloadValue = this.preloadValues[param['switch']] || null;
+
+    if (this.editable || preloadValue) {
+      var paramObj = new YabiJobParam(this, param,
+            (param['switch'] == this.batchParameter),
             this.editable, preloadValue);
-
       this.params.push(paramObj);
 
-      if (!params[paramIndex]['hidden']) {
-        this.optionsEl.appendChild(paramObj.containerEl);
+      if (!param.hidden) {
+        this.optionsNode.append(paramObj.containerEl);
       }
 
       if (!(paramObj.payload.mandatory || paramObj.payload.common)) {
         allShown = false;
       }
     }
-  }
+  }, this);
 
   //if all params are shown, hide the optionsToggle div
-  if (allShown) {
-    this.optionsToggleEl.style.display = 'none';
-  }
+  this.optionsToggle.toggleView(!allShown);
 
   //after first hydration, need to update validity
   if (this.editable) {
@@ -829,32 +659,9 @@ YabiJob.prototype.solidify = function(obj) {
  * of this job when it has loaded properly
  */
 YabiJob.prototype.registerNameDependency = function(element) {
-  if (Y.Lang.isUndefined(this.nameDependents)) {
-    this.nameDependents = [];
-  }
-
   this.nameDependents.push(element);
 };
 
-
-/**
- * preloadValueFor
- *
- * identifies the preload values for a given parameter
- */
-YabiJob.prototype.preloadValueFor = function(switchName) {
-  if (! Y.Lang.isUndefined(this.preloadValues) &&
-      this.preloadValues.length > 0) {
-    for (var index in this.preloadValues) {
-      if (! Y.Lang.isUndefined(this.preloadValues[index]) &&
-          this.preloadValues[index].switchName == switchName) {
-        return this.preloadValues[index].value;
-      }
-    }
-  }
-
-  return null;
-};
 
 // --------- callback methods, these require a target via their inputs --------
 
@@ -866,12 +673,10 @@ YabiJob.prototype.preloadValueFor = function(switchName) {
  * parse json, store internally
  */
 YabiJob.prototype.hydrateResponse = function(o) {
-  var i, json;
+  var payload = null;
 
   try {
-    json = o.responseText;
-
-    this.solidify(Y.JSON.parse(json));
+    payload = Y.JSON.parse(o.responseText);
     this.failLoad = false;
   } catch (e) {
     this.valid = false;
@@ -882,14 +687,8 @@ YabiJob.prototype.hydrateResponse = function(o) {
 
     YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
   }
-};
 
-
-/**
- * toggleOptionsCallback
- *
- * callback when the show all options link is clicked
- */
-YabiJob.prototype.toggleOptionsCallback = function(e, job) {
-  job.toggleOptions();
+  if (payload) {
+    this.solidify(payload);
+  }
 };

@@ -29,9 +29,11 @@ import itertools
 from datetime import datetime, timedelta
 from urllib import unquote
 from urlparse import urlparse, urlunparse
+from collections import OrderedDict
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, BackendCredential
 from django.utils import simplejson as json
@@ -39,9 +41,10 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
+from django.shortcuts import get_object_or_404
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-from yabiadmin.yabiengine.models import WorkflowTag
+from yabiadmin.yabiengine.models import WorkflowTag, SavedWorkflow
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.utils import cache_keyname, json_error_response, json_response
@@ -49,7 +52,6 @@ from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
 
 import logging
-import six
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d'
@@ -68,7 +70,7 @@ def tool(request, toolname):
     try:
         tool = Tool.objects.get(name=toolname)
 
-        response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
+        response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
         cache.set(toolname_key, response, 30)
         return response
     except ObjectDoesNotExist:
@@ -79,58 +81,74 @@ def tool(request, toolname):
 @cache_page(300)
 @vary_on_cookie
 def menu(request):
-    username = request.user.username
-    logger.debug('Username: ' + username)
+    # this view converts the tools into a form used by the front end.
+    # ToolSets are not shown in the front end, but map users to groups
+    # of tools.
+    # ToolGroups are for example genomics, select data, mapreduce.
+    toolset = menu_all_tools_toolset(request.user)
+    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}),
+                        content_type="application/json")
 
-    try:
-        all_tools = {}
-        prefetch_related = (
-            'tool__tooloutputextension_set__file_extension',
-            'tool__toolparameter_set__accepted_filetypes__extensions',
-        )
-        select_related = ('tool_group',)
 
-        for toolgroup in ToolGrouping.objects.filter(tool_set__users__name=username).prefetch_related(*prefetch_related).select_related(*select_related):
-            tg = all_tools.setdefault(toolgroup.tool_group.name, {})
-            if toolgroup.tool.enabled:  # only include tools that are enabled
-                tool = tg.setdefault(toolgroup.tool.name, {})
-                if not tool:
-                    tool["name"] = toolgroup.tool.name
-                    tool["displayName"] = toolgroup.tool.display_name
-                    tool["description"] = toolgroup.tool.description
-                    tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                    tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+@authentication_required
+def menu_saved_workflows(request):
+    toolset = menu_saved_workflows_toolset(request.user)
+    return HttpResponse(json.dumps({"menu": {"toolsets": [toolset]}}),
+                        content_type="application/json")
 
-        # from here down is getting the tools into a form
-        # used by the front end so no changes are needed there
-        # toolsets are dev, marine science, ccg etc, not used on the front end
-        # toolgroups are for example genomics, select data, mapreduce
-        output = {}
-        output['menu'] = {}
-        output['menu']['toolsets'] = []
 
-        all_tools_toolset = {}
-        output['menu']['toolsets'].append(all_tools_toolset)
+def menu_all_tools_toolset(user):
+    qs = ToolGrouping.objects.filter(tool_set__users__user=user)
+    qs = qs.filter(tool__enabled=True)  # only include tools that are enabled
+    qs = qs.order_by("tool_group__name", "tool__name")
+    qs = qs.select_related("tool_group", "tool")
+    qs = qs.prefetch_related(
+        'tool__tooloutputextension_set__file_extension',
+        'tool__toolparameter_set__accepted_filetypes__extensions',
+    )
 
-        all_tools_toolset["name"] = 'all_tools'
-        all_tools_toolset["toolgroups"] = []
+    all_tools = OrderedDict()
+    for toolgroup in qs:
+        tg = all_tools.setdefault(toolgroup.tool_group.name, OrderedDict())
+        tg.setdefault(toolgroup.tool.name, {
+            "name": toolgroup.tool.name,
+            "displayName": toolgroup.tool.display_name,
+            "description": toolgroup.tool.description,
+            "outputExtensions": toolgroup.tool.output_filetype_extensions(),
+            "inputExtensions": toolgroup.tool.input_filetype_extensions(),
+        })
 
-        for key in sorted(six.iterkeys(all_tools)):
-            toolgroup = all_tools[key]
-            tg = {}
-            tg['name'] = key
-            tg['tools'] = []
+    return {
+        "name": "all_tools",
+        "toolgroups": [{"name": name, "tools": toolgroup.values()}
+                       for name, toolgroup in all_tools.iteritems()]
+    }
 
-            for toolname in sorted(six.iterkeys(toolgroup)):
-                tg['tools'].append(toolgroup[toolname])
 
-            all_tools_toolset["toolgroups"].append(tg)
+def menu_saved_workflows_toolset(user):
+    def make_tool(wf):
+        return {
+            "name": wf.name,
+            "savedWorkflowId": wf.id,
+            "displayName": wf.name,
+            "description": wf.creator.name,
+            "creator": wf.creator.name,
+            "created_on": str(wf.created_on),
+            "json": json.loads(wf.json),
+        }
 
-        response = HttpResponse(json.dumps(output))
-#        response["Vary"] = "Cookie" # cache this page per session
-        return response
-    except ObjectDoesNotExist:
-        return JsonMessageResponseNotFound("Object not found")
+    qs = SavedWorkflow.objects.filter(creator__user=user).order_by("created_on")
+    qs = qs.select_related("creator")
+
+    toolgroups = [{
+        "name": "Saved Workflows",
+        "tools": map(make_tool, qs),
+    }]
+
+    return {
+        "name": "saved_workflows",
+        "toolgroups": toolgroups
+    }
 
 
 @authentication_required
@@ -329,20 +347,19 @@ def put(request):
 @transaction.commit_manually
 def submit_workflow(request):
     try:
-        yabiusername = request.user.username
-        logger.debug(yabiusername)
-
         received_json = request.POST["workflowjson"]
         workflow_dict = json.loads(received_json)
-        user = User.objects.get(name=yabiusername)
+
+        yabiuser = User.objects.get(name=request.user.username)
 
         # Check if the user already has a workflow with the same name, and if so,
         # munge the name appropriately.
-        workflow_dict["name"] = munge_name(yabiusername, workflow_dict["name"])
+        workflow_dict["name"] = munge_name(yabiuser.workflow_set, workflow_dict["name"])
         workflow_json = json.dumps(workflow_dict)
+
         workflow = EngineWorkflow.objects.create(
             name=workflow_dict["name"],
-            user=user,
+            user=yabiuser,
             json=workflow_json,
             original_json=received_json,
             start_time=datetime.now()
@@ -362,15 +379,15 @@ def submit_workflow(request):
     return json_response({"workflow_id": workflow.pk})
 
 
-def munge_name(user, workflow_name):
-    if EngineWorkflow.objects.filter(user__name=user, name=workflow_name).count() == 0:
+def munge_name(workflow_set, workflow_name):
+    if not workflow_set.filter(name=workflow_name).exists():
         return workflow_name
 
     match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_name)
     base = match.group(1) if match else workflow_name
 
-    used_names = [wf.name for wf in EngineWorkflow.objects.filter(user__name=user, name__startswith=base)]
-    used_names = frozenset(used_names)
+    workflows = workflow_set.filter(name__startswith=base)
+    used_names = frozenset(workflows.values_list("name", flat=True))
 
     unused_name = lambda name: name not in used_names
     infinite_range = itertools.count
@@ -379,6 +396,47 @@ def munge_name(user, workflow_name):
     next_available_name = find_first(unused_name, generate_unique_names)
 
     return next_available_name
+
+
+@authentication_required
+def save_workflow(request):
+    try:
+        workflow_dict = json.loads(request.POST["workflowjson"])
+    except KeyError:
+        return json_error_response("workflowjson param not posted",
+                                   status=400)
+    except ValueError:
+        return json_error_response("Invalid workflow JSON")
+
+    yabiuser = User.objects.get(name=request.user.username)
+
+    # Check if the user already has a workflow with the same name, and if so,
+    # munge the name appropriately.
+    workflow_dict["name"] = munge_name(yabiuser.savedworkflow_set,
+                                       workflow_dict["name"])
+    workflow_json = json.dumps(workflow_dict)
+    workflow = SavedWorkflow.objects.create(
+        name=workflow_dict["name"],
+        creator=yabiuser, created_on=datetime.now(),
+        json=workflow_json
+    )
+
+    return json_response({"saved_workflow_id": workflow.pk})
+
+
+@authentication_required
+def delete_saved_workflow(request):
+    if "id" not in request.POST:
+        return HttpResponseBadRequest("Need id param")
+
+    workflow = get_object_or_404(SavedWorkflow, id=request.POST["id"])
+
+    if workflow.creator.user != request.user and not request.user.is_superuser:
+        return json_error_response("That's not yours", status=403)
+
+    workflow.delete()
+
+    return json_response("deleted")
 
 
 @authentication_required

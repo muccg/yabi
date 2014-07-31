@@ -22,7 +22,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 import os
 import logging
-from functools import reduce
+from collections import namedtuple
 logger = logging.getLogger(__name__)
 
 
@@ -87,22 +87,26 @@ def get_listing(yabiusername, uri, recurse=False):
         return backend.ls(uri)
 
 
+Bespoke = namedtuple("FileEntry", ("filename", "size", "date", "link"))
+
+
 def get_file_list(yabiusername, uri, recurse=False):
     """
     Get a file list and return a bespoke structure
     Used by legacy code in yabiengine to determine dependencies for tasks
     """
+
     results = get_listing(yabiusername, uri, recurse)
 
-    shortpath = reduce(lambda x, y: x if len(x) < len(y) else y, results.keys())
-    spl = len(shortpath)
+    # determine the length of the common prefix of keys
+    spl = min(map(len, results))
 
     file_list = []
-    for key in results.keys():
-        for entry in results[key]["files"]:
+    for key, item in results.iteritems():
+        for entry in item["files"]:
             listing = (os.path.join(key[spl:], entry[0]),) + tuple(entry[1:])
             file_list.append(listing)
-    return file_list
+    return [Bespoke(*entry) for entry in file_list]
 
 
 def get_backend_list(yabiusername):
@@ -160,7 +164,7 @@ def abort_task(task):
 def exec_credential(yabiusername, uri):
     """
     Return a exec_credential for a given user and uri
-    Curretly wraps legacy code in backendhelper
+    Currently wraps legacy code in backendhelper
     raises ObjectDoesNotExist, DecryptedCredentialNotAvailable
     """
     from yabiadmin.yabiengine import backendhelper
@@ -170,7 +174,7 @@ def exec_credential(yabiusername, uri):
 def fs_credential(yabiusername, uri):
     """
     Return a fs_credential for a given user and uri
-    Curretly wraps legacy code in backendhelper
+    Currently wraps legacy code in backendhelper
     raises ObjectDoesNotExist, DecryptedCredentialNotAvailable
     """
     from yabiadmin.yabiengine import backendhelper
