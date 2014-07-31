@@ -6,7 +6,7 @@
 
 %define version 7.2.7
 %define unmangled_version 7.2.7
-%define release 2
+%define release 3
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
 %define shellname yabish
