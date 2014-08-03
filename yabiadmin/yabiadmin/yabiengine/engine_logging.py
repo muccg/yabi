@@ -18,6 +18,9 @@ from functools import partial
 # context to the yabiadmin.yabiengine.models.Syslog
 
 
+logger = logging.getLogger(__name__)
+
+
 def create_logger(context_type, logger, pk):
     return logging.LoggerAdapter(logger, {
         'yabi_context': {
@@ -37,10 +40,14 @@ class YabiDBHandler(logging.Handler):
         if hasattr(record, 'yabi_context'):
             table_name = record.yabi_context.get('type')
             table_id = record.yabi_context.get('id')
-            m.Syslog.objects.create(
-                message=self.format_message(record),
-                table_name=table_name,
-                table_id=table_id)
+            try:
+                m.Syslog.objects.create(
+                    message=self.format_message(record),
+                    table_name=table_name,
+                    table_id=table_id)
+            except:
+                logger.exception("Couldn't log to Syslog table")
+                logger.error("Original message %s", self.format_message(record))
 
     def format_message(self, record):
         msg = record.getMessage()
