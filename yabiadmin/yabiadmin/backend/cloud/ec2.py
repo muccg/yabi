@@ -115,10 +115,7 @@ class EC2Handler(CloudHandler):
         return mysize_or_empty[0]
 
     def _find_node(self, node_id):
-        def matches_id(node):
-            return node.id == node_id
-        ournode_or_empty = filter(matches_id, self.driver.list_nodes())
+        ournode_or_empty = self.driver.list_nodes(ex_node_ids=(node_id,))
         if len(ournode_or_empty) == 0:
-            # TODO proper type
             raise CloudError("Node '%s' not found", node_id)
         return ournode_or_empty[0]
