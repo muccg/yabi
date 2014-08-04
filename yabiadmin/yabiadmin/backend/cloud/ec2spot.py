@@ -24,38 +24,21 @@
 
 import logging
 from functools import partial
+from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-from .exceptions import IncorrectConfigurationError
+from .handler import CloudHandler
+from .exceptions import IncorrectConfigurationError, CloudError
 
 
 logger = logging.getLogger(__name__)
 
 
-# TODO this is a copy of ec2.py, implement, DRY etc.
-
-# TODO We can probably move away from having an instance
-# Just return handle and work with the handle
-# Add a service method for getting the IP to the Handler
-class CloudInstance(object):
-    def __init__(self, node_id, ip_addresses):
-        self.node_id = node_id
-        self.ip_addresses = ip_addresses
-
-    @property
-    def handle(self):
-        return self.node_id
-
-    @property
-    def ip_address(self):
-        if len(self.ip_addresses) > 0:
-            return self.ip_addresses[0]
-
-
-class EC2SpotHandler(object):
+class EC2SpotHandler(CloudHandler):
+    INSTANCE_NAME = 'yabi-dynbe-instance'
     MANDATORY_CONFIG_KEYS = (
-        'access_id', 'secret_key', 'region', 'size_id', 'ami_id', 'keypair_name')
+        'access_id', 'secret_key', 'spot_price', 'region', 'size_id', 'ami_id', 'keypair_name')
     # In addition accepts
     # 'security_group_names': [
     #       "default", "ssh", "proxied", "rdsaccess" ]
@@ -75,24 +58,34 @@ class EC2SpotHandler(object):
         if 'security_group_names' in self.config:
             extra_args['ex_securitygroup'] = self.config['security_group_names']
 
-        node = self.driver.create_node(name='yabi-dynbe-instance',
+        node = self.driver.create_node(name=self.INSTANCE_NAME,
                                        image=image, size=size,
                                        ex_keyname=self.config['keypair_name'],
                                        **extra_args)
 
-        # TODO this code should go to is_node_ready
-        # node_id will be set by create_node
-        # ip_address will be set by is_node_ready
-        result = self.driver.wait_until_running((node,), timeout=1200)
-        if len(result) == 0:
-            # TODO wrong type but this code will go away anyways
-            raise StandardError("Node '%s' still not running!", node.id)
-        node, ip_addresses = result[0]
-
-        return CloudInstance(node.id, ip_addresses)
+        return node.id
 
     def is_node_ready(self, instance_handle):
-        pass
+        TIMEOUT = 1
+        node = self._find_node(node_id=instance_handle)
+        try:
+            # We want to try just once, no retries
+            # Therefore setting both wait_period and timeout to the same value
+            self.driver.wait_until_running((node,),
+                                           wait_period=TIMEOUT, timeout=TIMEOUT)
+
+            return True
+
+        except LibcloudError as e:
+            if e.value.startswith('Timed out after %s seconds' % TIMEOUT):
+                return False
+            else:
+                raise
+
+    def fetch_ip_address(self, instance_handle):
+        node = self._find_node(node_id=instance_handle)
+        if len(node.public_ips) > 0:
+            return node.public_ips[0]
 
     def destroy_node(self, instance_handle):
         node = self._find_node(node_id=instance_handle)
@@ -122,10 +115,7 @@ class EC2SpotHandler(object):
         return mysize_or_empty[0]
 
     def _find_node(self, node_id):
-        def matches_id(node):
-            return node.id == node_id
-        ournode_or_empty = filter(matches_id, self.driver.list_nodes())
+        ournode_or_empty = self.driver.list_nodes(ex_node_ids=(node_id,))
         if len(ournode_or_empty) == 0:
-            # TODO proper type
-            raise StandardError("Node '%s' not found", node_id)
+            raise CloudError("Node '%s' not found", node_id)
         return ournode_or_empty[0]
