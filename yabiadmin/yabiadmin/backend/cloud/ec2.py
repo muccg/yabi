@@ -23,10 +23,9 @@
 #
 
 import logging
-from functools import partial
 from libcloud.common.types import LibcloudError
-from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+from libcloud.compute.drivers.ec2 import VALID_EC2_REGIONS
 
 from .handler import CloudHandler
 from .exceptions import IncorrectConfigurationError, CloudError
@@ -42,9 +41,6 @@ class EC2Handler(CloudHandler):
     # In addition accepts
     # 'security_group_names': [
     #       "default", "ssh", "proxied", "rdsaccess" ]
-
-    _ec2_attrs = filter(lambda x: x.startswith('EC2'), dir(Provider))
-    VALID_REGIONS = map(partial(getattr, Provider), _ec2_attrs)
 
     def __init__(self, config):
         self.config = self._init_config(config)
@@ -99,11 +95,17 @@ class EC2Handler(CloudHandler):
 
         return config
 
+    def _region_to_provider(self, region):
+        prefixed = "ec2-%s" % region
+
+        return prefixed.replace("-", "_")
+
     def _create_driver(self):
         region = self.config['region']
-        if region not in self.VALID_REGIONS:
+        if region not in VALID_EC2_REGIONS:
             raise IncorrectConfigurationError("Invalid AWS region '%s'" % region)
-        cls = get_driver(region)
+
+        cls = get_driver(self._region_to_provider(region))
 
         return cls(self.config['access_id'], self.config['secret_key'])
 
