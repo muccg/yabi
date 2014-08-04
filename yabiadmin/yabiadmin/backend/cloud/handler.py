@@ -26,19 +26,32 @@
 class CloudHandler(object):
     """Interface expected to be implemented by Handler classes.
 
-    Handler classes are a facade to the libcloud API."""
+    Handler classes are a facade to the libcloud API.
+
+    The instance_handle used by some of the methods is Handler specific.
+    Don't try to use code that interprets the handler in any ways. Just pass
+    in the instance_handle you received from create_node and/or is_node_ready
+    to the other methods that require it.
+    """
 
     def __init__(self, config):
         """Expects a dictionary of handler specific configuration"""
         pass
 
     def create_node(self):
+        """Initiates creation of a node based on the config passed into __init__.
+
+        Return an instance handle."""
         raise NotImplementedError()
 
     def is_node_ready(self, instance_handle):
+        """Is the node ready to use?
+
+        Returns None if the instance isn't ready or the (new) instance handle if it is ready."""
         raise NotImplementedError()
 
     def fetch_ip_address(self, instance_handle):
+        """Return the public IP address of the node."""
         raise NotImplementedError()
 
     def destroy_node(self, instance_handle):

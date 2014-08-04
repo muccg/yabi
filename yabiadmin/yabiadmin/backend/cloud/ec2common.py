@@ -27,14 +27,15 @@ from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.ec2 import VALID_EC2_REGIONS
 
-from .handler import CloudHandler
 from .exceptions import IncorrectConfigurationError, CloudError
 
 
 logger = logging.getLogger(__name__)
 
 
-class EC2Handler(CloudHandler):
+class EC2Common(object):
+    """Class to be mixed in into the ec2 and ec2 spot handlers."""
+
     INSTANCE_NAME = 'yabi-dynbe-instance'
     MANDATORY_CONFIG_KEYS = (
         'access_id', 'secret_key', 'region', 'size_id', 'ami_id', 'keypair_name')
@@ -46,46 +47,27 @@ class EC2Handler(CloudHandler):
         self.config = self._init_config(config)
         self.driver = self._create_driver()
 
-    def create_node(self):
-        image = self.driver.get_image(self.config['ami_id'])
-        size = self._get_size()
-
-        extra_args = {}
-        if 'security_group_names' in self.config:
-            extra_args['ex_securitygroup'] = self.config['security_group_names']
-
-        node = self.driver.create_node(name=self.INSTANCE_NAME,
-                                       image=image, size=size,
-                                       ex_keyname=self.config['keypair_name'],
-                                       **extra_args)
-
-        return node.id
-
-    def is_node_ready(self, instance_handle):
+    def _is_node_running(self, instance_id):
         TIMEOUT = 1
-        node = self._find_node(node_id=instance_handle)
+        node = self._find_node(node_id=instance_id)
         try:
             # We want to try just once, no retries
             # Therefore setting both wait_period and timeout to the same value
             self.driver.wait_until_running((node,),
                                            wait_period=TIMEOUT, timeout=TIMEOUT)
 
-            return instance_handle
+            return True
 
         except LibcloudError as e:
             if e.value.startswith('Timed out after %s seconds' % TIMEOUT):
-                return None
+                return False
             else:
                 raise
 
-    def fetch_ip_address(self, instance_handle):
-        node = self._find_node(node_id=instance_handle)
+    def _fetch_ip_address(self, instance_id):
+        node = self._find_node(node_id=instance_id)
         if len(node.public_ips) > 0:
             return node.public_ips[0]
-
-    def destroy_node(self, instance_handle):
-        node = self._find_node(node_id=instance_handle)
-        node.destroy()
 
     def _init_config(self, config):
         missing = filter(lambda x: x not in config, self.MANDATORY_CONFIG_KEYS)
@@ -94,11 +76,6 @@ class EC2Handler(CloudHandler):
                 "The following mandatory keys are missing: %s" % ", ".join(missing))
 
         return config
-
-    def _region_to_provider(self, region):
-        prefixed = "ec2-%s" % region
-
-        return prefixed.replace("-", "_")
 
     def _create_driver(self):
         region = self.config['region']

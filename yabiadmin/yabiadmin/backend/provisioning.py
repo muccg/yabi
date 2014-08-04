@@ -83,7 +83,14 @@ def use_fs_backend_for_execution(job):
 def is_instance_ready(dbinstance):
     """Is instance running and has a public IP"""
     config = _prepare_config(dbinstance.configuration)
-    return cloud.is_instance_ready(dbinstance.instance_handle, config)
+    new_handle = cloud.is_instance_ready(dbinstance.instance_handle, config)
+    if new_handle is None:
+        return False
+
+    dbinstance.instance_handle = new_handle
+    dbinstance.save()
+
+    return True
 
 
 def update_dynbe_ip_addresses(job):
@@ -125,7 +132,7 @@ def _update_backend_uri_on_job_in_db(job, be_type, db_instance):
 
 def _prepare_config(config_json):
     config_dict = json.loads(config_json)
-    if config_dict.get('instance_class') == 'ec2':
+    if config_dict.get('instance_class') in ('ec2', 'ec2spot'):
         if not (settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
             raise ImproperlyConfigured("Please set 'AWS_ACCESS_KEY_ID' and 'AWS_SECRET_ACCESS_KEY' in your settings file.")
         config_dict.update({
