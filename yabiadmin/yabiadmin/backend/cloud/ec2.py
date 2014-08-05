@@ -23,12 +23,8 @@
 #
 
 import logging
-from libcloud.common.types import LibcloudError
-from libcloud.compute.providers import get_driver
-from libcloud.compute.drivers.ec2 import VALID_EC2_REGIONS
 
 from .ec2base import EC2Base
-from .exceptions import IncorrectConfigurationError, CloudError
 
 
 logger = logging.getLogger(__name__)
