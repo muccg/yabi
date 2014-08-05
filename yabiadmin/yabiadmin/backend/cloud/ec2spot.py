@@ -103,6 +103,8 @@ class EC2SpotHandler(CloudHandler, EC2Common):
         node = self._find_node(node_id=handle.instance_id)
         spot_req = self._find_spot_request(spot_req_id=handle.spot_req_id)
 
+        # TODO Do we want to cancel the spot requests?
+        # I don't think we have to.
         self.driver.ex_cancel_spot_instance_request(spot_req)
         node.destroy()
 
@@ -115,11 +117,8 @@ class EC2SpotHandler(CloudHandler, EC2Common):
         ourspot_or_empty = self.driver.ex_list_spot_requests(spot_request_ids=(spot_req_id,))
         if len(ourspot_or_empty) != 1:
             raise CloudError("Spot request '%s' not found", spot_req_id)
-        ourspot = ourspot_or_empty[0]
-        if ourspot.instance_id is None:
-            logger.info("Spot requests '%s' status '%s'", ourspot.id, ourspot.message)
 
-        return ourspot
+        return ourspot_or_empty[0]
 
     def _on_spot_request_got_instance(self, spot_req_id, instance_id):
         logger.info("Your Spot request '%s' has an instance now: '%s'. Waiting for the instance to be ready.", spot_req_id, instance_id)
@@ -131,5 +130,8 @@ class EC2SpotHandler(CloudHandler, EC2Common):
         spot_request = self._find_spot_request(spot_req_id)
         instance_id = spot_request.instance_id
 
-        if instance_id is not None:
-            return instance_id
+        if instance_id is None:
+            logger.info("Spot requests '%s' status '%s'",
+                        spot_request.id, spot_request.message)
+
+        return instance_id
