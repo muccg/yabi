@@ -27,7 +27,7 @@ import logging
 import json
 from ccglibcloud.ec2spot import set_spot_drivers
 
-from .ec2common import EC2Base
+from .ec2base import EC2Base
 from .exceptions import CloudError
 
 
