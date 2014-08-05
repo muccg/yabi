@@ -27,8 +27,7 @@ import logging
 import json
 from ccglibcloud.ec2spot import set_spot_drivers
 
-from .handler import CloudHandler
-from .ec2common import EC2Common
+from .ec2common import EC2Base
 from .exceptions import CloudError
 
 
@@ -54,11 +53,11 @@ class Handle(namedtuple('HandleBase', ['spot_req_id', 'instance_id'])):
         return json.dumps(self._asdict())
 
 
-class EC2SpotHandler(CloudHandler, EC2Common):
-    MANDATORY_CONFIG_KEYS = EC2Common.MANDATORY_CONFIG_KEYS + ('spot_price',)
+class EC2SpotHandler(EC2Base):
+    MANDATORY_CONFIG_KEYS = EC2Base.MANDATORY_CONFIG_KEYS + ('spot_price',)
 
     def __init__(self, config):
-        EC2Common.__init__(self, config)
+        EC2Base.__init__(self, config)
 
     def create_node(self):
         image = self.driver.get_image(self.config['ami_id'])
@@ -93,20 +92,19 @@ class EC2SpotHandler(CloudHandler, EC2Common):
 
         return None
 
-    def fetch_ip_address(self, instance_handle):
-        handle = Handle.from_json(instance_handle)
-
-        return self._fetch_ip_address(handle.instance_id)
-
     def destroy_node(self, instance_handle):
         handle = Handle.from_json(instance_handle)
-        node = self._find_node(node_id=handle.instance_id)
         spot_req = self._find_spot_request(spot_req_id=handle.spot_req_id)
 
         # TODO Do we want to cancel the spot requests?
         # I don't think we have to.
         self.driver.ex_cancel_spot_instance_request(spot_req)
-        node.destroy()
+
+        EC2Base.destroy_node(self, instance_handle)
+
+    def _handle_to_instance_id(self, instance_handle):
+        handle = Handle.from_json(instance_handle)
+        return handle.instance_id
 
     def _region_to_provider(self, region):
         prefixed = "ec2-spot-%s" % region

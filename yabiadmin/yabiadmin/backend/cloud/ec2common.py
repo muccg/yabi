@@ -27,13 +27,14 @@ from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.ec2 import VALID_EC2_REGIONS
 
+from .handler import CloudHandler
 from .exceptions import IncorrectConfigurationError, CloudError
 
 
 logger = logging.getLogger(__name__)
 
 
-class EC2Common(object):
+class EC2Base(CloudHandler):
     """Class to be mixed in into the ec2 and ec2 spot handlers."""
 
     INSTANCE_NAME = 'yabi-dynbe-instance'
@@ -46,6 +47,18 @@ class EC2Common(object):
     def __init__(self, config):
         self.config = self._init_config(config)
         self.driver = self._create_driver()
+
+    def _handle_to_instance_id(self, instance_handle):
+        raise NotImplementedError()
+
+    def fetch_ip_address(self, instance_handle):
+        instance_id = self._handle_to_instance_id(instance_handle)
+        return self._fetch_ip_address(instance_id)
+
+    def destroy_node(self, instance_handle):
+        instance_id = self._handle_to_instance_id(instance_handle)
+        node = self._find_node(node_id=instance_id)
+        node.destroy()
 
     def _is_node_running(self, instance_id):
         TIMEOUT = 1

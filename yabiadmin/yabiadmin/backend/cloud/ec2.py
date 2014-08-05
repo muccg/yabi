@@ -27,24 +27,17 @@ from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.ec2 import VALID_EC2_REGIONS
 
-from .handler import CloudHandler
+from .ec2common import EC2Base
 from .exceptions import IncorrectConfigurationError, CloudError
 
 
 logger = logging.getLogger(__name__)
 
 
-class EC2Handler(CloudHandler):
-    INSTANCE_NAME = 'yabi-dynbe-instance'
-    MANDATORY_CONFIG_KEYS = (
-        'access_id', 'secret_key', 'region', 'size_id', 'ami_id', 'keypair_name')
-    # In addition accepts
-    # 'security_group_names': [
-    #       "default", "ssh", "proxied", "rdsaccess" ]
+class EC2Handler(EC2Base):
 
     def __init__(self, config):
-        self.config = self._init_config(config)
-        self.driver = self._create_driver()
+        EC2Base.__init__(self, config)
 
     def create_node(self):
         image = self.driver.get_image(self.config['ami_id'])
@@ -62,62 +55,15 @@ class EC2Handler(CloudHandler):
         return node.id
 
     def is_node_ready(self, instance_handle):
-        TIMEOUT = 1
-        node = self._find_node(node_id=instance_handle)
-        try:
-            # We want to try just once, no retries
-            # Therefore setting both wait_period and timeout to the same value
-            self.driver.wait_until_running((node,),
-                                           wait_period=TIMEOUT, timeout=TIMEOUT)
-
+        if self._is_node_running(instance_handle):
             return instance_handle
 
-        except LibcloudError as e:
-            if e.value.startswith('Timed out after %s seconds' % TIMEOUT):
-                return None
-            else:
-                raise
+        return None
 
-    def fetch_ip_address(self, instance_handle):
-        node = self._find_node(node_id=instance_handle)
-        if len(node.public_ips) > 0:
-            return node.public_ips[0]
-
-    def destroy_node(self, instance_handle):
-        node = self._find_node(node_id=instance_handle)
-        node.destroy()
-
-    def _init_config(self, config):
-        missing = filter(lambda x: x not in config, self.MANDATORY_CONFIG_KEYS)
-        if len(missing) > 0:
-            raise IncorrectConfigurationError(
-                "The following mandatory keys are missing: %s" % ", ".join(missing))
-
-        return config
+    def _handle_to_instance_id(self, instance_handle):
+        return instance_handle
 
     def _region_to_provider(self, region):
         prefixed = "ec2-%s" % region
 
         return prefixed.replace("-", "_")
-
-    def _create_driver(self):
-        region = self.config['region']
-        if region not in VALID_EC2_REGIONS:
-            raise IncorrectConfigurationError("Invalid AWS region '%s'" % region)
-
-        cls = get_driver(self._region_to_provider(region))
-
-        return cls(self.config['access_id'], self.config['secret_key'])
-
-    def _get_size(self):
-        all_sizes = self.driver.list_sizes()
-        mysize_or_empty = filter(lambda s: s.id == self.config['size_id'], all_sizes)
-        if len(mysize_or_empty) == 0:
-            raise IncorrectConfigurationError("Invalid size_id '%s'" % self.config['size_id'])
-        return mysize_or_empty[0]
-
-    def _find_node(self, node_id):
-        ournode_or_empty = self.driver.list_nodes(ex_node_ids=(node_id,))
-        if len(ournode_or_empty) == 0:
-            raise CloudError("Node '%s' not found", node_id)
-        return ournode_or_empty[0]
