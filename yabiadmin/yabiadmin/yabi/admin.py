@@ -194,6 +194,7 @@ class CredentialAdmin(AdminBase):
 
 
 class DynamicBackendConfigurationAdmin(AdminBase):
+    form = DynamicBackendConfigurationForm
     list_display = ['name']
 
 

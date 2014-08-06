@@ -169,17 +169,40 @@ class ToolParameterForm(forms.ModelForm):
             field.queryset = field.queryset.exclude(id__exact=self.instance.id)
 
     def clean_possible_values(self):
-        possible_values = self.cleaned_data['possible_values']
-        if possible_values.strip() == '':
-            return ''
-        try:
-            json.loads(possible_values)
-        except ValueError:
-            raise ValidationError('Not valid JSON')
-        return possible_values
+        validator = _compose(_validate_json, _wspace_to_empty)
+        return validator(self.cleaned_data['possible_values'])
 
 
 class ToolOutputExtensionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ToolOutputExtensionForm, self).__init__(*args, **kwargs)
         self.fields['file_extension'].queryset = FileExtension.objects.all().order_by('pattern')
+
+
+class DynamicBackendConfigurationForm(forms.ModelForm):
+    class Meta:
+        model = DynamicBackendConfiguration
+
+    def clean_configuration(self):
+        validator = _compose(_validate_json, _wspace_to_empty)
+        return validator(self.cleaned_data['configuration'])
+
+
+def _compose(*funcs):
+    return reduce(lambda f, g: lambda x: f(g(x)), funcs)
+
+
+def _wspace_to_empty(value):
+    if value.strip() == '':
+        return ''
+    return value
+
+
+def _validate_json(value):
+    if value == '':
+        return ''
+    try:
+        json.loads(value)
+    except ValueError:
+        raise ValidationError('Invalid JSON.')
+    return value
