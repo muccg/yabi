@@ -6,6 +6,9 @@ Backends
 In Yabi there are two types of backend - execution and storage. As the names suggest, an execution 
 backend is where tasks will be run, and a storage backend is where files are stored.
 
+Both types of backends can be static or dynamic. Dynamic backends are automatically created by Yabi for example
+using Amazon Web Services, Open Stack or other providers. see :ref:`dynamicbackends`.
+
 To get things up and running the best idea is to set up your first backend to a resource that you can connect to via SSH.
 Before trying to add the backend to Yabi you should be able to connect to it via the command line using 
 ssh keys from the box running Yabi.
@@ -20,12 +23,14 @@ Click on Backends under Yabi heading and add a backend, using `scp` as the schem
 
 ::
 
-    Name            Example File Server
-    Description     My example file server
-    Scheme          scp
-    Hostname        exampleserver.localdomain
-    Port            22
-    Path            /home/
+    Name                           Example File Server
+    Description                    My example file server
+    Dynamic backend                Leave unchecked or see Dynamic Backends
+    Dynamic backend configuration  Leave unchecked or see Dynamic Backends
+    Scheme                         scp
+    Hostname                       exampleserver.localdomain
+    Port                           22
+    Path                           /home/
 
 .. index::
    single: backend; path field
@@ -76,12 +81,14 @@ Again, click on Backends under Yabi heading and add a backend, this time using `
 
 ::
 
-    Name            Example Execution Server
-    Description     My example execution server
-    Scheme          ssh+pbspro
-    Hostname        exampleserver.localdomain
-    Port            22
-    Path            /
+    Name                           Example Execution Server
+    Description                    My example execution server
+    Dynamic backend                Leave unchecked or see Dynamic Backends
+    Dynamic backend configuration  Leave unchecked or see Dynamic Backends
+    Scheme                         ssh+pbspro
+    Hostname                       exampleserver.localdomain
+    Port                           22
+    Path                           /
 
 .. index::
     pair: backend; qsub;

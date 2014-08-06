@@ -23,13 +23,6 @@ What is the default stageout field for?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 See :ref:`defaultstageout`.
 
-Why am I getting an error about accessing a "store" directory?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You need to make sure that the value given for ``YABISTORE_HOME`` in the settings.py
-file is writeable by the webserver you are using. By default ``YABISTORE_HOME`` is set 
-to ``.yabi/run/store/``.
-
 How does Yabi handle the URI construction with the Backend and Backend Credential records?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -88,54 +81,3 @@ This should ensure symlinks are used rather than copying input files.
 
 Of course, if you select a file from a file system that is separate from the execution file 
 system then Yabi has to make a copy to stage it in.
-
-
-Backend
--------
-
-How do I know if the backend is running?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you can browse files in the Files tab of Yabi then the backend is running. If you are still not sure then visit the url 
-for the backend i.e. http://127.0.0.1:9001/ and you should see:
-
-::
-
-    Twisted Yabi Core: 0.2
-
-NB: If you have set a different port in the yabi.conf file for the backend the url will be different.
-
-
-Why do I get compile errors from gevent when setting up the backend?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you are getting errors that look like this:
-
-::
-
-    gevent/core.c:15914: warning: implicit declaration of function 'evhttp_accept_socket'
-    gevent/core.c: At top level:
-    gevent/core.c:21272: error: expected ')' before 'val'
-    error: command 'gcc' failed with exit status 1
-
-Then you need to install libevent and libevent-dev before trying to install Yabi. Yabi backend uses gevent which depends on libevent.
-
-
-Why am I getting pyOpenSSL errors when running the backend?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you are getting this error:
-
-::
-
-    from OpenSSL import crypto 
-    exceptions.ImportError: cannot import name crypto 
-
-You are most likely running on Python 2.7. The version of pyOpenSSL that we are including works with Python 2.6. To fix this you just need to
-install the latest version of pyOpenSSL into the backend virtualenv:
-
-::
-
-    cd yabibe/yabibe 
-    source virt_yabibe/bin/activate 
-    pip install -U pyOpenSSL 
-

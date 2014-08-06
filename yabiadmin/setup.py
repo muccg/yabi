@@ -80,9 +80,9 @@ dependency_links = [
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://bitbucket.org/ccgmurdoch/libcloud-drivers/downloads/ccg-libcloud-drivers-0.0.1.tar.gz',
 
-    #'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+    'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
     # Temporary fix
-    'http://repo.ccgapps.com.au/djamboloader-0.1.2.tar.gz',
+    # 'http://repo.ccgapps.com.au/djamboloader-0.1.2.tar.gz',
 ]
 
 importlib_available = True
