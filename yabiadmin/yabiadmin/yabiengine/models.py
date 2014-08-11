@@ -22,13 +22,13 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
+import json
+import os
 from django.db import models
 from yabiadmin.yabi.models import User, Backend, BackendCredential, Tool
 from yabiadmin.yabiengine import backendhelper
-from django.utils import simplejson as json
 from ccg_django_utils import webhelpers
 from ccg_django_utils.webhelpers import url
-import os
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from datetime import datetime
 

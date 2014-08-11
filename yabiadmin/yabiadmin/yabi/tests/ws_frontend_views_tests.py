@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import json
 from django.utils import unittest as unittest
 from django.test.client import Client
 from model_mommy import mommy
 from yabiadmin.yabi.ws_frontend_views import munge_name
 from yabiadmin.yabi.models import User, Backend, BackendCredential, Credential, Tool, ToolSet, ToolGroup
 from django.core.cache import cache
-
-from django.utils import simplejson as json
 
 
 USER = 'demo'

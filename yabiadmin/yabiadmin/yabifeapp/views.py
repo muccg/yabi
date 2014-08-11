@@ -22,6 +22,7 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
+import json
 import os
 from django.conf.urls.defaults import *
 from django.conf import settings
@@ -30,7 +31,6 @@ from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
-from django.utils import simplejson as json
 from django.core.cache import cache
 from ccg_django_utils import webhelpers
 from yabiadmin.yabi.models import User

@@ -22,12 +22,12 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
+import json
 import traceback
 from django.db import models
 from django.db.models import Count
 from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import authenticate
-from django.utils import simplejson as json
 from django.conf import settings
 from django.core.cache import cache
 from urlparse import urlunparse

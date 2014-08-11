@@ -20,8 +20,8 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+import json
 from django import forms
-from django.utils import simplejson as json
 from yabiadmin.yabi.models import *
 from yabiadmin.crypto_utils import any_unencrypted, any_annotated_block
 from django.core.exceptions import ValidationError

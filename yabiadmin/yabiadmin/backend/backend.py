@@ -91,8 +91,6 @@ def get_listing(yabiusername, uri, recurse=False):
         return backend.ls(uri)
 
 
-
-
 def get_file_list(yabiusername, uri, recurse=False):
     """
     Get a file list and return a bespoke structure
