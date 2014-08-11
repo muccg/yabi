@@ -31,6 +31,10 @@ The api we expose to celery tasks and yabi to interact with file/exec backends
 """
 
 
+DirEntry = namedtuple("DirEntry", ("uri", "size", "is_symlink"))
+FileEntry = namedtuple("FileEntry", ("filename", "size", "date", "link"))
+
+
 def put_file(yabiusername, filename, uri):
     """
     Put a file to a backend by streaming through a fifo.
@@ -87,7 +91,6 @@ def get_listing(yabiusername, uri, recurse=False):
         return backend.ls(uri)
 
 
-Bespoke = namedtuple("FileEntry", ("filename", "size", "date", "link"))
 
 
 def get_file_list(yabiusername, uri, recurse=False):
@@ -106,7 +109,7 @@ def get_file_list(yabiusername, uri, recurse=False):
         for entry in item["files"]:
             listing = (os.path.join(key[spl:], entry[0]),) + tuple(entry[1:])
             file_list.append(listing)
-    return [Bespoke(*entry) for entry in file_list]
+    return [FileEntry(*entry) for entry in file_list]
 
 
 def get_backend_list(yabiusername):
@@ -114,9 +117,8 @@ def get_backend_list(yabiusername):
     from yabiadmin.yabi.models import BackendCredential
 
     def becred_as_dir_entry(bc):
-        ZERO_SIZE = 0
-        NEVER_A_SYMLINK = ''
-        return [bc.homedir_uri, ZERO_SIZE, NEVER_A_SYMLINK]
+        return DirEntry(uri=bc.homedir_uri, size=0, is_symlink=False)
+
     visible_becreds = BackendCredential.objects.filter(
         backend__dynamic_backend=False,
         credential__user__name=yabiusername,
