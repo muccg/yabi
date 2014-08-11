@@ -15,7 +15,7 @@ Yabi has a few key features:
 
  - simplified web based access to High Performance Computing
  - easy tool addition and maintenance
- - handling of disparate compute and storage resouces ie PBSPro, SSH, Amazon S3
+ - handling of disparate compute and storage resouces ie. PBSPro, SGE, Torque, SSH, SFTP, Amazon S3, Swift
  - easy and powerful workflow creation environment
 
 
@@ -36,10 +36,10 @@ and data environments.
 Architecture
 ------------
 
-The diagram below is an overview of the Yabi architecture. There are three main components:
- * The Client (typically a web browser)
+The Yabi architecture consists of three main components:
+ * The Client (typically a web browser or yabish)
  * The Yabi Application
- * The Yabi Backend (Yabi Resouce Manager)
+ * The Yabi Backend (Yabi Resource Manager)
 
 
 Client

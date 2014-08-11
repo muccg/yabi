@@ -10,13 +10,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class SSHBackend(object):
     def setUp(self):
         admin.create_ssh_backend()
         admin.create_sftp_backend()
-
-        key_file = os.path.join(os.path.dirname(__file__), "test_data/yabitests.pub")
-        os.system("cat %s >> ~/.ssh/authorized_keys" % key_file)
+        admin.authorise_test_ssh_key()
 
     def tearDown(self):
         models.Backend.objects.get(name='SFTP Backend').delete()
@@ -24,7 +23,7 @@ class SSHBackend(object):
         logger.debug(models.Backend.objects.filter(name='SFTP Backend').count())
         logger.debug(models.Backend.objects.filter(name='SSH Backend').count())
 
-        os.system('sed "/yabitest/ D" -i.old ~/.ssh/authorized_keys')
+        admin.cleanup_test_ssh_key()
 
 
 class ManySSHJobsTest(YabiTestCase, SSHBackend):

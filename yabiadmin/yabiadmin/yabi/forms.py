@@ -47,6 +47,12 @@ class BackendForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(BackendForm, self).clean()
+        dynamic_backend = cleaned_data.get("dynamic_backend")
+        dynamic_backend_configuration = cleaned_data.get("dynamic_backend_configuration")
+
+        if dynamic_backend and dynamic_backend_configuration is None:
+            raise forms.ValidationError("You must select a Dynamic Backend Configuration "
+                                        "for a Dynamic Backend.")
         scheme = self.cleaned_data.get('scheme')
 
         caps = get_backend_caps()
@@ -140,6 +146,7 @@ class BackendCredentialForm(forms.ModelForm):
 class ToolForm(forms.ModelForm):
     class Meta:
         model = Tool
+        exclude = ('use_same_dynamic_backend',)
 
     def clean_backend(self):
         backend = self.cleaned_data['backend']
@@ -161,17 +168,40 @@ class ToolParameterForm(forms.ModelForm):
             field.queryset = field.queryset.exclude(id__exact=self.instance.id)
 
     def clean_possible_values(self):
-        possible_values = self.cleaned_data['possible_values']
-        if possible_values.strip() == '':
-            return ''
-        try:
-            json.loads(possible_values)
-        except ValueError:
-            raise ValidationError('Not valid JSON')
-        return possible_values
+        validator = _compose(_validate_json, _wspace_to_empty)
+        return validator(self.cleaned_data['possible_values'])
 
 
 class ToolOutputExtensionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ToolOutputExtensionForm, self).__init__(*args, **kwargs)
         self.fields['file_extension'].queryset = FileExtension.objects.all().order_by('pattern')
+
+
+class DynamicBackendConfigurationForm(forms.ModelForm):
+    class Meta:
+        model = DynamicBackendConfiguration
+
+    def clean_configuration(self):
+        validator = _compose(_validate_json, _wspace_to_empty)
+        return validator(self.cleaned_data['configuration'])
+
+
+def _compose(*funcs):
+    return reduce(lambda f, g: lambda x: f(g(x)), funcs)
+
+
+def _wspace_to_empty(value):
+    if value.strip() == '':
+        return ''
+    return value
+
+
+def _validate_json(value):
+    if value == '':
+        return ''
+    try:
+        json.loads(value)
+    except ValueError:
+        raise ValidationError('Invalid JSON.')
+    return value

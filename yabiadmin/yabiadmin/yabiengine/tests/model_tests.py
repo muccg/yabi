@@ -52,21 +52,21 @@ class TaskRetryingOneTaskMarkedAsRetryingTest(unittest.TestCase):
         self.assertTrue(self.workflow.is_retrying)
 
     def test_task_not_retrying_after_task_recovered_from_error(self):
-        self.second_task.recovered_from_error()
+        self.second_task.finished_retrying()
 
         second_task_reloaded = m.Task.objects.get(pk=self.second_task.pk)
 
         self.assertFalse(second_task_reloaded.is_retrying)
 
     def test_task_error_msg_cleared_after_task_recovered_from_error(self):
-        self.second_task.recovered_from_error()
+        self.second_task.finished_retrying()
 
         second_task_reloaded = m.Task.objects.get(pk=self.second_task.pk)
 
         self.assertTrue(second_task_reloaded.error_msg is None)
 
     def test_job_and_workflow_not_retrying_after_task_recovered_from_error(self):
-        self.second_task.recovered_from_error()
+        self.second_task.finished_retrying()
 
         self.assertFalse(self.job.is_retrying)
         self.assertFalse(self.workflow.is_retrying)

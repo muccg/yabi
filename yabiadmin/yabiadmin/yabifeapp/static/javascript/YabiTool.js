@@ -17,7 +17,7 @@ function YabiTool(tooldef, collection, groupNode) {
 
     _.forEach(exts, function(ext) {
       var span = Y.Node.create('<span class="acceptedExtension"/>').set("text", ext);
-      accepted.append(span).append(" ");
+      accepted.append(span).append(document.createTextNode(" "));
     });
 
     return node;
@@ -110,11 +110,11 @@ YabiTool.prototype.setupFootNode = function() {
       Y.io(appURL + "ws/workflows/delete_saved/", {
         method: 'POST',
         on: {
-          success: function (transId, obj, args) {
+          success: function(transId, obj, args) {
             removeFromCollection();
             YAHOO.ccgyabi.widget.YabiMessage.success("Deleted");
           },
-          failure: function (transId, obj) {
+          failure: function(transId, obj) {
             YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to delete");
           }
         },

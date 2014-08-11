@@ -192,7 +192,7 @@ jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
-        ${VIRTUALENV}/bin/gjslint --nojsdoc $JS
+        ${VIRTUALENV}/bin/gjslint --disable 0131 --max_line_length 100 --nojsdoc $JS
     done
 }
 
@@ -414,9 +414,11 @@ startceleryd() {
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
     CELERYD_OPTS="-A yabiadmin.backend.celerytasks -E --loglevel=DEBUG --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid -Ofair"
+    # Do just provisioning (provision fs and ex backends and clean_up_dynamic backends)
+    #CELERYD_OPTS="$CELERYD_OPTS -Q provisioning"
     # Do just file operations (stagein and stagout tasks)
     #CELERYD_OPTS="$CELERYD_OPTS -Q file_operations"
-    # Do all tasks BUT file operations (stagein and stagout tasks)
+    # Do all tasks BUT provisioning and file operations
     #CELERYD_OPTS="$CELERYD_OPTS -Q celery"
     #CELERY_LOADER="django"
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"

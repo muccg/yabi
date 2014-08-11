@@ -1,4 +1,4 @@
-// globals for workflow design page
+// Globals for workflow design page
 var workflow, tools;
 
 var YabiApp = {};
@@ -64,18 +64,19 @@ YUI().use(
         e.halt(true);
 
         if (!wf.isValid()) {
-          YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow isn't valid. Please correct errors before submitting.");
+          var msg = "Workflow isn't valid. Please correct errors before submitting.";
+          YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
         } else {
 
           var baseURL = appURL + "ws/workflows/submit/";
 
           jsCallback = {
-            success: function (transId, obj, args) {
+            success: function(transId, obj, args) {
               YAHOO.ccgyabi.widget.YabiMessage.success("Success on submit!");
               workflow.deleteDraft(true);
               workflow.submitSuccessCallback(obj, summonJobsView, args.target);
             },
-            failure: function (transId, obj) {
+            failure: function(transId, obj) {
               YAHOO.ccgyabi.widget.YabiMessage.fail("Fail on submit!");
             }
           };

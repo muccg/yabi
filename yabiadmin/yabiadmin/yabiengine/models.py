@@ -23,7 +23,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
 from django.db import models
-from yabiadmin.yabi.models import User, BackendCredential, Tool
+from yabiadmin.yabi.models import User, Backend, BackendCredential, Tool
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 from ccg_django_utils import webhelpers
@@ -128,9 +128,19 @@ class Workflow(models.Model, Editable, Status):
         return self.job_set.get(order=order)
 
     def update_status(self):
+        FINISHED = (STATUS_COMPLETE, STATUS_ERROR, STATUS_ABORTED)
+
         job_statuses = [x['status'] for x in Job.objects.filter(workflow=self).values('status')]
-        if not all([status in (STATUS_COMPLETE, STATUS_ERROR, STATUS_ABORTED) for status in job_statuses]):
-            if self.status == STATUS_READY:
+        jobs_finished = [status in FINISHED for status in job_statuses]
+        jobs_errored = [STATUS_ERROR == status for status in job_statuses]
+
+        if not all(jobs_finished):
+            if any(jobs_errored):
+                self.status = STATUS_ERROR
+                self.save()
+            # Handles transition from READY to RUNNING
+            # TODO Could be clearer than this
+            elif self.status == STATUS_READY:
                 if any([status in (STATUS_RUNNING, STATUS_COMPLETE) for status in job_statuses]):
                     self.status = STATUS_RUNNING
                     self.save()
@@ -213,6 +223,8 @@ class Job(models.Model, Editable, Status):
     preferred_stagein_method = models.CharField(max_length=5, null=False, choices=STAGING_COPY_CHOICES)
     preferred_stageout_method = models.CharField(max_length=5, null=False, choices=STAGING_COPY_CHOICES)
 
+    dynamic_backends = models.ManyToManyField('DynamicBackendInstance', through='JobDynamicBackend', null=True, blank=True)
+
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)
 
@@ -271,6 +283,11 @@ class Job(models.Model, Editable, Status):
     @property
     def is_retrying(self):
         return any([t.is_retrying for t in self.task_set.all()])
+
+    @property
+    def has_dynamic_backend(self):
+        return (self.tool.fs_backend.dynamic_backend or
+                self.tool.backend.dynamic_backend)
 
 
 class Task(models.Model, Editable, Status):
@@ -456,11 +473,41 @@ class Task(models.Model, Editable, Status):
         self.error_msg = message
         self.save()
 
-    def recovered_from_error(self):
-        logger.debug("Task %s recovered from error", self.pk)
+    def finished_retrying(self):
         self.is_retrying = False
         self.error_msg = None
         self.save()
+
+
+class DynamicBackendInstance(models.Model):
+    created_on = models.DateTimeField(auto_now_add=True, editable=False)
+    created_for_job = models.ForeignKey(Job)
+    configuration = models.TextField()
+    instance_handle = models.CharField(max_length=256)
+    hostname = models.CharField(max_length=512, blank=True)
+    destroyed_on = models.DateTimeField(blank=True, null=True)
+
+
+class JobDynamicBackend(models.Model):
+    BE_TYPE_CHOICES = (
+        ('fs', 'filesystem'),
+        ('ex', 'execution'),
+    )
+    BE_TYPE_MAP = dict(BE_TYPE_CHOICES)
+    BE_TYPE_REVERSED_MAP = dict(map(reversed, BE_TYPE_CHOICES))
+
+    @staticmethod
+    def descr_to_type(descr):
+        return JobDynamicBackend.BE_TYPE_REVERSED_MAP[descr]
+
+    job = models.ForeignKey(Job)
+    backend = models.ForeignKey(Backend)
+    instance = models.ForeignKey(DynamicBackendInstance)
+    be_type = models.CharField(max_length=2, choices=BE_TYPE_CHOICES)
+
+    @property
+    def type_descr(self):
+        return self.BE_TYPE_MAP[self.be_type]
 
 
 class StageIn(models.Model, Editable):

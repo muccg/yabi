@@ -152,7 +152,7 @@ def menu_saved_workflows_toolset(user):
             "json": json.loads(wf.json),
         }
 
-    qs = SavedWorkflow.objects.filter(creator=user).order_by("created_on")
+    qs = SavedWorkflow.objects.filter(creator__user=user).order_by("created_on")
     qs = qs.select_related("creator")
 
     toolgroups = [{
@@ -173,10 +173,11 @@ def ls(request):
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
     yabiusername = request.user.username
-    logger.debug('yabiusername: {0} uri: {1}'.format(yabiusername, request.GET['uri']))
-    if request.GET['uri']:
-        recurse = request.GET.get('recurse')
-        listing = backend.get_listing(yabiusername, request.GET['uri'], recurse is not None)
+    uri = request.GET.get('uri')
+    recurse = request.GET.get('recurse')
+    logger.debug('yabiusername: {0} uri: {1}'.format(yabiusername, uri))
+    if uri:
+        listing = backend.get_listing(yabiusername, uri, recurse is not None)
     else:
         listing = backend.get_backend_list(yabiusername)
 

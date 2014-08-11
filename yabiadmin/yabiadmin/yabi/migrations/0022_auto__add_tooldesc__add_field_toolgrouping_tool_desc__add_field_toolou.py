@@ -8,14 +8,57 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'ToolDesc'
+        db.create_table(u'yabi_tooldesc', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('last_modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tooldesc_modifiers', null=True, on_delete=models.SET_NULL, to=orm['auth.User'])),
+            ('last_modified_on', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, null=True, blank=True)),
+            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tooldesc_creators', null=True, on_delete=models.SET_NULL, to=orm['auth.User'])),
+            ('created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
+            ('path', self.gf('django.db.models.fields.CharField')(max_length=512, null=True, blank=True)),
+            ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('accepts_input', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'yabi', ['ToolDesc'])
 
-        # Changing field 'Tool.desc'
-        db.alter_column(u'yabi_tool', 'desc_id', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['yabi.ToolDesc']))
+        # Adding field 'Tool.desc'
+        db.add_column(u'yabi_tool', 'desc',
+                      self.gf('django.db.models.fields.related.ForeignKey')(null=True, to=orm['yabi.ToolDesc']),
+                      keep_default=False)
+
+        # Adding field 'ToolGrouping.tool_desc'
+        db.add_column(u'yabi_toolgrouping', 'tool_desc',
+                      self.gf('django.db.models.fields.related.ForeignKey')(null=True, to=orm['yabi.ToolDesc']),
+                      keep_default=False)
+
+        # Adding field 'ToolOutputExtension.tool_desc'
+        db.add_column(u'yabi_tooloutputextension', 'tool_desc',
+                      self.gf('django.db.models.fields.related.ForeignKey')(null=True, to=orm['yabi.ToolDesc']),
+                      keep_default=False)
+
+        # Adding field 'ToolParameter.tool_desc'
+        db.add_column(u'yabi_toolparameter', 'tool_desc',
+                      self.gf('django.db.models.fields.related.ForeignKey')(null=True, to=orm['yabi.ToolDesc']),
+                      keep_default=False)
+
 
     def backwards(self, orm):
+        # Deleting field 'Tool.desc'
+        db.delete_column(u'yabi_tool', 'desc_id')
 
-        # Changing field 'Tool.desc'
-        db.alter_column(u'yabi_tool', 'desc_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.ToolDesc'], null=True))
+        # Deleting model 'ToolDesc'
+        db.delete_table(u'yabi_tooldesc')
+
+        # Deleting field 'ToolGrouping.tool_desc'
+        db.delete_column(u'yabi_toolgrouping', 'tool_desc_id')
+
+        # Deleting field 'ToolOutputExtension.tool_desc'
+        db.delete_column(u'yabi_tooloutputextension', 'tool_desc_id')
+
+        # Deleting field 'ToolParameter.tool_desc'
+        db.delete_column(u'yabi_toolparameter', 'tool_desc_id')
+
 
     models = {
         u'auth.group': {
@@ -59,6 +102,8 @@ class Migration(SchemaMigration):
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'backend_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'}),
+            'dynamic_backend': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'dynamic_backend_configuration': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.DynamicBackendConfiguration']", 'null': 'True', 'blank': 'True'}),
             'hostname': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'backend_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
@@ -102,6 +147,16 @@ class Migration(SchemaMigration):
             'security_state': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.User']"}),
             'username': ('django.db.models.fields.CharField', [], {'max_length': '512'})
+        },
+        u'yabi.dynamicbackendconfiguration': {
+            'Meta': {'object_name': 'DynamicBackendConfiguration'},
+            'configuration': ('django.db.models.fields.TextField', [], {}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'dynamicbackendconfiguration_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'dynamicbackendconfiguration_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         u'yabi.fileextension': {
             'Meta': {'ordering': "('pattern',)", 'object_name': 'FileExtension'},
@@ -148,15 +203,18 @@ class Migration(SchemaMigration):
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'})
         },
         u'yabi.tool': {
-            'Meta': {'object_name': 'Tool'},
+            'Meta': {'ordering': "('name',)", 'object_name': 'Tool'},
+            'accepts_input': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Backend']"}),
             'cpus': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tool_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'desc': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"}),
+            'desc': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']", 'null': 'True', 'blank': 'True'}),
+            'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'display_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'fs_backend': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'fs_backends'", 'to': u"orm['yabi.Backend']"}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.ToolGroup']", 'null': 'True', 'through': u"orm['yabi.ToolGrouping']", 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'job_type': ('django.db.models.fields.CharField', [], {'default': "'single'", 'max_length': '40', 'null': 'True', 'blank': 'True'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tool_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
@@ -165,12 +223,16 @@ class Migration(SchemaMigration):
             'link_supported': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'max_memory': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'module': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'output_filetypes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.FileExtension']", 'null': 'True', 'through': u"orm['yabi.ToolOutputExtension']", 'blank': 'True'}),
+            'path': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'}),
             'queue': ('django.db.models.fields.CharField', [], {'default': "'normal'", 'max_length': '50', 'null': 'True', 'blank': 'True'}),
             'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'use_same_dynamic_backend': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'walltime': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'})
         },
         u'yabi.tooldesc': {
-            'Meta': {'ordering': "('name',)", 'object_name': 'ToolDesc'},
+            'Meta': {'object_name': 'ToolDesc'},
             'accepts_input': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tooldesc_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -199,7 +261,8 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'toolgrouping_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
-            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"}),
+            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Tool']"}),
+            'tool_desc': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"}),
             'tool_group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolGroup']"}),
             'tool_set': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolSet']"})
         },
@@ -213,7 +276,8 @@ class Migration(SchemaMigration):
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'must_be_larger_than': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'must_exist': ('django.db.models.fields.NullBooleanField', [], {'default': 'False', 'null': 'True', 'blank': 'True'}),
-            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"})
+            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Tool']"}),
+            'tool_desc': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"})
         },
         u'yabi.toolparameter': {
             'Meta': {'object_name': 'ToolParameter'},
@@ -238,7 +302,8 @@ class Migration(SchemaMigration):
             'sensitive_data': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'switch': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'switch_use': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ParameterSwitchUse']"}),
-            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"}),
+            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Tool']"}),
+            'tool_desc': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"}),
             'use_output_filename': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolParameter']", 'null': 'True', 'blank': 'True'})
         },
         u'yabi.toolset': {

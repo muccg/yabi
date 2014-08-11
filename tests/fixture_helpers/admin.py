@@ -76,7 +76,7 @@ def create_sshtorque_backend():
         username=os.environ.get('USER'),
         password='',
         cert='cert',
-        key=private_key,
+        key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
     )
     models.BackendCredential.objects.create(backend=sshtorque_backend, credential=cred, homedir='')
@@ -94,7 +94,7 @@ def create_sshpbspro_backend():
         username=os.environ.get('USER'),
         password='',
         cert='cert',
-        key=private_key,
+        key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
     )
     models.BackendCredential.objects.create(backend=sshpbspro_backend, credential=cred, homedir='')
@@ -115,7 +115,7 @@ ${command} 1>STDOUT.txt 2>STDERR.txt
         username=os.environ.get('USER'),
         password='',
         cert='cert',
-        key=private_key,
+        key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
     )
     models.BackendCredential.objects.create(backend=ssh_backend, credential=cred, homedir='')
@@ -133,7 +133,7 @@ def create_sftp_backend():
         username=os.environ.get('USER'),
         password='',
         cert='cert',
-        key=private_key,
+        key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
     )
     models.BackendCredential.objects.create(
@@ -245,7 +245,7 @@ def create_fakes3_backend(scheme="s3", path="/"):
         default_stageout = False,
         submission = ""
     )
-
+    return backend, cred, backend_cred
 
 def create_tool_cksum(*args, **kwargs):
     tool = create_tool('cksum', *args, **kwargs)
@@ -299,7 +299,14 @@ def modify_backend(scheme="localex",hostname="localhost",**kwargs):
     backend.save()
 
 
-private_key = \
+def authorise_test_ssh_key():
+    key_file = os.path.join(os.path.dirname(__file__), "../test_data/yabitests.pub")
+    os.system("cat %s >> ~/.ssh/authorized_keys" % key_file)
+
+def cleanup_test_ssh_key():
+    os.system('sed "/yabitest/ D" -i.old ~/.ssh/authorized_keys')
+
+private_test_ssh_key = \
 """-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAuqrtex+43HRsh2gFZpcdkgJlLG7DyZyhbLLVZsKXPD3E4+a/
 YWSj/2iRL/95sYc0X4bCXrFkonVsSdOBawaNNDpx6V8zGgBCkpKtTn1OzgUb4BvZ
