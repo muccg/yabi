@@ -50,6 +50,7 @@ app = celery.Celery('yabiadmin.backend.celerytasks')
 
 app.config_from_object('django.conf:settings')
 
+DYNBE_READY_POLL_INTERVAL = getattr(settings, 'DYNBE_READY_POLL_INTERVAL', 60)
 
 # Celery uses its own logging setup. All our custom logging setup has to be
 # done in this callback
@@ -188,7 +189,7 @@ def provision_ex_be(job_id):
         raise
 
 
-@app.task(max_retries=None, default_retry_delay=15)
+@app.task(max_retries=None, default_retry_delay=DYNBE_READY_POLL_INTERVAL)
 @log_it('job')
 def poll_until_dynbes_ready(job_id):
     job = EngineJob.objects.get(pk=job_id)

@@ -382,6 +382,9 @@ CELERYD_FORCE_EXECV = True
 
 CELERYD_LOG_FORMAT = "YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s"
 
+# How much to wait between polling whether the Dynamic Backend is ready for usage
+# DYNBE_READY_POLL_INTERVAL = 120
+
 # ## PREVIEW SETTINGS
 
 # The truncate key controls whether the file may be previewed in truncated form
