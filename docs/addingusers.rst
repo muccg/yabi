@@ -70,7 +70,4 @@ This listing will show you all the tools a user has access to and the tool group
 User Backends
 ^^^^^^^^^^^^^
 
-This listing will show you all the execution and filesystem backend credentials set up for the user. NB the filesystem 
-backends have a ``Test`` link beside them that will cause Yabi to request a file listing for the backend. The user must
-be logged through the Yabi front end for these test links to work. If the test link is successful then the credential 
-for the user must be working.
+This listing will show you all the execution and filesystem backend credentials set up for the user.

@@ -17,6 +17,7 @@ Yabi Documentation
     backends
     credentials
     backendcredentials
+    dynamicbackends
     submissiontemplates
     tools
     tool_import_export

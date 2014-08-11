@@ -229,7 +229,7 @@ def create_fakes3_backend(scheme="s3", path="/"):
         default_stageout = False,
         submission = ""
     )
-
+    return backend, cred, backend_cred
 
 def create_tool_cksum():
     create_tool('cksum')

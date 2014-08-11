@@ -112,11 +112,21 @@ def get_file_list(yabiusername, uri, recurse=False):
 def get_backend_list(yabiusername):
     """Returns a list of backends for user, returns in json"""
     from yabiadmin.yabi.models import BackendCredential
-    logger.debug('yabiusername: {0}'.format(yabiusername))
-    results = {yabiusername: {'files': [], 'directories': []}}
-    for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
-        results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
-    return results
+
+    def becred_as_dir_entry(bc):
+        ZERO_SIZE = 0
+        NEVER_A_SYMLINK = ''
+        return [bc.homedir_uri, ZERO_SIZE, NEVER_A_SYMLINK]
+    visible_becreds = BackendCredential.objects.filter(
+        backend__dynamic_backend=False,
+        credential__user__name=yabiusername,
+        visible=True)
+    dir_entries = map(becred_as_dir_entry, visible_becreds)
+
+    return {
+        yabiusername: {
+            'files': [],
+            'directories': dir_entries}}
 
 
 def stage_in_files(task):

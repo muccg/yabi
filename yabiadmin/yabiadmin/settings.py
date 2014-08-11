@@ -177,6 +177,10 @@ if env.get("dbtype", "") == "mysql":
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env.get("secret_key", "changeme")
 
+# AWS Credentials used to provision EC2 instances
+AWS_ACCESS_KEY_ID = env.get("aws_access_key_id", "")
+AWS_SECRET_ACCESS_KEY = env.get("aws_secret_access_key", "")
+
 # email settings so yabi can send email error alerts etc
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host
 EMAIL_HOST = env.get("email_host", "")
@@ -341,10 +345,12 @@ CELERY_SEND_TASK_SENT_EVENT = True
 
 # see http://docs.celeryproject.org/en/latest/userguide/routing.html
 FILE_OPERATIONS = 'file_operations'
+PROVISIONING = 'provisioning'
 
 CELERY_QUEUES = (
     Queue('celery', routing_key='celery'),
     Queue(FILE_OPERATIONS, routing_key=FILE_OPERATIONS),
+    Queue(PROVISIONING, routing_key=PROVISIONING),
 )
 
 FILE_OPERATIONS_ROUTE = {
@@ -352,7 +358,16 @@ FILE_OPERATIONS_ROUTE = {
     'routing_key': FILE_OPERATIONS,
 }
 
+PROVISIONING_ROUTE = {
+    'queue': PROVISIONING,
+    'routing_key': PROVISIONING,
+}
+
 CELERY_ROUTES = {
+    'yabiadmin.backend.celerytasks.provision_fs_be': PROVISIONING_ROUTE,
+    'yabiadmin.backend.celerytasks.provision_ex_be': PROVISIONING_ROUTE,
+    'yabiadmin.backend.celerytasks.clean_up_dynamic_backends': PROVISIONING_ROUTE,
+
     'yabiadmin.backend.celerytasks.stage_in_files': FILE_OPERATIONS_ROUTE,
     'yabiadmin.backend.celerytasks.stage_out_files': FILE_OPERATIONS_ROUTE,
 }
