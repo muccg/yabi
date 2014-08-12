@@ -563,7 +563,7 @@ class CommandTemplate(object):
                         # file must appear in list
                         assert backref['filename'] in [X[0] for X in file_list], "Selected input file does not appear in output of previous tool"
                         index = [X[0] for X in file_list].index(backref['filename'])
-                        filename, size, date, link = file_list[index]
+                        filename, size, link = file_list[index]
                         details = {
                             "path": [],
                             "filename": filename,
@@ -588,7 +588,7 @@ class CommandTemplate(object):
                         # if the parameter is batch_param, we batch all the files
                         # if its not batch_param we only reference the FIRST matching file (this is legacy behavoir)
 
-                        for filename, size, date, link in file_list:
+                        for filename, size, link in file_list:
                             if ignore_file(os.path.basename(filename)):
                                 continue                        # skip this filename because it matches the glob ignore list
 

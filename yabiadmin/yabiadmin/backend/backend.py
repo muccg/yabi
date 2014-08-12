@@ -93,8 +93,8 @@ def get_listing(yabiusername, uri, recurse=False):
 
 def get_file_list(yabiusername, uri, recurse=False):
     """
-    Get a file list and return a bespoke structure
-    Used by legacy code in yabiengine to determine dependencies for tasks
+    Return a list of file entries for a URI.
+    Used by commandlinetemplate to determine dependencies for tasks.
     """
 
     results = get_listing(yabiusername, uri, recurse)
