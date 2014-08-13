@@ -89,6 +89,8 @@ _statuses_order = [st[0] for st in STATUS_MAP
 _statuses_order.reverse()
 STATUSES_REVERSE_ORDER = _statuses_order
 
+TERMINATED_STATUSES = (STATUS_COMPLETE, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_ABORTED)
+
 # Celery Settings
 MAX_CELERY_TASK_RETRIES = 3
 
