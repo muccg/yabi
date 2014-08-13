@@ -22,6 +22,7 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 import hashlib
+import json
 from django.http import HttpResponse, HttpResponseRedirect
 from ccg_django_utils.http import HttpResponseUnauthorized
 from django.conf import settings
@@ -30,7 +31,6 @@ from django.core.mail import mail_admins
 from django.contrib.auth import logout as django_logout
 from ccg_django_utils import webhelpers
 from django.template.loader import render_to_string
-from django.utils import simplejson as json
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.django_cache_persister import DjangoCacheCookiePersister
 import logging

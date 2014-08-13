@@ -22,13 +22,13 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
+import json
 import os
 import datetime
 import uuid
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 from django.db.transaction import is_managed
-from django.utils import simplejson as json
 from yabiadmin.yabi.models import BackendCredential, Tool
 from yabiadmin.exceptions import InvalidRequestError
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate

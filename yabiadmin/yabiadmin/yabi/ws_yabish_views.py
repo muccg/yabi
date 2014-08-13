@@ -22,14 +22,14 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
-import uuid
 import copy
+import json
 import os
+import uuid
 from datetime import datetime
 from django.db import transaction
 from django.http import HttpResponse
 from yabiadmin.yabi import models
-from django.utils import simplejson as json
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.backend import backend

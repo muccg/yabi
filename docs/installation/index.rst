@@ -9,13 +9,13 @@ Dependencies
 
 - Python
 - python include headers
-- sqlite3 (or other database supported by Django)
+- Postgresql is preferred, but other database supported by Django should also work
 
 
 Source code
 -----------
 
-Yabi source code is available from Google Code:
+Yabi source code is available on Bitbucket:
 
    ``$ hg clone https://bitbucket.org/ccgmurdoch/yabi``
 
@@ -29,7 +29,6 @@ How to install
     apache
     settings
     database
-    authentication
     caching
     yabish
 

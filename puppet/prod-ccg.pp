@@ -13,7 +13,7 @@ node default {
 
   $django_config = {
     deployment             => 'prod',
-    release                => '7.2.7-3',
+    release                => '8.0.0-1',
     dbdriver               => 'django.db.backends.postgresql_psycopg2',
     dbserver               => $globals::dbhost_postgresql_ccg_prod,
     dbhost                 => $globals::dbhost_postgresql_ccg_prod,
@@ -29,7 +29,9 @@ node default {
     admin_email            => $globals::system_email,
     allowed_hosts          => 'ccg.murdoch.edu.au localhost',
     torque_path            => '/opt/torque/2.3.13/bin',
-    sge_path               => '/opt/sge6/bin/linux-x64'
+    sge_path               => '/opt/sge6/bin/linux-x64',
+    aws_access_key_id      => $globals::yabi_aws_access_key_id,
+    aws_secret_access_key  => $globals::yabi_aws_secret_access_key,
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
@@ -56,8 +58,6 @@ node default {
       Package['yabi-admin'],
       Django::Config['yabiadmin'] ]
   }
-
-  package {'yabi-shell': provider => yum_nogpgcheck}
 
   service { 'rabbitmq-server':
     ensure     => 'running',

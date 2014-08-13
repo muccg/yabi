@@ -20,8 +20,8 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+import json
 import os
-from django.utils import simplejson as json
 from yabiadmin.backend.exceptions import RetryException, FileNotFoundError, NotSupportedError
 from yabiadmin.backend.utils import create_fifo
 from yabiadmin.backend.backend import fs_credential

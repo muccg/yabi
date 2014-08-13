@@ -22,6 +22,9 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
+import json
+import logging
+import six
 from urllib import quote
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
@@ -32,13 +35,10 @@ from django.core import urlresolvers
 from yabiadmin.yabi.models import *
 from yabiadmin import ldaputils
 from ccg_django_utils import webhelpers
-from django.utils import simplejson as json
 from django import forms
 from django.views.debug import get_safe_settings
 from django.contrib import messages
 from django.conf import settings
-import logging
-import six
 
 logger = logging.getLogger(__name__)
 

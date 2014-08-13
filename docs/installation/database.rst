@@ -7,11 +7,11 @@ Database Setup
 ==============
 
 The Yabi codebase employs `South <http://south.aeracode.org/>`_ to manage schema and data migrations. Because of this when initially setting
-up your database you need only create an empty data base called yabi_live and grant access.
+up your database you need only create an empty data base called yabi_prod and grant access.
 From there the install process will create the schema, insert setup data, create 
 initial users etc.
 
-To change the database that Yabi points at you will need to alter the DATABASES section
+To change the database that Yabi points at you will need to alter your database settings
 in the Django settings file. For more details see :ref:`settings`.
 
 .. index::
@@ -25,7 +25,7 @@ Ensure service is started:
 
 Create databases required:
 
- ``$ mysql -uroot -e "create database yabi_live default charset=UTF8;"``
+ ``$ mysql -uroot -e "create database yabi_prod default charset=UTF8;"``
 
 
  Initialise Yabi database:

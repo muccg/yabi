@@ -24,9 +24,14 @@ class S3FileUploadTest(RequestTest):
 
     def setUp(self):
         RequestTest.setUp(self)
-        admin.create_fakes3_backend()
+        self.backend, self.credential, self.becred = admin.create_fakes3_backend()
 
         fakes3_setup(self, self.SPECIAL_TEST_BUCKET)
+
+    def tearDown(self):
+        self.backend.delete()
+        self.credential.delete()
+        self.becred.delete()
 
     def test_s3_files_list(self):
         r = self.session.get(self.fscmd("ls"))
