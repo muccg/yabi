@@ -52,6 +52,7 @@ app.config_from_object('django.conf:settings')
 
 DYNBE_READY_POLL_INTERVAL = getattr(settings, 'DYNBE_READY_POLL_INTERVAL', 60)
 
+
 # Celery uses its own logging setup. All our custom logging setup has to be
 # done in this callback
 def setup_logging(*args, **kwargs):

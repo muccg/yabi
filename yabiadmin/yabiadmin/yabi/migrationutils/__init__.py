@@ -2,7 +2,6 @@
 from datetime import datetime
 import six
 from collections import OrderedDict
-from itertools import takewhile
 import logging
 
 

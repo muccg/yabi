@@ -33,6 +33,7 @@ from ccg.webservices.ext import ExtJsonInterface
 from yabiadmin.yabi.models import *
 from yabiadmin.yabi.forms import *
 
+
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     save_as = True
 
@@ -136,6 +137,7 @@ class ToolAdmin(AdminBase):
     search_fields = ['desc__name', 'display_name', 'desc__path']
     save_as = False
     list_filter = ["backend", "fs_backend", "enabled"]
+
 
 class ToolGroupAdmin(AdminBase):
     list_display = ['name', 'tools_str']

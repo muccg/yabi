@@ -377,12 +377,12 @@ def create_tool(desc, tool_dict):
         # try and get the backends
         try:
             backend = Backend.objects.get(name=tool_dict['backend'])
-        except ObjectDoesNotExist as e:
+        except ObjectDoesNotExist:
             backend = Backend.objects.get(name='nullbackend')
 
         try:
             fs_backend = Backend.objects.get(name=tool_dict['fs_backend'])
-        except ObjectDoesNotExist as e:
+        except ObjectDoesNotExist:
             fs_backend = Backend.objects.get(name='nullbackend')
 
         tool = Tool(desc=desc,
@@ -400,6 +400,7 @@ def create_tool(desc, tool_dict):
     else:
         tool.save()
         return tool
+
 
 def create_tool_desc(tool_dict):
     # create the tool
