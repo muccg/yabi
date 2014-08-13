@@ -12,18 +12,20 @@ node default {
   include globals
 
   $django_config = {
-    deployment  => 'prod',
-    release     => '8.0.0-1',
-    dbdriver    => 'django.db.backends.postgresql_psycopg2',
-    dbserver    => $globals::dbhost_rds_syd_postgresql_prod,
-    dbhost      => $globals::dbhost_rds_syd_postgresql_prod,
-    dbname      => 'yabiadmin_prod',
-    dbuser      => $globals::dbuser_syd_prod,
-    dbpass      => $globals::dbpass_syd_prod,
-    memcache    => $globals::memcache_syd,
-    secret_key  => $globals::secretkey_aws_yabi,
-    admin_email => $globals::system_email,
-    allowed_hosts => 'www.ccgapps.com.au ccgapps.com.au localhost'
+    deployment            => 'prod',
+    release               => '8.0.0-1',
+    dbdriver              => 'django.db.backends.postgresql_psycopg2',
+    dbserver              => $globals::dbhost_rds_syd_postgresql_prod,
+    dbhost                => $globals::dbhost_rds_syd_postgresql_prod,
+    dbname                => 'yabiadmin_prod',
+    dbuser                => $globals::dbuser_syd_prod,
+    dbpass                => $globals::dbpass_syd_prod,
+    memcache              => $globals::memcache_syd,
+    secret_key            => $globals::secretkey_aws_yabi,
+    admin_email           => $globals::system_email,
+    allowed_hosts         => 'www.ccgapps.com.au ccgapps.com.au localhost',
+    aws_access_key_id     => $globals::yabi_aws_access_key_id,
+    aws_secret_access_key => $globals::yabi_aws_secret_access_key,
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
