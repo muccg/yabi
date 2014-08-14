@@ -34,9 +34,8 @@ Dynamic Backend Configurations
 Dynamic Backend Configuration have to be created through Yabi Admin. These are named configuration
 parameters used by Yabi when creating a Dynamic Backend.
 
-Please edit them under Yabi/DynamicBackendConfigurations in Yabi Admin.
+Please edit them under Yabi/DynamicBackendConfigurations in Yabi Admin::
 
-::
     Name            The name of the configuration (ex. "CCG AWS t1.micro")
     Configuration   A JSON dictionary containing the provider specific configuration.
 
@@ -58,9 +57,8 @@ Field                    Description
  spot_price              (Spot Instance Only) The max price your willing to pay for an hour of usage
 ======================  =============
 
-An example for an AWS Spot instance configuration:
+An example for an AWS Spot instance configuration::
 
-::
  {
     "instance_class": "ec2spot",
 
@@ -80,9 +78,9 @@ An example for an AWS Spot instance configuration:
     ]
  }
 
-An example for an AWS On-Demand instance configuration:
+An example for an AWS On-Demand instance configuration::
 
-::
+
  {
     "instance_class": "ec2",
 
