@@ -38,6 +38,10 @@ logger = logging.getLogger(__name__)
 set_spot_drivers()
 
 
+class InvalidSpotInstanceRequestID(CloudError):
+    pass
+
+
 class Handle(namedtuple('HandleBase', ['spot_req_id', 'instance_id'])):
     @classmethod
     def from_json(cls, json_data):
@@ -46,6 +50,7 @@ class Handle(namedtuple('HandleBase', ['spot_req_id', 'instance_id'])):
     def from_handle(self, instance_id):
         return self._replace(instance_id=instance_id)
 
+    @property
     def has_instance_id(self):
         return self.instance_id is not None
 
@@ -96,11 +101,11 @@ class EC2SpotHandler(EC2Base):
         handle = Handle.from_json(instance_handle)
         spot_req = self._find_spot_request(spot_req_id=handle.spot_req_id)
 
-        # TODO Do we want to cancel the spot requests?
-        # I don't think we have to.
         self.driver.ex_cancel_spot_instance_request(spot_req)
 
-        EC2Base.destroy_node(self, instance_handle)
+        # Spot request might not be fulfilled yet
+        if handle.has_instance_id:
+            EC2Base.destroy_node(self, instance_handle)
 
     def _handle_to_instance_id(self, instance_handle):
         handle = Handle.from_json(instance_handle)
@@ -112,11 +117,13 @@ class EC2SpotHandler(EC2Base):
         return prefixed.replace("-", "_")
 
     def _find_spot_request(self, spot_req_id):
-        ourspot_or_empty = self.driver.ex_list_spot_requests(spot_request_ids=(spot_req_id,))
-        if len(ourspot_or_empty) != 1:
-            raise CloudError("Spot request '%s' not found", spot_req_id)
-
-        return ourspot_or_empty[0]
+        try:
+            ourspot_or_empty = self.driver.ex_list_spot_requests(spot_request_ids=(spot_req_id,))
+            return ourspot_or_empty[0]
+        except Exception as e:
+            if 'InvalidSpotInstanceRequestID.NotFound' in str(e):
+                raise InvalidSpotInstanceRequestID("Invalid spot instance request id '%s'", spot_req_id)
+            raise
 
     def _on_spot_request_got_instance(self, spot_req_id, instance_id):
         logger.info("Your Spot request '%s' has an instance now: '%s'. Waiting for the instance to be ready.", spot_req_id, instance_id)

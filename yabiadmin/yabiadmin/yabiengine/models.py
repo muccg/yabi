@@ -250,10 +250,10 @@ class Job(models.Model, Editable, Status):
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
         The order of the list being checked is therefore important.
         '''
-        for status in [STATUS_ERROR, 'exec:error', 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE, STATUS_ABORTED]:
+        for status in [STATUS_ERROR, STATUS_EXEC_ERROR, 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE, STATUS_ABORTED]:
             if [T for T in Task.objects.filter(job=self) if T.status == status]:
                 # we need to map the task status values to valid job status values
-                if status == 'exec:error':
+                if status == STATUS_EXEC_ERROR:
                     self.status = STATUS_ERROR
                 elif status.startswith('exec') or status in ['stageout', 'cleaning', 'stagein', 'mkdir']:
                     self.status = STATUS_RUNNING
@@ -272,6 +272,12 @@ class Job(models.Model, Editable, Status):
                 break
 
         return self.status
+
+    @property
+    def is_finished(self):
+        '''Returns True if all the Tasks of the Job finished.
+        Status could be COMPLETED, ABORTED or ERROR.'''
+        return all(map(lambda t: t.is_finished, Task.objects.filter(job=self)))
 
     @property
     def is_workflow_aborting(self):
@@ -464,6 +470,10 @@ class Task(models.Model, Editable, Status):
         if self.envvars_json is None or self.envvars_json.strip() == '':
             return {}
         return json.loads(self.envvars_json)
+
+    @property
+    def is_finished(self):
+        return self.status in TERMINATED_STATUSES
 
     def mark_task_as_retrying(self, message="Some error occurred"):
         self.is_retrying = True
