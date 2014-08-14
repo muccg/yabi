@@ -167,6 +167,6 @@ class TestLsWithExtraBackendCredentials(WSTestCase):
         self.assertEquals(1, len(listing), 'Should be only one entry')
         self.assertEquals([], listing[USER]['files'], 'Should have empty files array')
         self.assertItemsEqual(
-            [[self.PRELOADED_BC.homedir_uri, 0, ''],
-             [expected_homedir_uri, 0, '']],
+            [[self.PRELOADED_BC.homedir_uri, 0, False],
+             [expected_homedir_uri, 0, False]],
             listing[USER]['directories'])

@@ -115,7 +115,7 @@ def get_backend_list(yabiusername):
     from yabiadmin.yabi.models import BackendCredential
 
     def becred_as_dir_entry(bc):
-        return DirEntry(uri=bc.homedir_uri, size=0, is_symlink='')
+        return DirEntry(uri=bc.homedir_uri, size=0, is_symlink=False)
 
     visible_becreds = BackendCredential.objects.filter(
         backend__dynamic_backend=False,
