@@ -1,9 +1,7 @@
 {% extends "admin/base_site_mako.html" %}
-{% load pytag %}
-{% load is_false %}
 {% load dynamic_lookups %}
 
-{% if is_popup|is_false %}
+{% if not is_popup %}
 {% block block_breadcrumbs %}
 <div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Backend Credential Test</div>
 {% endblock %}
@@ -40,7 +38,7 @@
 
 <br/><br/>
 
-{% if error|is_false %}
+{% if not error %}
 <h3>File listing of {{bec.homedir_uri}}</h3>
 <table>
     <tr>
