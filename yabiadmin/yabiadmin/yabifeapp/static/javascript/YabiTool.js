@@ -40,10 +40,10 @@ function YabiTool(tooldef, collection, groupNode) {
   this.setupFootNode().appendTo(descNode);
 
   Y.Node.create('<div class="tool"/>')
-    .set("text", this.payload.displayName)
+    .set("text", this.payload.displayName || this.payload.defDisplayName)
     .append(Y.Node.create('<span class="backend"/>')
             .set("text", this.payload.backend)
-            .toggleView(this.payload.manyBackends))
+            .toggleView(this.payload.manyBackends && !this.payload.displayName))
     .append(addLink)
     .append(descNode)
     .appendTo(this.node)

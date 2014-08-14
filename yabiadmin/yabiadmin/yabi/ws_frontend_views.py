@@ -124,7 +124,8 @@ def menu_all_tools_toolset(user):
         for backend_tool_id, backend_name, display_name in backend_tools:
             tg.setdefault(backend_tool_id, {
                 "name": toolgroup.tool.name,
-                "displayName": display_name or toolgroup.tool.name,
+                "displayName": display_name,
+                "defDisplayName": toolgroup.tool.name,
                 "description": toolgroup.tool.description,
                 "outputExtensions": toolgroup.tool.output_filetype_extensions(),
                 "inputExtensions": toolgroup.tool.input_filetype_extensions(),

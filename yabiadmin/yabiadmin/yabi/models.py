@@ -197,7 +197,7 @@ class Tool(Base):
     link_supported = models.BooleanField(default=True)
 
     desc.help_text = "The tool definition"
-    display_name.help_text = "Optional text visible to users. If blank, then tool description's name is used."
+    display_name.help_text = "Optional text visible to users. If blank, then tool definition's name is used."
     enabled.help_text = "Enable tool in frontend."
     backend.help_text = "The execution backend for this tool."
     fs_backend.help_text = "The filesystem backend for this tool."
@@ -206,6 +206,9 @@ class Tool(Base):
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
     lcopy_supported.help_text = "If this tool should use local copies on supported backends where appropriate."
     link_supported.help_text = "If this tool should use symlinks on supported backends where appropriate."
+
+    def get_display_name(self):
+        return self.display_name or self.desc.name
 
     def tool_dict(self):
         output = self.desc.tool_dict()
