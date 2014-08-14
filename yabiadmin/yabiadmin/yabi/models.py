@@ -665,7 +665,9 @@ class Backend(Base):
         return urlunparse((self.scheme, netloc, self.path, '', '', ''))
 
     def __unicode__(self):
-        return "%s - %s://%s:%s%s" % (self.name, self.scheme, self.hostname, self.port, self.path)
+        parts = [self.name, " - ", self.scheme, "://", self.hostname,
+                 ":%d" % self.port if self.port else "", self.path]
+        return "".join(parts)
 
     @models.permalink
     def get_absolute_url(self):
