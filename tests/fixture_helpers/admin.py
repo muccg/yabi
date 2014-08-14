@@ -12,7 +12,7 @@ Module providing helper methods for creating data in yabi admin from tests
 def create_tool(name, display_name=None, path=None,
                 ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem',
                 testcase=None):
-    desc = create_tool_desc(name, display_name, path)
+    desc = create_tool_desc(name, path)
     create_tool_backend(name, ex_backend_name, fs_backend_name)
 
     if testcase:
@@ -20,10 +20,9 @@ def create_tool(name, display_name=None, path=None,
 
     return desc
 
-def create_tool_desc(name, display_name=None, path=None):
-    if display_name is None: display_name = name
+def create_tool_desc(name, path=None):
     if path is None: path = name
-    return models.ToolDesc.objects.get_or_create(name=name, display_name=display_name, path=path)[0]
+    return models.ToolDesc.objects.get_or_create(name=name, path=path)[0]
 
 def create_tool_backend(toolname, ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem'):
     desc = models.ToolDesc.objects.get(name=toolname)

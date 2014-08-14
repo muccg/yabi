@@ -4,7 +4,7 @@ from django.utils import unittest as unittest
 from django.test.client import Client
 from model_mommy import mommy
 from yabiadmin.yabi.ws_frontend_views import munge_name
-from yabiadmin.yabi.models import User, Backend, BackendCredential, Credential, Tool, ToolSet, ToolGroup
+from yabiadmin.yabi.models import User, Backend, BackendCredential, Credential, Tool, ToolDesc, ToolSet, ToolGroup
 from django.core.cache import cache
 
 from django.utils import simplejson as json
@@ -34,11 +34,6 @@ class WsMenuTest(WSTestCase):
         self.tool = None
         cache.clear()
         self.login_fe(ADMIN_USER)
-
-    def tearDown(self):
-        if self.tool:
-            ToolSet.objects.get(name='test').delete()
-            Tool.objects.get(name='new-tool').delete()
 
     def test_menu_is_returned(self):
         response = self.client.get('/ws/menu/')
@@ -79,16 +74,32 @@ class WsMenuTest(WSTestCase):
                             "Shouldn't get the same response from cache")
 
     def add_new_tool(self):
-        null_backend = Backend.objects.get(name='nullbackend')
-        tool = Tool.objects.create(
-            name='new-tool', display_name='new_tool',
-            backend=null_backend, fs_backend=null_backend)
+        admin = User.objects.get(name='admin')
+        backend = Backend.objects.get(name='Local Execution')
+        fs_backend = Backend.objects.get(name='nullbackend')
+        cred, cred_created = Credential.objects.get_or_create(description="test",
+                                                              user=admin, username="admin")
+        bc, bc_created = BackendCredential.objects.get_or_create(backend=backend, credential=cred)
+        bc2, bc2_created = BackendCredential.objects.get_or_create(backend=fs_backend, credential=cred)
+        desc, created = ToolDesc.objects.get_or_create(name='new-tool')
+        tool = Tool.objects.create(desc=desc, backend=backend, fs_backend=fs_backend)
         test_tset = ToolSet.objects.create(name='test')
-        admin = User.objects.get(name=ADMIN_USER)
         test_tset.users.add(admin)
         select_data = ToolGroup.objects.get(name='select data')
-        select_data.toolgrouping_set.create(tool_set=test_tset, tool=tool)
-        return tool
+        select_data.toolgrouping_set.create(tool_set=test_tset, tool=desc)
+
+        def cleanup():
+            tool.delete()
+            desc.delete()
+            test_tset.delete()
+            ToolSet.objects.filter(name='test').delete()
+            if cred_created:
+                cred.delete()
+            if bc_created:
+                bc.delete()
+        self.addCleanup(cleanup)
+
+        return desc
 
 
 class TestWorkflowNameMunging(unittest.TestCase):
