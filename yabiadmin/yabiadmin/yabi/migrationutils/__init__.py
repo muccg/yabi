@@ -3,6 +3,7 @@ from datetime import datetime
 import six
 from collections import OrderedDict
 from itertools import takewhile
+import logging
 
 
 class Settings:
@@ -289,33 +290,41 @@ def yabi_fileextension(pattern, user=None, orm=None):
     fileextension.pattern = pattern
     return fileextension
 
-#from yabiadmin.yabi.models import Tool, ToolDesc
+
+logger = logging.getLogger("migration")
 
 
-def deduplicate_tool_descs(ToolDesc, Tool):
+def deduplicate_tool_descs(Tool, ToolDesc, dry_run=False):
     def tool_key(tool):
-        # Important fields for the tool desc are path, description.
-        # name and display name will change depending on backend.
+        # Important fields for the tool desc are path and accepts_input.
+        # name is a unique field, and display name will change
+        # depending on backend.
         # Parameters and extensions are important, but the tool
         # groupings aren't.
-        return (tool.path, tool.description, tool.accepts_input,
+        return (tool.path, tool.accepts_input,
                 tuple(map(param_key, tool.toolparameter_set.order_by("id"))),
                 tuple(map(ext_key, tool.tooloutputextension_set.order_by("id"))))
 
     def param_key(param):
-        return (param.switch, param.switch_use, param.rank, param.fe_rank,
+        return (param.switch, param.switch_use.display_text,
+                param.rank, param.fe_rank,
                 param.mandatory, param.common, param.sensitive_data,
-                param.hidden, param.output_file, param.possible_values,
-                param.default_value, param.batch_bundle_files,
+                param.hidden, param.output_file,
+                param.possible_values or u"",  # nullable text field
+                param.default_value or u"",    # ... annoying
+                param.batch_bundle_files,
                 param.file_assignment)
 
     def ext_key(ext):
-        return (ext.file_extension.pattern, ext.must_exist, ext.must_be_larger_than)
+        # only one field of ToolOutputExtension is actually used
+        return ext.file_extension.pattern
 
     # a mapping of tool "key" to ToolDesc.id
     tooldescs = OrderedDict()
     # a mapping of duplicate ToolDesc ids to first ToolDesc.id
     remap = OrderedDict()
+
+    logger.info("Looking through %d ToolDescs..." % ToolDesc.objects.count())
 
     for desc in ToolDesc.objects.order_by("created_on"):
         key = tool_key(desc)
@@ -324,32 +333,24 @@ def deduplicate_tool_descs(ToolDesc, Tool):
         else:
             tooldescs[key] = desc.id
 
-    def attr_common_prefix(qs, attr):
-        return reduce(common_prefix, qs.values_list(attr, flat=True), None)
-
-    # for each set of duplicates, try to find common prefix of name and display_name
-    for desc_id, key in remap.iteritems():
-        first = ToolDesc.objects.get(id=desc_id)
-        group_ids = [desc_id] + [id for (id, k) in remap.items() if k == key]
-        descs = ToolDesc.objects.filter(id__in=group_ids)
-        first.name = attr_common_prefix(descs, "name") or first.name
-        first.display_name = attr_common_prefix(descs, "display_name") or first.display_name
-        first.save()
+    logger.info("%d ToolDescs will be removed" % len(remap))
 
     # update tools to point to first ToolDesc
     for tool in Tool.objects.filter(desc_id__in=remap.keys()):
+        logger.info("Setting Tool %d \"%s\" desc from %d to %d" % (tool.id, tool.desc.name,
+                                                                   tool.desc_id,
+                                                                   remap[tool.desc_id]))
         tool.desc_id = remap[tool.desc_id]
-        tool.save()
+        if not dry_run:
+            tool.save()
 
     # clean up the duplicates, will cascade delete parameters, etc
-    ToolDesc.objects.filter(id__in=remap.keys()).delete()
+    dead = ToolDesc.objects.filter(id__in=remap.keys())
+    if dead.exists():
+        logger.info("Deleting duplicate ToolDescs (and their related objects)")
+        logger.info(", ".join("%s id=%d" % (tool.name, tool.id) for tool in dead))
+    else:
+        logger.info("No duplicate ToolDescs")
 
-
-def common_prefix(a, b):
-    if a is None:
-        return b
-    if b is None:
-        return a
-    same = lambda (p, q): p == q
-    length = len(takewhile(same, six.zip(a, b)))
-    return a[:length]
+    if not dry_run:
+        dead.delete()
