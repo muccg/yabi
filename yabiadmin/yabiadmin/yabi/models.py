@@ -120,7 +120,7 @@ class ToolDesc(Base):
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = reduce(lambda x, y: x + y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()], [])
         extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def input_filetype_extensions_for_batch_param(self):
         '''
@@ -130,12 +130,12 @@ class ToolDesc(Base):
         if self.batch_on_param:
             filetypes = self.batch_on_param.accepted_filetypes.all()
             extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def output_filetype_extensions(self):
         '''Work out output file extensions for this tool and return a a list of them all'''
         extensions = [fe.file_extension.pattern for fe in self.tooloutputextension_set.all()]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def tool_dict(self):
         '''Gathers tool details into convenient dict for use by json or other models json'''
@@ -305,14 +305,14 @@ class ToolParameter(Base):
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = self.accepted_filetypes.all()
         extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def input_filetype_extensions(self):
         '''Work out input file extensions for this toolparameter and return a a list of them all'''
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = self.accepted_filetypes.all()
         extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     @property
     def input_file(self):
