@@ -28,6 +28,7 @@ import datetime
 import uuid
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
+from django.db.models import Q
 from django.db.transaction import is_managed
 from yabiadmin.yabi.models import BackendCredential, Tool
 from yabiadmin.exceptions import InvalidRequestError
@@ -199,37 +200,27 @@ class EngineJob(Job):
             extensions = (self.other_files)
         return extensions
 
-    @property
-    def exec_credential(self):
-        rval = None
+    def _get_be_cred(self, term, be_type):
+        full_term = Q(credential__user=self.workflow.user) & term
 
         try:
-            rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.backend)
+            rval = BackendCredential.objects.get(full_term)
+            return rval
         except (ObjectDoesNotExist, MultipleObjectsReturned):
-            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.backend))
-            ebcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.backend)
+            logger.critical('Invalid %s backend credentials for user: %s and backend: %s' % (be_type, self.workflow.user, self.tool.backend))
+            ebcs = BackendCredential.objects.filter(full_term)
             logger.debug("EBCS returned: %s" % ebcs)
             for bc in ebcs:
                 logger.debug("%s: Backend: %s Credential: %s" % (bc, bc.credential, bc.backend))
             raise
 
-        return rval
+    @property
+    def exec_credential(self):
+        return self._get_be_cred(Q(backend=self.tool.backend), 'execution')
 
     @property
     def fs_credential(self):
-        rval = None
-
-        try:
-            rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.fs_backend)
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
-            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend))
-            fsbcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.fs_backend)
-            logger.debug("FS Backend Credentials returned: %s" % fsbcs)
-            for bc in fsbcs:
-                logger.debug("%s: Backend: %s Credential: %s" % (bc, bc.credential, bc.backend))
-            raise
-
-        return rval
+        return self._get_be_cred(Q(backend=self.tool.fs_backend), 'FS')
 
     def update_dependencies(self):
         self.template.update_dependencies(self.workflow, ignored_patterns=DEPENDENCIES_EXCLUDED_PATTERNS)
