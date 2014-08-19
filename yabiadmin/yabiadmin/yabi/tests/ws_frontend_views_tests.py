@@ -137,7 +137,7 @@ class TestLsWithExtraBackendCredentials(WSTestCase):
     def setUp(self):
         WSTestCase.setUp(self)
         # Preloaded by quickstart
-        self.PRELOADED_BC = BackendCredential.objects.get(pk=3)
+        self.PRELOADED_BC = BackendCredential.objects.get(pk=2)
         self.setUpExtraBackendCredentials()
         self.login_fe(USER)
         self.maxDiff = None

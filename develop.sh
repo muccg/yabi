@@ -214,6 +214,7 @@ do_nosetests() {
     NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
     IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
     TEST_CASES="tests yabiadmin/yabiadmin"
+    TEST_CASES="yabiadmin/yabiadmin"
     TEST_CONFIG_FILE="${TARGET_DIR}/staging_tests.conf"
 
     # Some tests access external services defined in a config file.
