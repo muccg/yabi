@@ -13,16 +13,10 @@ class RewalkTest(YabiTestCase, FileUtils):
     In order to make this all work on different machines/users we will replace variables in the JSON file at run time.
     '''
     TIMEOUT = 60.0 * 20.0
-    
-    def setUpAdmin(self):
-        from yabiadmin.yabi import models
-        admin.create_tool_cksum()
-        admin.create_tool_dd()
 
-    def tearDownAdmin(self):
-        from yabiadmin.yabi import models
-        models.Tool.objects.get(name='cksum').delete()
-        models.Tool.objects.get(name='dd').delete()
+    def setUpAdmin(self):
+        admin.create_tool_cksum(testcase=self)
+        admin.create_tool_dd(testcase=self)
 
     def setUp(self):
         YabiTestCase.setUp(self)
@@ -30,7 +24,6 @@ class RewalkTest(YabiTestCase, FileUtils):
         self.setUpAdmin()
 
     def tearDown(self):
-        self.tearDownAdmin()
         YabiTestCase.tearDown(self)
         FileUtils.tearDown(self)
 
@@ -65,17 +58,17 @@ class RewalkTest(YabiTestCase, FileUtils):
         shutil.copy(filename, localfs_dir)
         filename = os.path.join(localfs_dir, os.path.basename(filename))
         self.delete_on_exit(filename)
-        
+
         changed_json_file = os.path.join(localfs_dir, 'dd_then_cksum.json')
-        
+
         self.delete_on_exit(changed_json_file)
 
         self.prepare_json(wfl_json_file, changed_json_file, {
             'DIR': localfs_dir, 'FILENAME': os.path.basename(filename)})
-        
-        result = self.yabi.run(['submitworkflow', changed_json_file])
+
+        result = self.yabi.run(['submitworkflow', '--backend', 'Local Execution',
+                                changed_json_file])
         wfl_id = result.id
         result = StatusResult(self.yabi.run(['status', wfl_id]))
         self.assertEqual(result.workflow.status, 'complete')
         self.assertTrue(all_items(lambda j: j.status == 'complete', result.workflow.jobs))
-

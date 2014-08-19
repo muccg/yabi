@@ -21,7 +21,7 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# -*- coding: utf-8 -*-
+
 import json
 import mimetypes
 import os
@@ -33,10 +33,12 @@ from urlparse import urlparse, urlunparse
 from collections import OrderedDict
 
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, BackendCredential
+from yabiadmin.yabi.models import User, Credential, BackendCredential
+from yabiadmin.yabi.models import ToolGrouping, Tool, ToolDesc, Backend
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
@@ -58,9 +60,8 @@ DATE_FORMAT = '%Y-%m-%d'
 
 
 @authentication_required
-def tool(request, toolname):
-    logger.debug(toolname)
-    toolname_key = cache_keyname(toolname)
+def tool(request, toolname, toolid=None):
+    toolname_key = "%s-%s" % (cache_keyname(toolname), toolid or "")
     page = cache.get(toolname_key)
 
     if page:
@@ -68,7 +69,10 @@ def tool(request, toolname):
         return page
 
     try:
-        tool = Tool.objects.get(name=toolname)
+        if toolid is None:
+            tool = ToolDesc.objects.get(name=toolname)
+        else:
+            tool = Tool.objects.get(id=toolid, desc__name=toolname)
 
         response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
         cache.set(toolname_key, response, 30)
@@ -98,25 +102,37 @@ def menu_saved_workflows(request):
 
 
 def menu_all_tools_toolset(user):
-    qs = ToolGrouping.objects.filter(tool_set__users__user=user)
-    qs = qs.filter(tool__enabled=True)  # only include tools that are enabled
+    creds = BackendCredential.objects.filter(credential__user__user=user)
+    backends = list(creds.values_list("backend", flat=True))
+    backends.append(Backend.objects.get(name="nullbackend").id)
+    user_tools = Tool.objects.filter(enabled=True, backend__in=backends, fs_backend__in=backends)
+
+    qs = ToolGrouping.objects.filter(tool_set__users=user)
+    qs = qs.filter(tool__in=user_tools.values_list("desc", flat=True))
     qs = qs.order_by("tool_group__name", "tool__name")
     qs = qs.select_related("tool_group", "tool")
     qs = qs.prefetch_related(
         'tool__tooloutputextension_set__file_extension',
         'tool__toolparameter_set__accepted_filetypes__extensions',
+        'tool__tool_set',
     )
 
     all_tools = OrderedDict()
     for toolgroup in qs:
         tg = all_tools.setdefault(toolgroup.tool_group.name, OrderedDict())
-        tg.setdefault(toolgroup.tool.name, {
-            "name": toolgroup.tool.name,
-            "displayName": toolgroup.tool.display_name,
-            "description": toolgroup.tool.description,
-            "outputExtensions": toolgroup.tool.output_filetype_extensions(),
-            "inputExtensions": toolgroup.tool.input_filetype_extensions(),
-        })
+        backend_tools = toolgroup.tool.tool_set.values_list("id", "backend__name", "display_name")
+        for backend_tool_id, backend_name, display_name in backend_tools:
+            tg.setdefault(backend_tool_id, {
+                "name": toolgroup.tool.name,
+                "displayName": display_name,
+                "defDisplayName": toolgroup.tool.name,
+                "description": toolgroup.tool.description,
+                "outputExtensions": toolgroup.tool.output_filetype_extensions(),
+                "inputExtensions": toolgroup.tool.input_filetype_extensions(),
+                "toolId": backend_tool_id,
+                "backend": backend_name,
+                "manyBackends": len(backend_tools) > 1,
+            })
 
     return {
         "name": "all_tools",
@@ -348,21 +364,13 @@ def put(request):
 @transaction.commit_manually
 def submit_workflow(request):
     try:
-        received_json = request.POST["workflowjson"]
-        workflow_dict = json.loads(received_json)
-
         yabiuser = User.objects.get(name=request.user.username)
-
-        # Check if the user already has a workflow with the same name, and if so,
-        # munge the name appropriately.
-        workflow_dict["name"] = munge_name(yabiuser.workflow_set, workflow_dict["name"])
-        workflow_json = json.dumps(workflow_dict)
+        workflow_dict = _preprocess_workflow_json(yabiuser, request.POST["workflowjson"])
 
         workflow = EngineWorkflow.objects.create(
             name=workflow_dict["name"],
             user=yabiuser,
-            json=workflow_json,
-            original_json=received_json,
+            original_json=json.dumps(workflow_dict),
             start_time=datetime.now()
         )
 
@@ -378,6 +386,26 @@ def submit_workflow(request):
         return json_error_response("Workflow submission error")
 
     return json_response({"workflow_id": workflow.pk})
+
+
+def _preprocess_workflow_json(yabiuser, received_json):
+    workflow_dict = json.loads(received_json)
+
+    # Check if the user already has a workflow with the same name, and if so,
+    # munge the name appropriately.
+    workflow_dict["name"] = munge_name(yabiuser.workflow_set, workflow_dict["name"])
+
+    # convert backendName and toolName into toolId
+    for job_dict in workflow_dict.get("jobs", []):
+        if "toolId" not in job_dict and "backendName" in job_dict:
+            tool = Tool.objects.filter(desc__name=job_dict.get("toolName", ""))
+            tool = tool.filter(Q(backend__name=job_dict["backendName"]) |
+                               Q(backend__name="nullbackend"))[:1]
+            if len(tool) > 0:
+                job_dict["toolId"] = tool[0].id
+                del job_dict["backendName"]
+
+    return workflow_dict
 
 
 def munge_name(workflow_set, workflow_name):

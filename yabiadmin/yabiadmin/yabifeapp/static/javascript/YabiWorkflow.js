@@ -301,7 +301,7 @@ YUI().use(
        *
        * adds a job to the end of the workflow
        */
-      YabiWorkflow.prototype.addJob = function(toolName, preloadValues,
+      YabiWorkflow.prototype.addJob = function(toolName, toolId, preloadValues,
           shouldFadeIn) {
 
         if (this.processing) {
@@ -311,7 +311,7 @@ YUI().use(
 
         this.hintNode.hide();
 
-        var job = new YabiJob(toolName, this.jobs.length + 1, preloadValues);
+        var job = new YabiJob(toolName, toolId, this.jobs.length + 1, preloadValues);
         job.editable = this.editable;
         if (!this.editable) {
           job.inputsNode.hide();
@@ -1033,6 +1033,7 @@ YUI().use(
             jobEl = this.jobs[index];
           } else {
             jobEl = this.addJob(jobData.toolName,
+                                jobData.toolId,
                                 jobData.parameterList.parameter,
                                 false);
           }

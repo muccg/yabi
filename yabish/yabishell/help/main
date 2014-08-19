@@ -3,7 +3,7 @@ Usage: yabish COMMAND [COMMAND_ARGUMENTS...] [OPTIONS...]
 
 COMMAND is either a command (ex. ls, jobs, attach ex.) or the name of a Tool you want to run on a YABI server.
 
-Yabish can be used mainly to run jobs on a YABI server by specifying the name of the tool and any arguments you might want to pass in to it on the command line. 
+Yabish can be used mainly to run jobs on a YABI server by specifying the name of the tool and any arguments you might want to pass in to it on the command line.
 For example, to run a blast using yabish:
 
     $ yabish blast -i myseqs.fa -p blastn -d nt
@@ -25,6 +25,8 @@ Yabish commands:
 
     rm URI - remove a file from a filesystem backend. SRC is the URI of the file you would like to delete.
 
+    backends - list the execution backends which you have access to in YABI.
+
     login USERNAME PASSWORD - login into Yabi with USERNAME/PASSWORD. This command is meant to be used only from automated scripts to avoid Yabish to prompt for the username and password
 
     logout - logout a user from Yabi.
@@ -35,7 +37,7 @@ Environment variables:
   YABISH_YABI_URL : set to the URL of the YABI server you would like Yabish to run your remote commands on (ex. https://ccg.murdoch.edu.au/yabi)
 
 Options:
-  --yabi-bg            Run the yabish remote job in the background 
+  --yabi-bg            Run the yabish remote job in the background
+  --backend BACKEND    Sets the execution backend. Use "yabish backends" to list backends.
   --yabi-url YABI_URL  The URL of the YABI server (ex. https://ccg.murdoch.edu.au/yabi). Alternatively, you can set this by the YABISH_YABI_URL environment variable
-  --yabi-debug         Run in debug mode - used by developers only to test yabish 
-
+  --yabi-debug         Run in debug mode - used by developers only to test yabish

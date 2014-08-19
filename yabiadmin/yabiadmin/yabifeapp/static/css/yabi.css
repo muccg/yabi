@@ -563,6 +563,15 @@ display:inline;
     color: #f66;
 }
 
+.jobContainer > h1 > .backend:before { content: "("; }
+.jobContainer > h1 > .backend:after { content: ")"; }
+
+.jobContainer > h1 > .backend {
+    opacity: 0.6;
+    margin-left: 1em;
+    font-size: 90%;
+}
+
 .jobInputs {
     text-shadow:none;
 }
@@ -1053,6 +1062,15 @@ div:hover > .tool {
     filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eaeff2', EndColorStr='#dadfe2');
     background: -moz-linear-gradient(top, #eaeff2, #dadfe2);
     background: -webkit-gradient(linear, left top, left bottom, from(#eaeff2), to(#dadfe2));
+}
+
+.tool > .backend:before {
+    content: " on ";
+}
+
+.tool > .backend {
+    opacity: 0.6;
+    margin-left: 0.5em;
 }
 
 .addLink {

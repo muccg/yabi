@@ -14,11 +14,11 @@ class HostnameTest(YabiTestCase):
 
     def setUp(self):
         YabiTestCase.setUp(self)
-        admin.add_tool_to_all_tools('hostname') 
+        admin.add_tool_to_all_tools('hostname')
 
     def tearDown(self):
         YabiTestCase.tearDown(self)
-        admin.remove_tool_from_all_tools('hostname') 
+        admin.remove_tool_from_all_tools('hostname')
 
     def test_hostname(self):
         result = self.yabi.run(['hostname'])
@@ -32,7 +32,7 @@ class HostnameTest(YabiTestCase):
 
     def test_submit_json_directly_larger_workflow(self):
         result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
-        # doesn't cause problems with this    
+        # doesn't cause problems with this
         #result = self.yabi.run(['submitworkflow', json_path('hostname_five_times')])
         wfl_id = result.id
 
@@ -50,7 +50,7 @@ class LocalExecutionRedirectTest(YabiTestCase):
     def setUp(self):
         YabiTestCase.setUp(self)
         admin.add_tool_to_all_tools('hostname')
-        hostname = models.Tool.objects.get(name='hostname')
+        hostname = models.ToolDesc.objects.get(name='hostname')
         switch_use_redirect = models.ParameterSwitchUse.objects.get(display_text='redirect')
         mommy.make('ToolParameter', tool=hostname, switch='--redirectTo', switch_use=switch_use_redirect, rank=101, output_file=True, file_assignment='none')
 
@@ -81,14 +81,14 @@ class ExplodingBackendTest(YabiTestCase):
         YabiTestCase.setUp(self)
 
         # hostname is already in the db, so remove it and re-add to exploding backend
-        models.Tool.objects.get(name='hostname').delete()
+        models.Tool.objects.get(desc__name='hostname').delete()
 
         admin.create_exploding_backend()
         admin.create_tool('hostname', ex_backend_name='Exploding Backend')
-        admin.add_tool_to_all_tools('hostname') 
+        admin.add_tool_to_all_tools('hostname')
 
     def tearDown(self):
-        models.Tool.objects.get(name='hostname').delete()
+        models.Tool.objects.get(desc__name='hostname').delete()
         models.Backend.objects.get(name='Exploding Backend').delete()
 
         # put normal hostname back to restore order
@@ -97,7 +97,8 @@ class ExplodingBackendTest(YabiTestCase):
 
     # TODO re-enable when we will have an Exploding Backend
     def xtest_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
+        result = self.yabi.run(['submitworkflow', '--backend', 'Exploding Backend',
+                                json_path('hostname_hundred_times')])
         wfl_id = result.id
         all_jobs_finished = False
         while not all_jobs_finished:

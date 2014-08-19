@@ -12,14 +12,14 @@ class TorqueBackendTest(YabiTestCase):
         YabiTestCase.setUp(self)
 
         # hostname is already in the db, so remove it and re-add to exploding backend
-        models.Tool.objects.get(name='hostname').delete()
+        models.Tool.objects.get(desc__name='hostname').delete()
 
         admin.create_torque_backend()
         admin.create_tool('hostname', ex_backend_name='Torque Backend')
         admin.add_tool_to_all_tools('hostname')
 
     def tearDown(self):
-        models.Tool.objects.get(name='hostname').delete()
+        models.Tool.objects.get(desc__name='hostname').delete()
         models.Backend.objects.get(name='Torque Backend').delete()
 
         # put normal hostname back to restore order
@@ -46,7 +46,7 @@ class TorqueBackendTest(YabiTestCase):
                     break
 
         # TODO FIXME
-        # This isn't ideal. I get transient errors in Torque, so accepting 
+        # This isn't ideal. I get transient errors in Torque, so accepting
         # jobs that complete with error status.
         self.assertTrue(sresult.workflow.status in ('complete', 'error'))
         self.assertTrue(all_items(lambda j: j.status == 'complete', sresult.workflow.jobs))

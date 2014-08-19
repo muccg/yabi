@@ -97,6 +97,9 @@ class Workflow(models.Model, Editable, Status):
     stageout = models.CharField(max_length=1000)
     original_json = models.TextField()
 
+    class Meta:
+        get_latest_by = "created_on"
+
     def __unicode__(self):
         return self.name
 

@@ -143,11 +143,10 @@ class BackendCredentialForm(forms.ModelForm):
 
         return default_stageout
 
-
 class ToolForm(forms.ModelForm):
     class Meta:
         model = Tool
-        exclude = ('groups', 'output_filetypes', 'use_same_dynamic_backend')
+        exclude = ('use_same_dynamic_backend',)
 
     def clean_backend(self):
         backend = self.cleaned_data['backend']

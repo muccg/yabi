@@ -52,7 +52,7 @@ class ParsingError(YabiError):
 def is_stagein_required(request):
     logger.debug(request.user.username)
     try:
-        tool, params = extract_tool_and_params(request)
+        _, params = extract_tools_and_params(request)
         input_files = [p.original_value for p in params if p.input_file]
         if input_files:
             resp = {'success': True, 'stagein_required': True, 'files': input_files}
@@ -72,10 +72,15 @@ def submitjob(request):
     # TODO extract common code from here and submitworkflow
 
     try:
-        tool, params = extract_tool_and_params(request)
+        tools, params = extract_tools_and_params(request)
+        if len(tools) > 1:
+            raise YabiError('Tool runs on more than one backend. '
+                            'Specify one with --backend. '
+                            'To list backends use "yabish backends".')
+        tool = tools[0]
         job = create_job(tool, params)
         selectfile_job, job = split_job(job)
-        workflow_dict = create_wrapper_workflow(selectfile_job, job, tool.name)
+        workflow_dict = create_wrapper_workflow(selectfile_job, job, tool.desc.name)
         workflow_json = json.dumps(workflow_dict)
         user = models.User.objects.get(name=request.user.username)
 
@@ -130,9 +135,12 @@ def split_job(job):
     if not files:
         selectfile_job = None
     else:
+        tool = models.Tool.objects.get(desc__name="fileselector",
+                                       backend__name="nullbackend")
         selectfile_job = {
             'valid': True,
             'toolName': 'fileselector',
+            'toolId': tool.id,
             'parameterList': {
                 'parameter': [{
                     'valid': True,
@@ -163,6 +171,20 @@ def createstageindir(request):
         resp = {'success': False, 'msg': str(e)}
 
     return HttpResponse(json.dumps(resp))
+
+
+@authentication_required
+def list_backends(request):
+    q = {"credential__user__user__username": request.user.username}
+    creds = models.BackendCredential.objects.filter(**q)
+    backends = models.Backend.objects.exclude(name="nullbackend")
+    # fixme: how to exclude fs backends?
+    backends = backends.filter(id__in=creds.values_list("backend", flat=True))
+
+    return HttpResponse(json.dumps({
+        'success': True,
+        'backends': list(backends.values("name", "description")),
+    }), content_type="application/json")
 
 
 # Implementation
@@ -322,21 +344,48 @@ class YabiArgumentParser(object):
             raise ParsingError('Mandatory option: %s not passed in.' % ','.join(missing_params))
 
 
-def extract_tool_and_params(request):
-    toolname = request.POST.get('name')
-    tools = models.Tool.objects.filter(display_name=toolname, toolgrouping__tool_set__users__name=request.user.username)
-    if len(tools) == 0:
+def get_tool_from_request(username, post):
+    toolname = post.get('name')
+    backendname = post.get('backend', None) or None
+    tooldesc = models.ToolDesc.objects.filter(name=toolname,
+                                              toolgrouping__tool_set__users__name=username)[:1]
+
+    if len(tooldesc) > 0:
+        tooldesc = tooldesc[0]
+        tools = tooldesc.tool_set.all()
+
+        if backendname:
+            # Select the tool for the given backend. Supports searching
+            # for all backends starting with a string. If more than one
+            # backend matches (not useful), then do an exact match instead.
+            tools = tools.filter(backend__name__istartswith=backendname)
+            if tools.count() > 1:
+                tools = tools.filter(backend__name__iexact=backendname)
+
+            if len(tools) == 0:
+                raise YabiError("Tool \"%s\" doesn't exist on "
+                                "backend \"%s\"" % (toolname, backendname))
+        elif len(tools) == 0:
+            raise YabiError('Unknown tool "%s"' % toolname)
+    else:
         raise YabiError('Unknown tool name "%s"' % toolname)
-    tool = tools[0]
-    argparser = YabiArgumentParser(tool)
+
+    return tooldesc, tools
+
+
+def extract_tools_and_params(request):
+    tooldesc, tools = get_tool_from_request(request.user.username, request.POST)
+
+    argparser = YabiArgumentParser(tooldesc)
     params = create_params(request, argparser)
-    return tool, params
+
+    return tools, params
 
 
 def create_job(tool, params):
     params_list = [{'switchName': arg.name, 'valid': True, 'value': arg.value}
                    for arg in params]
-    return {'toolName': tool.name, 'valid': True,
+    return {'toolName': tool.desc.name, 'toolId': tool.id, 'valid': True,
             'parameterList': {'parameter': params_list}}
 
 

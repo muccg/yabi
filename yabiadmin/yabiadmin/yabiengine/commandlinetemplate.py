@@ -23,7 +23,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 import os
-from yabiadmin.yabi.models import Tool
+from yabiadmin.yabi.models import ToolDesc
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend import backend
 
@@ -358,14 +358,14 @@ class CommandTemplate(object):
 
         toolname = job_dict["toolName"]
         parameters = job_dict["parameterList"]["parameter"]
-        tool = self.tool = Tool.objects.get(name=toolname)
+        self.tool = ToolDesc.objects.get(name=toolname)
 
-        if not tool.path:
+        if not self.tool.path:
             # we are a "select file" tool
             self.command = SelectFile()
         else:
             # we are a normal command
-            self.command = Command(tool.path)
+            self.command = Command(self.tool.path)
 
         # pack incoming params into dictionary
         self.params = dict([(p['switchName'], p) for p in parameters])
@@ -438,10 +438,7 @@ class CommandTemplate(object):
 
     def parse_parameter_description(self):
         """Parse the json parameter description"""
-        tool = self.tool
-
-        # loop over each of the tools parameters
-        for tp in tool.toolparameter_set.order_by('rank').all():
+        for tp in self.tool.toolparameter_set.order_by('rank').all():
             # check the tool switch against the incoming params
             if tp.switch not in self.params:
                 logger.debug("Switch ignored [%s]" % tp.switch)

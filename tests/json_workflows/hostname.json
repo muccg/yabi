@@ -1,10 +1,11 @@
 {
-    "name": "hostname", 
-    "tags": [], 
+    "name": "hostname",
+    "tags": [],
     "jobs": [{
-        "toolName":"hostname", 
-        "jobId":1, 
-        "valid":true, 
+        "toolName":"hostname",
+        "backendName":"Local Execution",
+        "jobId":1,
+        "valid":true,
         "parameterList":{
             "parameter":[]
         }
