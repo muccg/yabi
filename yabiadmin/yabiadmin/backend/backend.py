@@ -171,12 +171,22 @@ def abort_task(task):
     backend.abort_task()
 
 
+def _is_nullbackend(uri):
+    from yabiadmin.yabiengine.urihelper import uriparse
+    from yabiadmin.yabi.models import is_nullbackend_scheme
+
+    scheme, _ = uriparse(uri)
+    return is_nullbackend_scheme(scheme)
+
+
 def exec_credential(yabiusername, uri):
     """
     Return a exec_credential for a given user and uri
     Currently wraps legacy code in backendhelper
     raises ObjectDoesNotExist, DecryptedCredentialNotAvailable
     """
+    if _is_nullbackend(uri):
+        return None
     from yabiadmin.yabiengine import backendhelper
     return backendhelper.get_exec_backendcredential_for_uri(yabiusername, uri)
 
@@ -187,5 +197,7 @@ def fs_credential(yabiusername, uri):
     Currently wraps legacy code in backendhelper
     raises ObjectDoesNotExist, DecryptedCredentialNotAvailable
     """
+    if _is_nullbackend(uri):
+        return None
     from yabiadmin.yabiengine import backendhelper
     return backendhelper.get_fs_backendcredential_for_uri(yabiusername, uri)

@@ -36,7 +36,6 @@ from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger
 from yabiadmin.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse
-from .backendhelper import get_exec_backendcredential_for_uri
 import logging
 from six.moves import filter
 logger = logging.getLogger(__name__)
@@ -200,8 +199,10 @@ class EngineJob(Job):
             extensions = (self.other_files)
         return extensions
 
-    def _get_be_cred(self, term, be_type):
-        full_term = Q(credential__user=self.workflow.user) & term
+    def _get_be_cred(self, backend, be_type):
+        if backend.is_nullbackend:
+            return None
+        full_term = Q(credential__user=self.workflow.user) & Q(backend=backend)
 
         try:
             rval = BackendCredential.objects.get(full_term)
@@ -216,11 +217,11 @@ class EngineJob(Job):
 
     @property
     def exec_credential(self):
-        return self._get_be_cred(Q(backend=self.tool.backend), 'execution')
+        return self._get_be_cred(self.tool.backend, 'execution')
 
     @property
     def fs_credential(self):
-        return self._get_be_cred(Q(backend=self.tool.fs_backend), 'FS')
+        return self._get_be_cred(self.tool.fs_backend, 'FS')
 
     def update_dependencies(self):
         self.template.update_dependencies(self.workflow, ignored_patterns=DEPENDENCIES_EXCLUDED_PATTERNS)
@@ -238,6 +239,11 @@ class EngineJob(Job):
             # status is a property not an individual model field
             task.status = STATUS_READY
             task.save()
+
+    def get_backend_uri(self, credential):
+        if credential is None:
+            return 'null://%s@localhost.localdomain/' % self.workflow.user.name
+        return credential.homedir_uri
 
     def add_job(self, job_dict):
         assert(job_dict)
@@ -267,8 +273,8 @@ class EngineJob(Job):
 
         self.status = STATUS_PENDING
         self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s" % (self.order + 1, self.tool.get_display_name()))
-        self.exec_backend = self.exec_credential.homedir_uri
-        self.fs_backend = self.fs_credential.homedir_uri
+        self.exec_backend = self.get_backend_uri(self.exec_credential)
+        self.fs_backend = self.get_backend_uri(self.fs_credential)
         self.cpus = self.tool.cpus
         self.walltime = self.tool.walltime
         self.module = self.tool.module
@@ -291,10 +297,9 @@ class EngineJob(Job):
 
         try:
             self.update_dependencies()
-            be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
 
             input_files = self.get_input_files()
-            self.create_one_task_for_each_input_file(input_files, be)
+            self.create_one_task_for_each_input_file(input_files)
 
             # there must be at least one task for every job
             if not self.total_tasks():
@@ -329,7 +334,7 @@ class EngineJob(Job):
         input_files = [X for X in self.template.file_sets()]
         return input_files
 
-    def create_one_task_for_each_input_file(self, input_files, be):
+    def create_one_task_for_each_input_file(self, input_files):
         logger.debug("job %s is having tasks created for %s input files" % (self.pk, len(input_files)))
         assert is_managed() is True
         if len(input_files) == 0:
@@ -345,7 +350,6 @@ class EngineJob(Job):
         for task_num, input_file in enumerate(input_files, 1):
             task = EngineTask(job=self, status=STATUS_PENDING,
                               start_time=datetime.datetime.now(),
-                              execution_backend_credential=be,
                               task_num=task_num)
 
             task_name = left_padded_with_zeros.format(task_num) if count > 1 else ""

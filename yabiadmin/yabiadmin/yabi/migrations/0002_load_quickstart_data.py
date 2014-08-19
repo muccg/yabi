@@ -102,18 +102,14 @@ ${command}
         user_homedir = homedir()
         stageout_dir = user_homedir + "yabi_data_dir/"
 
-        yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
+        yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_4, yabi_credential_1, homedir="")
         yabi_backendcredential_1.save()
 
-        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_4, yabi_credential_1, user_homedir)
+        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, user_homedir, visible=True, default_stageout=False)
         yabi_backendcredential_2.save()
 
-        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, user_homedir, visible=True, default_stageout=False)
+        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, stageout_dir, default_stageout=True)
         yabi_backendcredential_3.save()
-
-        yabi_backendcredential_4 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, stageout_dir, default_stageout=True)
-        yabi_backendcredential_4.save()
-
 
         yabi_userprofile_1 = orm.UserProfile()
         yabi_userprofile_1.user = django_user_1
@@ -179,15 +175,6 @@ ${command}
         yabi_toolgrouping_1.tool = yabi_tool_1
         yabi_toolgrouping_1.tool_set = yabi_toolset_1
         yabi_toolgrouping_1.save()
-
-        # set the backend credentials to the user's homedir
-        ex_bec = orm.BackendCredential.objects.get(id=2)
-        ex_bec.homedir = ""                                         # exec backends have no path
-        ex_bec.save()
-        fs_bec = orm.BackendCredential.objects.get(id=3)
-        fs_bec.homedir = homedir()
-        fs_bec.save()
-
 
         # add the cat tool
         yabi_tool_cat = yabi_tool(name = 'cat',

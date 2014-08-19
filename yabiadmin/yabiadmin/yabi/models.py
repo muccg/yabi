@@ -624,6 +624,10 @@ class DynamicBackendConfiguration(Base):
         return self.name
 
 
+def is_nullbackend_scheme(scheme):
+    return scheme in ('null', 'selectfile')
+
+
 class Backend(Base):
     def __init__(self, *args, **kwargs):
         super(Backend, self).__init__(*args, **kwargs)
@@ -670,6 +674,10 @@ class Backend(Base):
     @models.permalink
     def get_absolute_url(self):
         return ('backend_view', (), {'backend_id': str(self.id)})
+
+    @property
+    def is_nullbackend(self):
+        return is_nullbackend_scheme(self.scheme)
 
 
 class HostKey(Base):
