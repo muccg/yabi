@@ -22,10 +22,11 @@ def create_workflow_with_job_and_a_task(testcase):
     testcase.workflow = mommy.make('Workflow', user=demo_user)
     testcase.job = mommy.make('Job', workflow=testcase.workflow, pk=testcase.workflow.pk, order=0)
     testcase.task = mommy.make('Task', job=testcase.job, pk=testcase.job.pk)
-    testcase.tool = mommy.make('ToolDesc', name='my-tool', path='tool.sh')
+    testcase.tooldesc = mommy.make('ToolDesc', name='my-tool')
+    testcase.tool = mommy.make('Tool', desc=testcase.tooldesc, path='tool.sh')
 
     def cleanup():
-        testcase.tool.delete()
+        testcase.tooldesc.delete()
         testcase.task.delete()
         testcase.job.delete()
         testcase.workflow.delete()

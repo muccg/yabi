@@ -12,23 +12,22 @@ Module providing helper methods for creating data in yabi admin from tests
 def create_tool(name, display_name=None, path=None,
                 ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem',
                 testcase=None):
-    desc = create_tool_desc(name, path)
-    create_tool_backend(name, ex_backend_name, fs_backend_name)
+    desc = create_tool_desc(name)
+    create_tool_backend(name, path, ex_backend_name, fs_backend_name)
 
     if testcase:
         testcase.addCleanup(desc.delete)
 
     return desc
 
-def create_tool_desc(name, path=None):
-    if path is None: path = name
-    return models.ToolDesc.objects.get_or_create(name=name, path=path)[0]
+def create_tool_desc(name):
+    return models.ToolDesc.objects.get_or_create(name=name)[0]
 
-def create_tool_backend(toolname, ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem'):
+def create_tool_backend(toolname, path, ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem'):
     desc = models.ToolDesc.objects.get(name=toolname)
     lfs = models.Backend.objects.get(name=fs_backend_name)
     lex = models.Backend.objects.get(name=ex_backend_name)
-    return models.Tool.objects.create(desc=desc, backend=lex, fs_backend=lfs)
+    return models.Tool.objects.create(desc=desc, path=path, backend=lex, fs_backend=lfs)
 
 def add_tool_to_all_tools(toolname):
     tool = models.ToolDesc.objects.get(name=toolname)
