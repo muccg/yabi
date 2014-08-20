@@ -179,6 +179,7 @@ class Migration(SchemaMigration):
             'link_supported': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'max_memory': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'module': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'path': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'}),
             'queue': ('django.db.models.fields.CharField', [], {'default': "'normal'", 'max_length': '50', 'null': 'True', 'blank': 'True'}),
             'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'use_same_dynamic_backend': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
@@ -196,7 +197,6 @@ class Migration(SchemaMigration):
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'output_filetypes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.FileExtension']", 'null': 'True', 'through': u"orm['yabi.ToolOutputExtension']", 'blank': 'True'}),
-            'path': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'})
         },
         u'yabi.toolgroup': {
             'Meta': {'object_name': 'ToolGroup'},

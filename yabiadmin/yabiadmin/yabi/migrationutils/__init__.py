@@ -295,12 +295,11 @@ logger = logging.getLogger("migration")
 
 def deduplicate_tool_descs(Tool, ToolDesc, dry_run=False):
     def tool_key(tool):
-        # Important fields for the tool desc are path and accepts_input.
-        # name is a unique field, and display name will change
+        # name is a unique field, path and display name will change
         # depending on backend.
         # Parameters and extensions are important, but the tool
         # groupings aren't.
-        return (tool.path, tool.accepts_input,
+        return (tool.accepts_input,
                 tuple(map(param_key, tool.toolparameter_set.order_by("id"))),
                 tuple(map(ext_key, tool.tooloutputextension_set.order_by("id"))))
 

@@ -15,7 +15,6 @@ class Migration(DataMigration):
 
         for tool in Tool.objects.all():
             desc = ToolDesc(name=tool.name,
-                            path=tool.path,
                             description=tool.description,
                             accepts_input=tool.accepts_input,
                             created_by=tool.created_by,
@@ -39,7 +38,6 @@ class Migration(DataMigration):
 
         for tool in Tool.objects.all():
             tool.name = tool.desc.name
-            tool.path = tool.desc.path
             tool.description = tool.desc.description
             tool.accepts_input = tool.desc.accepts_input
             tool.save()
@@ -232,7 +230,6 @@ class Migration(DataMigration):
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'output_filetypes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.FileExtension']", 'null': 'True', 'through': u"orm['yabi.ToolOutputExtension']", 'blank': 'True'}),
-            'path': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'})
         },
         u'yabi.toolgroup': {
             'Meta': {'object_name': 'ToolGroup'},

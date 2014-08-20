@@ -14,9 +14,6 @@ class Migration(SchemaMigration):
         # Deleting field 'Tool.description'
         db.delete_column(u'yabi_tool', 'description')
 
-        # Deleting field 'Tool.path'
-        db.delete_column(u'yabi_tool', 'path')
-
         # Deleting field 'Tool.name'
         db.delete_column(u'yabi_tool', 'name')
 
@@ -38,11 +35,6 @@ class Migration(SchemaMigration):
         # Adding field 'Tool.description'
         db.add_column(u'yabi_tool', 'description',
                       self.gf('django.db.models.fields.TextField')(null=True, blank=True),
-                      keep_default=False)
-
-        # Adding field 'Tool.path'
-        db.add_column(u'yabi_tool', 'path',
-                      self.gf('django.db.models.fields.CharField')(max_length=512, null=True, blank=True),
                       keep_default=False)
 
         # Adding field 'Tool.name'
@@ -226,6 +218,7 @@ class Migration(SchemaMigration):
             'link_supported': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'max_memory': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'module': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'path': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'}),
             'queue': ('django.db.models.fields.CharField', [], {'default': "'normal'", 'max_length': '50', 'null': 'True', 'blank': 'True'}),
             'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'use_same_dynamic_backend': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
@@ -243,7 +236,6 @@ class Migration(SchemaMigration):
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'output_filetypes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.FileExtension']", 'null': 'True', 'through': u"orm['yabi.ToolOutputExtension']", 'blank': 'True'}),
-            'path': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'})
         },
         u'yabi.toolgroup': {
             'Meta': {'object_name': 'ToolGroup'},
