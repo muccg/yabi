@@ -191,6 +191,8 @@ def try_to_load_key_file(key_type, credential_key, passphrase=None):
 
 
 def create_paramiko_pkey(key, passphrase=None):
+    if passphrase == "":
+        passphrase = None
     pkey = (
         try_to_load_key_file(paramiko.RSAKey, key, passphrase)
         or
