@@ -23,6 +23,7 @@
 #
 
 import logging
+import time
 from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider
@@ -58,12 +59,26 @@ class NovaHandler(LibcloudBaseHandler):
                                        ex_keyname=self.config['keypair_name'],
                                        **extra_args)
 
+        # Have to sleep between node creation and associating IP or with fast
+        # connection I was hitting this bug:
+        # https://bugs.launchpad.net/nova/+bug/1249065
+        time.sleep(3)
+
         # TODO this again will probably have to change depending on the public IP stuff
         floating_ip = self.driver.ex_create_floating_ip()
         logger.info("Created floating ip %s", floating_ip.ip_address)
         self.driver.ex_attach_floating_ip_to_node(node, floating_ip)
 
         return node.id
+
+    # TODO workarounds to test without public IPs, use super method later
+    def destroy_node(self, instance_handle):
+        instance_id = self._handle_to_instance_id(instance_handle)
+        node = self._find_node(node_id=instance_id)
+        node.destroy()
+        ip = self._fetch_ip_address(instance_id)
+        floating_ip = self.driver.ex_get_floating_ip(ip)
+        floating_ip.delete()
 
     # TODO workarounds to test without public IPs, use super method later
     def fetch_ip_address(self, instance_handle):
