@@ -48,6 +48,10 @@
     <td>{{bec.visible}}</td>
     <td>{{bec.uri}}</td>
     <td>{{bec.homedir_uri}}</td>
+    <td>{% if bec.homedir and not bec.backend.dynamic_backend %}
+            {% autoescape off %}{{ bec.backend_cred_test_link }}{% endautoescape %}
+        {% endif %}
+    </td>
     <td>{% autoescape off %}{{ bec.backend_cred_edit_link }}{% endautoescape %}</td>
 
     </tr>
