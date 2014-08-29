@@ -23,8 +23,6 @@
 #
 
 import logging
-import time
-from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider
 
@@ -42,9 +40,11 @@ class NovaHandler(LibcloudBaseHandler):
         'auth_url', 'username', 'password', 'tenant', 'flavor', 'image_name', 'keypair_name')
     # In addition accepts
     # auth_version: default is '2.0_password'
-    # region: ex. 'bparegion1'
-    # 'security_group_names': [
-    #       "default", "ssh", "proxied", "rdsaccess" ]
+    # service_type: default is 'compute'
+    # service_name: ex. 'Compute Service' for Nectar
+    # service_region: ex. 'Melbourne' for Nectar
+    # security_group_names: ex. ["default", "ssh", "icmp"]
+    # availability_zone: ex. 'tasmania' for Nectar
 
     def create_node(self):
         image = self._get_image_by_name(config_key='image_name')
@@ -52,71 +52,28 @@ class NovaHandler(LibcloudBaseHandler):
 
         extra_args = {}
         if 'security_group_names' in self.config:
-            extra_args['ex_securitygroups'] = self._get_security_groups()
+            extra_args['ex_security_groups'] = self._get_security_groups()
+        if 'availability_zone' in self.config:
+            extra_args['ex_availability_zone'] = self.config['availability_zone']
 
         node = self.driver.create_node(name=self.INSTANCE_NAME,
                                        image=image, size=size,
                                        ex_keyname=self.config['keypair_name'],
                                        **extra_args)
 
-        # Have to sleep between node creation and associating IP or with fast
-        # connection I was hitting this bug:
-        # https://bugs.launchpad.net/nova/+bug/1249065
-        time.sleep(3)
-
-        # TODO this again will probably have to change depending on the public IP stuff
-        floating_ip = self.driver.ex_create_floating_ip()
-        logger.info("Created floating ip %s", floating_ip.ip_address)
-        self.driver.ex_attach_floating_ip_to_node(node, floating_ip)
-
         return node.id
-
-    # TODO workarounds to test without public IPs, use super method later
-    def destroy_node(self, instance_handle):
-        instance_id = self._handle_to_instance_id(instance_handle)
-        node = self._find_node(node_id=instance_id)
-        node.destroy()
-        ip = self._fetch_ip_address(instance_id)
-        floating_ip = self.driver.ex_get_floating_ip(ip)
-        floating_ip.delete()
-
-    # TODO workarounds to test without public IPs, use super method later
-    def fetch_ip_address(self, instance_handle):
-        # instance_id = self._handle_to_instance_id(instance_handle)
-        # return self._fetch_ip_address(instance_id)
-        return "127.0.0.1"
-
-    # TODO workarounds to test without public IPs, use super method later
-    def _is_node_running(self, instance_id):
-        TIMEOUT = 1
-        node = self._find_node(node_id=instance_id)
-        try:
-            # We want to try just once, no retries
-            # Therefore setting both wait_period and timeout to the same value
-            self.driver.wait_until_running((node,), ssh_interface='private_ips',
-                                           wait_period=TIMEOUT, timeout=TIMEOUT)
-
-            return True
-
-        except LibcloudError as e:
-            if e.value.startswith('Timed out after %s seconds' % TIMEOUT):
-                return False
-            else:
-                raise
-
-    # TODO workarounds to test without public IPs, use super method later
-    def _fetch_ip_address(self, instance_id):
-        node = self._find_node(node_id=instance_id)
-        if len(node.private_ips) > 1:
-            return node.private_ips[1]
 
     def _create_driver(self):
         cls = get_driver(Provider.OPENSTACK)
 
         extra_args = {}
         extra_args.setdefault('ex_force_auth_version', '2.0_password')
-        if 'region' in self.config:
-            extra_args['ex_force_service_region'] = self.config['region']
+        conf_to_arg = (('service_type', 'ex_force_service_type'),
+                       ('service_name', 'ex_force_service_name'),
+                       ('service_region', 'ex_force_service_region'))
+        for conf_key, arg_name in conf_to_arg:
+            if conf_key in self.config:
+                extra_args[arg_name] = self.config[conf_key]
 
         driver = cls(self.config['username'], self.config['password'],
                      ex_force_auth_url=self.config['auth_url'],
