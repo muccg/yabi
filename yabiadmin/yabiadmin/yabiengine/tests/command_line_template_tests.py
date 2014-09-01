@@ -57,6 +57,7 @@ class CommandLineTemplateTest(unittest.TestCase):
         self.job_1_dict = {
             "jobId": 1,
             "toolName": "my-tool",
+            "toolId": self.tool.id,
             "parameterList": {"parameter": []}}
 
     def tearDown(self):
