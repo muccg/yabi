@@ -9,7 +9,7 @@ Module providing helper methods for creating data in yabi admin from tests
 '''
 
 
-def create_tool(name, display_name=None, path=None,
+def create_tool(name, display_name=None, path="",
                 ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem',
                 testcase=None):
     desc = create_tool_desc(name)
@@ -27,7 +27,8 @@ def create_tool_backend(toolname, path, ex_backend_name='Local Execution', fs_ba
     desc = models.ToolDesc.objects.get(name=toolname)
     lfs = models.Backend.objects.get(name=fs_backend_name)
     lex = models.Backend.objects.get(name=ex_backend_name)
-    return models.Tool.objects.create(desc=desc, path=path, backend=lex, fs_backend=lfs)
+    return models.Tool.objects.get_or_create(desc=desc, path=path or toolname,
+                                             backend=lex, fs_backend=lfs)[0]
 
 def add_tool_to_all_tools(toolname):
     tool = models.ToolDesc.objects.get(name=toolname)
@@ -270,11 +271,11 @@ def create_tool_dd(*args, **kwargs):
 
     combined_eq = models.ParameterSwitchUse.objects.get(display_text='combined with equals')
 
-    if_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=1, file_assignment = 'batch', switch='if')
+    if_tool_param = models.ToolParameter.objects.get_or_create(tool=tool, switch_use=combined_eq, mandatory=True, rank=1, file_assignment = 'batch', switch='if')[0]
     all_files = models.FileType.objects.get(name='all files')
     if_tool_param.accepted_filetypes.add(all_files)
 
-    of_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=2, file_assignment = 'none', switch='of', output_file=True)
+    of_tool_param = models.ToolParameter.objects.get_or_create(tool=tool, switch_use=combined_eq, mandatory=True, rank=2, file_assignment = 'none', switch='of', output_file=True)[0]
 
     tool.save()
 
