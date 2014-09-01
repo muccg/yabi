@@ -178,7 +178,7 @@ class ToolDesc(Base):
 
 class Tool(Base):
     desc = models.ForeignKey(ToolDesc, verbose_name="Tool")
-    path = models.CharField(max_length=512, null=True, blank=True)
+    path = models.CharField(max_length=512, blank=True)
     display_name = models.CharField(max_length=255, blank=True)
     enabled = models.BooleanField(default=True)
     backend = models.ForeignKey('Backend', verbose_name="Exec Backend")
