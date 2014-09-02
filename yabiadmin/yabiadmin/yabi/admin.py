@@ -113,10 +113,10 @@ class ToolParameterInline(admin.StackedInline):
 
 
 class ToolDescAdmin(AdminBase):
-    list_display = ['name', 'path', 'tool_groups_str', 'tool_link',
+    list_display = ['name', 'tool_groups_str', 'tool_link',
                     'created_by', 'created_on']
     inlines = [ToolOutputExtensionInline, ToolParameterInline]
-    search_fields = ['name', 'path']
+    search_fields = ['name']
     save_as = False
 
     def tool_link(self, ob):
@@ -133,8 +133,8 @@ class ToolDescAdmin(AdminBase):
 
 class ToolAdmin(AdminBase):
     form = ToolForm
-    list_display = ['desc', 'display_name', 'backend', 'fs_backend', 'enabled']
-    search_fields = ['desc__name', 'display_name', 'desc__path']
+    list_display = ['desc', 'path', 'display_name', 'backend', 'fs_backend', 'enabled']
+    search_fields = ['desc__name', 'display_name', 'path']
     save_as = False
     list_filter = ["backend", "fs_backend", "enabled"]
 

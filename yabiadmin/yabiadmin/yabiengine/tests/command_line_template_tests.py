@@ -45,22 +45,24 @@ class CommandLineTemplateTest(unittest.TestCase):
         demo_user = m.User.objects.get(name='demo')
         workflow = mommy.make('Workflow', user=demo_user)
         self.job = mommy.make('Job', workflow=workflow, order=0)
-        self.tool = mommy.make('ToolDesc', name='my-tool', path='tool.sh')
+        self.td = mommy.make('ToolDesc', name='my-tool')
+        self.tool = mommy.make('Tool', desc=self.td, path='tool.sh')
         combined_with_equals = ParameterSwitchUse.objects.get(display_text='combined with equals')
         value_only = ParameterSwitchUse.objects.get(display_text='valueOnly')
-        mommy.make('ToolParameter', tool=self.tool, switch="-arg1", switch_use=combined_with_equals, rank=2)
-        mommy.make('ToolParameter', tool=self.tool, switch="-arg2", switch_use=value_only, rank=1)
-        mommy.make('ToolParameter', tool=self.tool, switch="-arg3", switch_use=value_only, file_assignment='batch')
+        mommy.make('ToolParameter', tool=self.td, switch="-arg1", switch_use=combined_with_equals, rank=2)
+        mommy.make('ToolParameter', tool=self.td, switch="-arg2", switch_use=value_only, rank=1)
+        mommy.make('ToolParameter', tool=self.td, switch="-arg3", switch_use=value_only, file_assignment='batch')
 
         self.template = CommandTemplate()
         self.job_1_dict = {
             "jobId": 1,
             "toolName": "my-tool",
+            "toolId": self.tool.id,
             "parameterList": {"parameter": []}}
 
     def tearDown(self):
         self.job.workflow.delete()
-        self.tool.delete()
+        self.td.delete()
 
     def job_dict_with_params(self, *params):
         import copy

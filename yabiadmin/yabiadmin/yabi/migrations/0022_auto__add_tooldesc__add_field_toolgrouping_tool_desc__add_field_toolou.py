@@ -16,7 +16,6 @@ class Migration(SchemaMigration):
             ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tooldesc_creators', null=True, on_delete=models.SET_NULL, to=orm['auth.User'])),
             ('created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('path', self.gf('django.db.models.fields.CharField')(max_length=512, null=True, blank=True)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('accepts_input', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
@@ -243,7 +242,6 @@ class Migration(SchemaMigration):
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'output_filetypes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.FileExtension']", 'null': 'True', 'through': u"orm['yabi.ToolOutputExtension']", 'blank': 'True'}),
-            'path': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'})
         },
         u'yabi.toolgroup': {
             'Meta': {'object_name': 'ToolGroup'},

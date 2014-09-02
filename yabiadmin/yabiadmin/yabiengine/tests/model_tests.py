@@ -9,11 +9,12 @@ def create_workflow_with_job_and_2_tasks(testcase):
     testcase.job = mommy.make('Job', workflow=testcase.workflow, order=0)
     testcase.task = mommy.make('Task', job=testcase.job)
     testcase.second_task = mommy.make('Task', job=testcase.job)
-    testcase.tool = mommy.make('ToolDesc', name='my-tool', path='tool.sh')
+    testcase.tooldesc = mommy.make('ToolDesc', name='my-tool')
+    testcase.tool = mommy.make('Tool', desc=testcase.tooldesc, path='tool.sh')
 
     def cleanup():
         testcase.workflow.delete()
-        testcase.tool.delete()
+        testcase.tooldesc.delete()
     testcase.addCleanup(cleanup)
 
 
