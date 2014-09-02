@@ -14,7 +14,7 @@
 
 <table>
     <tr>
-        <th>Description</th
+        <th>Description</th>
         <th>Yabi Username</th>
         <th>Username</th>
         <th>Home Dir</th>
@@ -26,7 +26,7 @@
     <tr>
     <td>{{bec.credential.description}}</td>
     <td>{{bec.credential.user.name}}</td>
-    <td>{{bec.credential.username}</td>
+    <td>{{bec.credential.username}}</td>
     <td>{{bec.homedir}}</td>
     <td>{{bec.visible}}</td>
     <td>{{bec.uri}}</td>
@@ -81,7 +81,7 @@
 </table>
 {% else %}
 <h3 class="error">{{error}}</h3>
-<p>{{error_help}}</p>
+<p>{% autoescape off %}{{error_help}}{% endautoescape %}</p>
 {% endif %}
 </div>
 {% endblock %}

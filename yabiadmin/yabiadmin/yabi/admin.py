@@ -247,7 +247,7 @@ class BackendAdmin(AdminBase):
 
 
 class UserAdmin(AdminBase):
-    list_display = ['user', 'user_option_access', 'credential_access', 'toolsets_str', 'tools_link', 'backends_link']
+    list_display = ['user', 'user_option_access', 'credential_access', 'toolsets_str', 'tools_link', 'backends_link', 'last_login']
     list_editable = ['user_option_access', 'credential_access']
 
 

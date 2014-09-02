@@ -21,6 +21,8 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
+from libcloud.common.types import LibcloudError
+from .exceptions import IncorrectConfigurationError, CloudError
 
 
 class CloudHandler(object):
@@ -56,3 +58,93 @@ class CloudHandler(object):
 
     def destroy_node(self, instance_handle):
         raise NotImplementedError()
+
+
+class LibcloudBaseHandler(CloudHandler):
+    """Common code among different libcloud handlers."""
+
+    INSTANCE_NAME = 'yabi-dynbe-instance'
+
+    def __init__(self, config):
+        self.config = self._init_config(config)
+        self.driver = self._create_driver()
+
+    def _handle_to_instance_id(self, instance_handle):
+        return instance_handle
+
+    def fetch_ip_address(self, instance_handle):
+        instance_id = self._handle_to_instance_id(instance_handle)
+        return self._fetch_ip_address(instance_id)
+
+    def destroy_node(self, instance_handle):
+        instance_id = self._handle_to_instance_id(instance_handle)
+        node = self._find_node(node_id=instance_id)
+        node.destroy()
+
+    def is_node_ready(self, instance_handle):
+        if self._is_node_running(instance_handle):
+            return instance_handle
+
+        return None
+
+    def _is_node_running(self, instance_id):
+        TIMEOUT = 1
+        node = self._find_node(node_id=instance_id)
+        try:
+            # We want to try just once, no retries
+            # Therefore setting both wait_period and timeout to the same value
+            self.driver.wait_until_running((node,),
+                                           wait_period=TIMEOUT, timeout=TIMEOUT)
+
+            return True
+
+        except LibcloudError as e:
+            if e.value.startswith('Timed out after %s seconds' % TIMEOUT):
+                return False
+            else:
+                raise
+
+    def _fetch_ip_address(self, instance_id):
+        node = self._find_node(node_id=instance_id)
+        if len(node.public_ips) > 0:
+            return node.public_ips[0]
+
+    def _init_config(self, config):
+        missing = filter(lambda x: x not in config, self.MANDATORY_CONFIG_KEYS)
+        if len(missing) > 0:
+            raise IncorrectConfigurationError(
+                "The following mandatory keys are missing: %s" % ", ".join(missing))
+
+        return config
+
+    def _find_node(self, node_id):
+        ournode_or_empty = filter(lambda n: n.id == node_id, self.driver.list_nodes())
+        if len(ournode_or_empty) == 0:
+            raise CloudError("Node '%s' not found", node_id)
+        return ournode_or_empty[0]
+
+    def _get_first(self, driver_method, finder_fn, config_key):
+        value = self.config[config_key]
+        all_matches = driver_method()
+        mymatch_or_empty = filter(finder_fn(value), all_matches)
+        if len(mymatch_or_empty) == 0:
+            raise IncorrectConfigurationError("Invalid %s '%s'" % (config_key, value))
+
+        return mymatch_or_empty[0]
+
+    def _get_size_by_id(self, config_key):
+        return self._get_first(self.driver.list_sizes, _by_id_finder, config_key)
+
+    def _get_size_by_name(self, config_key):
+        return self._get_first(self.driver.list_sizes, _by_name_finder, config_key)
+
+    def _get_image_by_name(self, config_key):
+        return self._get_first(self.driver.list_images, _by_name_finder, config_key)
+
+
+def _by_id_finder(value):
+    return lambda x: x.id == value
+
+
+def _by_name_finder(value):
+    return lambda x: x.name == value

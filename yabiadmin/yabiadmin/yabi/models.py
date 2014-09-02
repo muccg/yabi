@@ -460,6 +460,11 @@ class User(Base):
     def default_stagein(self):
         return self.default_stageout + settings.DEFAULT_STAGEIN_DIRNAME
 
+    def last_login(self):
+        return self.user.last_login
+
+    last_login.admin_order_field = 'user__last_login'
+
 
 class CredentialAccess:
     """

@@ -20,6 +20,13 @@ The AWS credentials used to create your AWS EC2 instances have to be provided to
 
 Please set the ``aws_access_key_id`` and the ``aws_secret_access_key`` in your environment or config file for prod as described in :ref:`settings`.
 
+OpenStack Credentials
+---------------------
+
+Similarly, to create OpenStack Nova instances you will have to provide your OpenStack credentials used to create those instances.
+
+Please set the ``openstack_user`` and the ``openstack_password`` in your environment or config file for prod as described in :ref:`settings`.
+
 Dynamic Backends in Admin
 -------------------------
 
@@ -74,9 +81,7 @@ An example for an AWS Spot instance configuration:
 
     "security_group_names": [
         "default",
-        "ssh",
-        "proxied",
-        "rdsaccess"
+        "ssh"
     ]
  }
 
@@ -94,11 +99,49 @@ An example for an AWS On-Demand instance configuration:
 
     "security_group_names": [
         "default",
-        "ssh",
-        "proxied",
-        "rdsaccess"
+        "ssh"
     ]
  }
 
 The only difference between the two configuration is the ``instance_class``
 (``ec2`` vs. ``ec2spot``) and there is no ``spot_price`` for the On-Demand instance.
+
+OpenStack specific configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following configuration parameters are currently supported for OpenStack Nova instances.
+
+======================  ============  =============
+Field                    Mandatory?    Description
+======================  ============  =============
+ auth_url                   Yes        The keystone URL used for authentication
+ auth_version               No         Apache Libcloud auth_version. Default is "2.0_password"
+ tenant                     Yes        Tenant name
+ service_type               No         Catalog entry for service type. Default is "compute"
+ service_name               No         Catalog entry for service name. Default is "nova"
+ service_region             No         Catalog entry for service region. Default is "RegionOne"
+ flavor                     Yes        Flavor of the instance
+ image_name                 Yes        Name of image to boot the instance from
+ keypair_name               Yes        Name of the SSH key to install into the instance
+ availability_zone          No         The zone you would like your instance to be created in
+ security_group_names       No         List of Security groups
+======================  ============  =============
+
+An example would be the following configuration that it is used to start up `NeCTAR <http://nectar.org.au` instances.
+
+::
+  {
+    "instance_class": "nova",
+    "auth_url": "https://keystone.rc.nectar.org.au:5000/v2.0/tokens/",
+    "tenant": "pt-8173",
+    "service_region": "Melbourne",
+    "service_name": "Compute Service",
+
+    "availability_zone": "tasmania",
+    "flavor": "m1.small",
+    "image_name": "NeCTAR Ubuntu 14.04 (Trusty) amd64",
+    "keypair_name": "tszabo",
+    "security_group_names": [
+        "default", "ssh", "icmp"
+    ]
+  }

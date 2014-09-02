@@ -181,6 +181,10 @@ SECRET_KEY = env.get("secret_key", "changeme")
 AWS_ACCESS_KEY_ID = env.get("aws_access_key_id", "")
 AWS_SECRET_ACCESS_KEY = env.get("aws_secret_access_key", "")
 
+# OpenStack Credentials used to provision Nova instances
+OPENSTACK_USER = env.get("openstack_user", "")
+OPENSTACK_PASSWORD = env.get("openstack_password", "")
+
 # email settings so yabi can send email error alerts etc
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host
 EMAIL_HOST = env.get("email_host", "")

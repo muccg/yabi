@@ -260,7 +260,7 @@ def backend_cred_test(request, backend_cred_id):
 
     bec = get_object_or_404(BackendCredential, pk=backend_cred_id)
 
-    from yabiadmin.yabiengine import backendhelper
+    from yabiadmin.backend import backend
 
     template_vars = {
         'bec': bec,
@@ -275,23 +275,23 @@ def backend_cred_test(request, backend_cred_id):
     dict_join = lambda a, b: a.update(b) or a
 
     try:
-        rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
+        data = backend.get_listing(bec.credential.user.name, bec.homedir_uri)
 
         try:
             # successful listing
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
-                'listing': json.loads(rawdata)
+                'listing': data
             }))
 
         except ValueError:
             # value error report
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
                 'error': "Value Error",
-                'error_help': "<pre>" + rawdata + "</pre>"
+                'error_help': "<pre>" + data + "</pre>"
             }))
 
-    except backendhelper.BackendServerError as bse:
-        if "authentication failed" in str(bse).lower():
+    except Exception as e:
+        if "authentication failed" in str(e).lower():
             # auth failed
             cred_url = '%syabi/credential/%d' % (urlresolvers.reverse('admin:index'), bec.credential.id)  # TODO... construct this more 'correctly'
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
@@ -299,31 +299,11 @@ def backend_cred_test(request, backend_cred_id):
                 'error_help': "The authentication of the test has failed. The <a href='%s'>credential used</a> is most likely incorrect. Please ensure the <a href='%s'>credential</a> is correct." % (cred_url, cred_url)
             }))
 
-        elif "remote host key is denied" in str(bse).lower():
-            # remote host key denied.
-
-            # work out which hostkey this is...
-            keys = HostKey.objects.filter(hostname=bec.backend.hostname)
-
-            if not keys or len(keys) > 1:
-                # link to host key page
-                link = '%syabi/hostkey/?hostname=%s' % (urlresolvers.reverse('admin:index'), bec.backend.hostname)  # TODO... construct this more 'correctly'
-            else:
-                # link to changelist page
-                link = '%syabi/hostkey/%d' % (urlresolvers.reverse('admin:index'), keys[0].id)
-
-            logger.info("backend_cred_test tried to test BackendCredential %d and received a denied host key exception [hostname: %s]." % (bec.id, bec.backend.hostname))
-
-            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
-                'error': "Remote Host Key Denied",
-                'error_help': "The remote host key has been denied. Please <a href='%s'>check the hostkey</a>'s fingerprint and if it is the correct key, mark it as accepted." % link
-            }))
-
         else:
             # overall exception
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
                 'error': "Backend Server Error",
-                'error_help': "<pre>" + str(bse) + "</pre>"
+                'error_help': str(e).replace('\n', '\\n').replace('\\n', '<br/>')
             }))
 
     # we should not get here

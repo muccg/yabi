@@ -43,7 +43,6 @@ install_requires = [
 # Compiled python modules which are usually provided by system packages
 install_requires_compiled = [
     'SQLAlchemy>=0.7.10,<0.8.0',
-    'lxml>=3.3.0,<3.4.0',
     'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
 ]
 

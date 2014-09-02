@@ -61,12 +61,9 @@ class Handle(namedtuple('HandleBase', ['spot_req_id', 'instance_id'])):
 class EC2SpotHandler(EC2Base):
     MANDATORY_CONFIG_KEYS = EC2Base.MANDATORY_CONFIG_KEYS + ('spot_price',)
 
-    def __init__(self, config):
-        EC2Base.__init__(self, config)
-
     def create_node(self):
         image = self.driver.get_image(self.config['ami_id'])
-        size = self._get_size()
+        size = self._get_size_by_id(config_key='size_id')
 
         extra_args = {}
         if 'security_group_names' in self.config:

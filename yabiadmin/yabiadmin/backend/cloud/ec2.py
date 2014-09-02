@@ -37,7 +37,7 @@ class EC2Handler(EC2Base):
 
     def create_node(self):
         image = self.driver.get_image(self.config['ami_id'])
-        size = self._get_size()
+        size = self._get_size_by_id(config_key='size_id')
 
         extra_args = {}
         if 'security_group_names' in self.config:
@@ -49,15 +49,6 @@ class EC2Handler(EC2Base):
                                        **extra_args)
 
         return node.id
-
-    def is_node_ready(self, instance_handle):
-        if self._is_node_running(instance_handle):
-            return instance_handle
-
-        return None
-
-    def _handle_to_instance_id(self, instance_handle):
-        return instance_handle
 
     def _region_to_provider(self, region):
         prefixed = "ec2-%s" % region
