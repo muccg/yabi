@@ -132,12 +132,20 @@ def _update_backend_uri_on_job_in_db(job, be_type, db_instance):
 
 def _prepare_config(config_json):
     config_dict = json.loads(config_json)
+
     if config_dict.get('instance_class') in ('ec2', 'ec2spot'):
         if not (settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
             raise ImproperlyConfigured("Please set 'AWS_ACCESS_KEY_ID' and 'AWS_SECRET_ACCESS_KEY' in your settings file.")
         config_dict.update({
             'access_id': settings.AWS_ACCESS_KEY_ID,
             'secret_key': settings.AWS_SECRET_ACCESS_KEY})
+
+    if config_dict.get('instance_class') == 'nova':
+        if not (settings.OPENSTACK_USER and settings.OPENSTACK_PASSWORD):
+            raise ImproperlyConfigured("Please set 'OPENSTACK_USER' and 'OPENSTACK_PASSWORD' in your settings file.")
+        config_dict.update({
+            'username': settings.OPENSTACK_USER,
+            'password': settings.OPENSTACK_PASSWORD})
 
     return config_dict
 

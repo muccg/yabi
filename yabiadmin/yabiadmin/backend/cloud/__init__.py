@@ -24,11 +24,13 @@
 from .exceptions import IncorrectConfigurationError
 from .ec2 import EC2Handler
 from .ec2spot import EC2SpotHandler
+from nova import NovaHandler
 
 
 handler_registry = {
     'ec2': EC2Handler,
     'ec2spot': EC2SpotHandler,
+    'nova': NovaHandler,
 }
 
 

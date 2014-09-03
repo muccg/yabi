@@ -21,14 +21,17 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# -*- coding: utf-8 -*-
-from yabiadmin.yabi.models import *
-from yabiadmin.yabi.forms import *
+
 from django.contrib import admin
-from ccg.webservices.ext import ExtJsonInterface
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
+
 from ccg_django_utils import webhelpers
+from ccg.webservices.ext import ExtJsonInterface
+
+from yabiadmin.yabi.models import *
+from yabiadmin.yabi.forms import *
 
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
@@ -109,15 +112,31 @@ class ToolParameterInline(admin.StackedInline):
                 db_field, request, **kwargs)
 
 
-class ToolAdmin(AdminBase):
-    form = ToolForm
-    list_display = ['name', 'display_name', 'path', 'enabled', 'backend', 'fs_backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
-    inlines = [ToolOutputExtensionInline, ToolParameterInline]  # TODO need to add back in tool groupings and find out why it is not working with mango
-    search_fields = ['name', 'display_name', 'path']
+class ToolDescAdmin(AdminBase):
+    list_display = ['name', 'tool_groups_str', 'tool_link',
+                    'created_by', 'created_on']
+    inlines = [ToolOutputExtensionInline, ToolParameterInline]
+    search_fields = ['name']
     save_as = False
 
-    def get_form(self, request, obj=None, **kwargs):
-        return ToolForm
+    def tool_link(self, ob):
+        view_url = reverse('tool_view', kwargs={'tool_id': ob.id})
+        return '<a href="%s">View</a>' % view_url
+    tool_link.short_description = 'View'
+    tool_link.allow_tags = True
+
+    def tool_groups_str(self, ob):
+        fmt = lambda tg: "%s (%s)" % (tg.tool_group, tg.tool_set)
+        return ",".join(map(fmt, ob.toolgrouping_set.all()))
+    tool_groups_str.short_description = 'Belongs to Tool Groups'
+
+
+class ToolAdmin(AdminBase):
+    form = ToolForm
+    list_display = ['desc', 'path', 'display_name', 'backend', 'fs_backend', 'enabled']
+    search_fields = ['desc__name', 'display_name', 'path']
+    save_as = False
+    list_filter = ["backend", "fs_backend", "enabled"]
 
 
 class ToolGroupAdmin(AdminBase):
@@ -228,7 +247,7 @@ class BackendAdmin(AdminBase):
 
 
 class UserAdmin(AdminBase):
-    list_display = ['user', 'user_option_access', 'credential_access', 'toolsets_str', 'tools_link', 'backends_link']
+    list_display = ['user', 'user_option_access', 'credential_access', 'toolsets_str', 'tools_link', 'backends_link', 'last_login']
     list_editable = ['user_option_access', 'credential_access']
 
 
@@ -257,6 +276,7 @@ def register(site):
     # site.register(QueuedWorkflow, QueueAdmin)
     # site.register(InProgressWorkflow, QueueAdmin)
     site.register(FileType, FileTypeAdmin)
+    site.register(ToolDesc, ToolDescAdmin)
     site.register(Tool, ToolAdmin)
     site.register(ToolGroup, ToolGroupAdmin)
     site.register(ToolSet, ToolSetAdmin)

@@ -301,7 +301,7 @@ YUI().use(
        *
        * adds a job to the end of the workflow
        */
-      YabiWorkflow.prototype.addJob = function(toolName, preloadValues,
+      YabiWorkflow.prototype.addJob = function(toolName, toolId, preloadValues,
           shouldFadeIn) {
 
         if (this.processing) {
@@ -311,7 +311,7 @@ YUI().use(
 
         this.hintNode.hide();
 
-        var job = new YabiJob(toolName, this.jobs.length + 1, preloadValues);
+        var job = new YabiJob(toolName, toolId, this.jobs.length + 1, preloadValues);
         job.editable = this.editable;
         if (!this.editable) {
           job.inputsNode.hide();
@@ -857,11 +857,22 @@ YUI().use(
       };
 
       YabiWorkflow.prototype.loadDraft = function() {
+        var loadMigrateWorkflow = function(json) {
+          var ob;
+          if (json) {
+            ob = Y.JSON.parse(json);
+            if (!(ob && ob.jobs && _.all(ob.jobs, "toolId"))) {
+              // discard drafts from older versions which don't have toolId
+              ob = null;
+            }
+          }
+          return ob;
+        };
+
         if (this.editable) {
           this.draftLoaded = false;
-          var json = Y.Cookie.get("workflow");
-          if (json) {
-            var ob = Y.JSON.parse(json);
+          var ob = loadMigrateWorkflow(Y.Cookie.get("workflow"));
+          if (ob) {
             this.solidify(ob);
             this.setTags(ob.tags);
             this.setupJobsList = this.jobs;
@@ -1033,6 +1044,7 @@ YUI().use(
             jobEl = this.jobs[index];
           } else {
             jobEl = this.addJob(jobData.toolName,
+                                jobData.toolId,
                                 jobData.parameterList.parameter,
                                 false);
           }

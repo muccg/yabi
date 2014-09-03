@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from datetime import datetime
 import six
+from collections import OrderedDict
+import logging
 
 
 class Settings:
@@ -286,3 +288,67 @@ def yabi_fileextension(pattern, user=None, orm=None):
     fileextension.created_on = datetime.now()
     fileextension.pattern = pattern
     return fileextension
+
+
+logger = logging.getLogger("migration")
+
+
+def deduplicate_tool_descs(Tool, ToolDesc, dry_run=False):
+    def tool_key(tool):
+        # name is a unique field, path and display name will change
+        # depending on backend.
+        # Parameters and extensions are important, but the tool
+        # groupings aren't.
+        return (tool.accepts_input,
+                tuple(map(param_key, tool.toolparameter_set.order_by("id"))),
+                tuple(map(ext_key, tool.tooloutputextension_set.order_by("id"))))
+
+    def param_key(param):
+        return (param.switch, param.switch_use.display_text,
+                param.rank, param.fe_rank,
+                param.mandatory, param.common, param.sensitive_data,
+                param.hidden, param.output_file,
+                param.possible_values or u"",  # nullable text field
+                param.default_value or u"",    # ... annoying
+                param.batch_bundle_files,
+                param.file_assignment)
+
+    def ext_key(ext):
+        # only one field of ToolOutputExtension is actually used
+        return ext.file_extension.pattern
+
+    # a mapping of tool "key" to ToolDesc.id
+    tooldescs = OrderedDict()
+    # a mapping of duplicate ToolDesc ids to first ToolDesc.id
+    remap = OrderedDict()
+
+    logger.info("Looking through %d ToolDescs..." % ToolDesc.objects.count())
+
+    for desc in ToolDesc.objects.order_by("created_on"):
+        key = tool_key(desc)
+        if key in tooldescs:
+            remap[desc.id] = tooldescs[key]
+        else:
+            tooldescs[key] = desc.id
+
+    logger.info("%d ToolDescs will be removed" % len(remap))
+
+    # update tools to point to first ToolDesc
+    for tool in Tool.objects.filter(desc_id__in=remap.keys()):
+        logger.info("Setting Tool %d \"%s\" desc from %d to %d" % (tool.id, tool.desc.name,
+                                                                   tool.desc_id,
+                                                                   remap[tool.desc_id]))
+        tool.desc_id = remap[tool.desc_id]
+        if not dry_run:
+            tool.save()
+
+    # clean up the duplicates, will cascade delete parameters, etc
+    dead = ToolDesc.objects.filter(id__in=remap.keys())
+    if dead.exists():
+        logger.info("Deleting duplicate ToolDescs (and their related objects)")
+        logger.info(", ".join("%s id=%d" % (tool.name, tool.id) for tool in dead))
+    else:
+        logger.info("No duplicate ToolDescs")
+
+    if not dry_run:
+        dead.delete()

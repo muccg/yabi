@@ -43,7 +43,6 @@ install_requires = [
 # Compiled python modules which are usually provided by system packages
 install_requires_compiled = [
     'SQLAlchemy>=0.7.10,<0.8.0',
-    'lxml>=3.3.0,<3.4.0',
     'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
 ]
 
@@ -96,7 +95,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='8.0.0',
+      version='9.0.1',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',

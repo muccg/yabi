@@ -183,7 +183,7 @@ ci_authorized_keys() {
 
 # lint using flake8
 lint() {
-    ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count || true
+    ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count
 }
 
 

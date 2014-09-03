@@ -52,6 +52,7 @@ app.config_from_object('django.conf:settings')
 
 DYNBE_READY_POLL_INTERVAL = getattr(settings, 'DYNBE_READY_POLL_INTERVAL', 60)
 
+
 # Celery uses its own logging setup. All our custom logging setup has to be
 # done in this callback
 def setup_logging(*args, **kwargs):
@@ -112,7 +113,7 @@ def _process_job(job):
             poll_until_dynbes_ready.s(),
             create_db_tasks.s(),
             spawn_ready_tasks.s())
-        # clean_up_dynamic_backends() happens on_job_completed()
+        # clean_up_dynamic_backends() happens on_job_finished()
 
     def simple_job_chain(job_id):
         return chain(
@@ -192,21 +193,29 @@ def provision_ex_be(job_id):
 @app.task(max_retries=None, default_retry_delay=DYNBE_READY_POLL_INTERVAL)
 @log_it('job')
 def poll_until_dynbes_ready(job_id):
+    job_logger = create_job_logger(logger, job_id)
     job = EngineJob.objects.get(pk=job_id)
     if job.is_workflow_aborting:
         abort_job(job)
         return None
 
-    job_dynbes = job.dynamic_backends.distinct()
-    instances_ready = map(provisioning.is_instance_ready, job_dynbes)
+    try:
+        job_dynbes = job.dynamic_backends.distinct()
+        instances_ready = map(provisioning.is_instance_ready, job_dynbes)
+        if not all(instances_ready):
+            raise get_current_celery_task().retry()
 
-    if not all(instances_ready):
+        for dynbe in job_dynbes:
+            provisioning.update_dynbe_ip_addresses(job)
+
+        return job_id
+
+    except celery.exceptions.RetryTaskError:
+        # raised by the retry above, just re-raise.
+        raise
+    except Exception:
+        job_logger.exception("Error in poll_until_dynbes_ready for job '%s'.", job_id)
         raise get_current_celery_task().retry()
-
-    for dynbe in job_dynbes:
-        provisioning.update_dynbe_ip_addresses(job)
-
-    return job_id
 
 
 @app.task(max_retries=None)
@@ -226,12 +235,15 @@ def clean_up_dynamic_backends(job_id):
         return job_id
     except Exception:
         job_logger.exception("Exception in clean_up_dynamic_backends for job {0}".format(job_id))
-        raise
+        raise get_current_celery_task().retry()
 
 
 @app.task(max_retries=None)
 @log_it('job')
 def create_db_tasks(job_id):
+    if job_id is None:
+        logger.info("create_db_tasks received no job_id. Skipping processing.")
+        return None
     job_logger = create_job_logger(logger, job_id)
     request = get_current_celery_task().request
     try:
@@ -267,8 +279,8 @@ def create_db_tasks(job_id):
 @app.task()
 def spawn_ready_tasks(job_id):
     if job_id is None:
-        logger.warning('no tasks to process, exiting early')
-        return
+        logger.info("spawn_ready_tasks received no job_id. Skipping processing.")
+        return None
     job_logger = create_job_logger(logger, job_id)
     job_logger.info("Starting spawn_ready_tasks for Job %s", job_id)
     try:
@@ -299,7 +311,7 @@ def spawn_ready_tasks(job_id):
 
 
 @app.task
-def on_job_completed(job_id):
+def on_job_finished(job_id):
     job = Job.objects.get(pk=job_id)
     if job.has_dynamic_backend:
         clean_up_dynamic_backends.apply_async((job_id,))
@@ -551,10 +563,12 @@ def provision_be(job_id, be_type):
     return job_id
 
 
-def abort_job(job):
+def abort_job(job, update_workflow=True):
     job.status = STATUS_ABORTED
     job.save()
-    job.workflow.update_status()
+    on_job_finished.apply_async((job.pk,))
+    if update_workflow:
+        job.workflow.update_status()
 
 
 # Service methods
@@ -581,8 +595,8 @@ def change_task_status(task_id, status):
             task.job.workflow.update_status()
             # commit before submission of Celery Tasks
             transaction.commit()
-            if job_status == STATUS_COMPLETE:
-                on_job_completed.apply_async((task.job.pk,))
+            if task.job.is_finished:
+                on_job_finished.apply_async((task.job.pk,))
             new_status = task.job.workflow.status
             if old_status != new_status and new_status == STATUS_COMPLETE:
                 on_workflow_completed.apply_async((task.job.workflow.pk,))
@@ -601,9 +615,7 @@ def process_workflow_jobs_if_needed(task):
     workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
     if workflow.is_aborting:
         for job in workflow.jobs_that_wait_for_dependencies():
-            logger.debug('Aborting job %s', job.pk)
-            job.status = STATUS_ABORTED
-            job.save()
+            abort_job(job, update_workflow=False)
         workflow.update_status()
         return
     if task.job.status == STATUS_COMPLETE:

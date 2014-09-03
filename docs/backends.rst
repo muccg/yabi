@@ -112,11 +112,9 @@ Take a look at these FAQ
 
 Null Backend
 ------------
-An evolutionary quirk of Yabi is that the system requires what we call a null backend for tools that should not be
-executed, such as a file selection tool. We hope to remove this branch of code in a future release. To add a null 
-backend follow the steps above for adding an execution backend and use these values:
-
-::
+The null backend is used by tools that should not be executed, such as a file selection tool.
+A null backend is created automatically for every new installation of Yabi, but in case you have to create one yourself you can
+do it by using these values::
 
     Name            Null Backend
     Description     Use this null backend when tools should not be executed.
@@ -125,8 +123,6 @@ backend follow the steps above for adding an execution backend and use these val
     Port            
     Path            /
 
-Now add a Backend Credential (see :ref:`backendcredentials`) for the null backend. It does not matter which credential 
-you associate with the Null Backend as it will not be used.
 
 S3 Backend
 ----------

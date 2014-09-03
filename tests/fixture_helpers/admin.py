@@ -8,15 +8,30 @@ import six
 Module providing helper methods for creating data in yabi admin from tests
 '''
 
-def create_tool(name, display_name=None, path=None, ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem'):
-    if display_name is None: display_name = name
-    if path is None: path = name
+
+def create_tool(name, display_name=None, path="",
+                ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem',
+                testcase=None):
+    desc = create_tool_desc(name)
+    create_tool_backend(name, path, ex_backend_name, fs_backend_name)
+
+    if testcase:
+        testcase.addCleanup(desc.delete)
+
+    return desc
+
+def create_tool_desc(name):
+    return models.ToolDesc.objects.get_or_create(name=name)[0]
+
+def create_tool_backend(toolname, path, ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem'):
+    desc = models.ToolDesc.objects.get(name=toolname)
     lfs = models.Backend.objects.get(name=fs_backend_name)
     lex = models.Backend.objects.get(name=ex_backend_name)
-    models.Tool.objects.create(name=name, display_name=display_name, path=path, backend=lex, fs_backend=lfs)
+    return models.Tool.objects.get_or_create(desc=desc, path=path or toolname,
+                                             backend=lex, fs_backend=lfs)[0]
 
 def add_tool_to_all_tools(toolname):
-    tool = models.Tool.objects.get(name=toolname)
+    tool = models.ToolDesc.objects.get(name=toolname)
     tg = models.ToolGroup.objects.get(name='select data')
     alltools = models.ToolSet.objects.get(name='alltools')
     tg.toolgrouping_set.create(tool=tool, tool_set=alltools)
@@ -231,10 +246,9 @@ def create_fakes3_backend(scheme="s3", path="/"):
     )
     return backend, cred, backend_cred
 
-def create_tool_cksum():
-    create_tool('cksum')
+def create_tool_cksum(*args, **kwargs):
+    tool = create_tool('cksum', *args, **kwargs)
     add_tool_to_all_tools('cksum')
-    tool = models.Tool.objects.get(name='cksum')
     tool.accepts_input = True
     star_extension = models.FileExtension.objects.get(pattern='*')
     models.ToolOutputExtension.objects.create(tool=tool, file_extension=star_extension)
@@ -247,27 +261,26 @@ def create_tool_cksum():
 
     tool.save()
 
+
 def create_tool_dd(*args, **kwargs):
-    create_tool('dd', *args, **kwargs)
+    tool = create_tool('dd', *args, **kwargs)
     add_tool_to_all_tools('dd')
-    tool = models.Tool.objects.get(name='dd')
     tool.accepts_input = True
     star_extension = models.FileExtension.objects.get(pattern='*')
     models.ToolOutputExtension.objects.create(tool=tool, file_extension=star_extension)
 
     combined_eq = models.ParameterSwitchUse.objects.get(display_text='combined with equals')
 
-    if_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=1, file_assignment = 'batch', switch='if')
+    if_tool_param = models.ToolParameter.objects.get_or_create(tool=tool, switch_use=combined_eq, mandatory=True, rank=1, file_assignment = 'batch', switch='if')[0]
     all_files = models.FileType.objects.get(name='all files')
     if_tool_param.accepted_filetypes.add(all_files)
 
-    of_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=2, file_assignment = 'none', switch='of', output_file=True)
+    of_tool_param = models.ToolParameter.objects.get_or_create(tool=tool, switch_use=combined_eq, mandatory=True, rank=2, file_assignment = 'none', switch='of', output_file=True)[0]
 
     tool.save()
 
 def create_tool_sleep():
-    create_tool('sleep')
-    tool = models.Tool.objects.get(name='sleep')
+    tool = create_tool('sleep')
     tool.accepts_input = False
     valueOnly = models.ParameterSwitchUse.objects.get(display_text='valueOnly')
     tool.save()

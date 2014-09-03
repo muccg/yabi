@@ -4,10 +4,11 @@
  * YabiJob
  * create a new yabi job (node) corresponding to a tool
  */
-function YabiJob(toolName, jobId, preloadValues) {
+function YabiJob(toolName, toolId, jobId, preloadValues) {
   this.loaded = false;
   this.toolName = toolName;
   this.displayName = toolName; //temporary while loading
+  this.toolId = toolId;
   this.jobId = jobId;
   this.payload = {};
   this.params = [];
@@ -36,7 +37,11 @@ function YabiJob(toolName, jobId, preloadValues) {
   //___JOB NODE___
   this.jobNode = Y.Node.create('<div class="jobContainer"/>')
     .appendTo(this.container);
-  this.titleNode = Y.Node.create('<h1>loading...</h1>')
+  this.titleNode = Y.Node.create('<span>loading...</span>');
+  this.backendNode = Y.Node.create('<span class="backend"/>');
+  Y.Node.create('<h1/>')
+    .append(this.titleNode)
+    .append(this.backendNode)
     .appendTo(this.jobNode);
 
   this.inputsNode = Y.Node.create('<div class="jobInputs">accepts: *</div>')
@@ -150,7 +155,7 @@ YabiJob.prototype.hydrate = function() {
     self.hydrateResponse(o);
   };
 
-  YabiToolCache.get(this.toolName, callback, callback);
+  YabiToolCache.get(this.toolName, this.toolId, callback, callback);
 };
 
 
@@ -303,20 +308,17 @@ YabiJob.prototype.toString = function() {
 };
 
 YabiJob.prototype.toJSON = function() {
-  var result = { 'toolName': this.toolName,
-    'jobId': this.jobId,
-    'valid': this.valid };
-
-  var params = [];
-  for (var index in this.params) {
-    if (this.params[index].toJSON() !== null) {
-      params.push(this.params[index].toJSON());
+  return {
+    toolName: this.toolName,
+    toolId: this.toolId,
+    jobId: this.jobId,
+    valid: this.valid,
+    parameterList: {
+      parameter: _(this.params)
+        .map(function(param) { return param.toJSON(); })
+        .compact().valueOf()
     }
-  }
-
-  result.parameterList = {'parameter': params};
-
-  return result;
+  };
 };
 
 
@@ -541,6 +543,9 @@ YabiJob.prototype.fixPayload = function(obj) {
   if (!Y.Lang.isArray(obj.tool.parameter_list)) {
     obj.tool.parameter_list = [obj.tool.parameter_list];
   }
+  if (obj.tool.backend == "nullbackend") {
+    obj.tool.backend = null;
+  }
   return obj;
 };
 
@@ -555,6 +560,9 @@ YabiJob.prototype.solidify = function(obj) {
   var ext, spanEl, content, paramObj, index, paramIndex;
 
   this.titleNode.set("text", this.payload.tool.display_name);
+  this.backendNode
+    .set("text", this.payload.tool.backend)
+    .toggleView(this.payload.tool.backend ? true : false);
   this.displayName = this.payload.tool.display_name;
   if (!this.payload.tool.enabled) {
       this.displayName = 'Disabled Tool: ' + this.displayName;

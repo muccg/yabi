@@ -53,7 +53,7 @@ class AddToolForm(forms.Form):
         except Exception:
             raise forms.ValidationError("Unable to load json. Please check it is valid.")
 
-        if Tool.objects.filter(name=tool_dict["tool"]["name"]):
+        if ToolDesc.objects.filter(name=tool_dict["tool"]["name"]):
             raise forms.ValidationError("A tool named %s already exists." % tool_dict["tool"]["name"])
 
         return data
@@ -108,16 +108,14 @@ def format_params(tool_parameters):
 
 @staff_member_required
 def tool(request, tool_id):
-    logger.debug("")
-
-    tool = get_object_or_404(Tool, pk=tool_id)
+    tool = get_object_or_404(ToolDesc, pk=tool_id)
 
     return render_to_response('yabi/tool.html', {
         'tool': tool,
         'user': request.user,
         'title': 'Tool Details',
         'root_path': urlresolvers.reverse('admin:index'),
-        'edit_url': urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,)),
+        'edit_url': urlresolvers.reverse('admin:yabi_tooldesc_change', args=(tool.id,)),
         'json_url': webhelpers.url('/ws/tool/' + quote(tool.name)),
         'tool_params': format_params(tool.toolparameter_set.order_by('id')),
     })
@@ -262,7 +260,7 @@ def backend_cred_test(request, backend_cred_id):
 
     bec = get_object_or_404(BackendCredential, pk=backend_cred_id)
 
-    from yabiadmin.yabiengine import backendhelper
+    from yabiadmin.backend import backend
 
     template_vars = {
         'bec': bec,
@@ -277,23 +275,23 @@ def backend_cred_test(request, backend_cred_id):
     dict_join = lambda a, b: a.update(b) or a
 
     try:
-        rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
+        data = backend.get_listing(bec.credential.user.name, bec.homedir_uri)
 
         try:
             # successful listing
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
-                'listing': json.loads(rawdata)
+                'listing': data
             }))
 
         except ValueError:
             # value error report
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
                 'error': "Value Error",
-                'error_help': "<pre>" + rawdata + "</pre>"
+                'error_help': "<pre>" + data + "</pre>"
             }))
 
-    except backendhelper.BackendServerError as bse:
-        if "authentication failed" in str(bse).lower():
+    except Exception as e:
+        if "authentication failed" in str(e).lower():
             # auth failed
             cred_url = '%syabi/credential/%d' % (urlresolvers.reverse('admin:index'), bec.credential.id)  # TODO... construct this more 'correctly'
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
@@ -301,31 +299,11 @@ def backend_cred_test(request, backend_cred_id):
                 'error_help': "The authentication of the test has failed. The <a href='%s'>credential used</a> is most likely incorrect. Please ensure the <a href='%s'>credential</a> is correct." % (cred_url, cred_url)
             }))
 
-        elif "remote host key is denied" in str(bse).lower():
-            # remote host key denied.
-
-            # work out which hostkey this is...
-            keys = HostKey.objects.filter(hostname=bec.backend.hostname)
-
-            if not keys or len(keys) > 1:
-                # link to host key page
-                link = '%syabi/hostkey/?hostname=%s' % (urlresolvers.reverse('admin:index'), bec.backend.hostname)  # TODO... construct this more 'correctly'
-            else:
-                # link to changelist page
-                link = '%syabi/hostkey/%d' % (urlresolvers.reverse('admin:index'), keys[0].id)
-
-            logger.info("backend_cred_test tried to test BackendCredential %d and received a denied host key exception [hostname: %s]." % (bec.id, bec.backend.hostname))
-
-            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
-                'error': "Remote Host Key Denied",
-                'error_help': "The remote host key has been denied. Please <a href='%s'>check the hostkey</a>'s fingerprint and if it is the correct key, mark it as accepted." % link
-            }))
-
         else:
             # overall exception
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
                 'error': "Backend Server Error",
-                'error_help': "<pre>" + str(bse) + "</pre>"
+                'error_help': str(e).replace('\n', '\\n').replace('\\n', '<br/>')
             }))
 
     # we should not get here
@@ -361,47 +339,63 @@ def add_tool(request):
 
             tool_dict = json.loads(f.cleaned_data["tool_json"])
             tool_dict = tool_dict["tool"]
-            tool = create_tool(request, tool_dict)
+            desc = create_tool_desc(tool_dict)
+            tool = create_tool(desc, tool_dict)
 
-            return HttpResponseRedirect(urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,)))
+            set_owner(request.user, desc, tool)
+
+            if tool:
+                redir = urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,))
+            else:
+                redir = urlresolvers.reverse('admin:yabi_tooldesc_change', args=(desc.id,))
+
+            return HttpResponseRedirect(redir)
 
 
-@staff_member_required
-def create_tool(request, tool_dict):
-    # try and get the backends
+def create_tool(desc, tool_dict):
     try:
-        backend = Backend.objects.get(name=tool_dict['backend'])
-    except ObjectDoesNotExist as e:
-        backend = Backend.objects.get(name='nullbackend')
+        # try and get the backends
+        try:
+            backend = Backend.objects.get(name=tool_dict['backend'])
+        except ObjectDoesNotExist:
+            backend = Backend.objects.get(name='nullbackend')
 
-    try:
-        fs_backend = Backend.objects.get(name=tool_dict['fs_backend'])
-    except ObjectDoesNotExist as e:
-        fs_backend = Backend.objects.get(name='nullbackend')
+        try:
+            fs_backend = Backend.objects.get(name=tool_dict['fs_backend'])
+        except ObjectDoesNotExist:
+            fs_backend = Backend.objects.get(name='nullbackend')
 
+        tool = Tool(desc=desc,
+                    enabled=tool_dict["enabled"],
+                    backend=backend,
+                    fs_backend=fs_backend,
+                    cpus=tool_dict["cpus"],
+                    walltime=tool_dict["walltime"],
+                    module=tool_dict["module"],
+                    queue=tool_dict["queue"],
+                    max_memory=tool_dict["max_memory"],
+                    job_type=tool_dict["job_type"])
+    except KeyError:
+        return None
+    else:
+        tool.save()
+        return tool
+
+
+def create_tool_desc(tool_dict):
     # create the tool
-    tool = Tool(name=tool_dict["name"],
-                display_name=tool_dict["display_name"],
-                path=tool_dict["path"],
-                description=tool_dict["description"],
-                enabled=tool_dict["enabled"],
-                backend=backend,
-                fs_backend=fs_backend,
-                accepts_input=tool_dict["accepts_input"],
-                cpus=tool_dict["cpus"],
-                walltime=tool_dict["walltime"],
-                module=tool_dict["module"],
-                queue=tool_dict["queue"],
-                max_memory=tool_dict["max_memory"],
-                job_type=tool_dict["job_type"]
-                )
-    tool.save()
+    desc = ToolDesc(name=tool_dict["name"],
+                    display_name=tool_dict["display_name"],
+                    path=tool_dict["path"],
+                    description=tool_dict["description"],
+                    accepts_input=tool_dict["accepts_input"])
+    desc.save()
 
     # add the output extensions
     for output_ext in tool_dict["outputExtensions"]:
         extension, created = FileExtension.objects.get_or_create(pattern=output_ext["file_extension__pattern"])
         tooloutputextension, created = ToolOutputExtension.objects.get_or_create(
-            tool=tool,
+            tool=desc,
             file_extension=extension,
             must_exist=output_ext["must_exist"],
             must_be_larger_than=output_ext["must_be_larger_than"])
@@ -409,7 +403,7 @@ def create_tool(request, tool_dict):
     # add the tool parameters
     for parameter in tool_dict["parameter_list"]:
 
-        toolparameter = ToolParameter(tool=tool,
+        toolparameter = ToolParameter(tool=desc,
                                       rank=parameter["rank"],
                                       fe_rank=parameter["fe_rank"],
                                       mandatory=parameter["mandatory"],
@@ -458,8 +452,8 @@ def create_tool(request, tool_dict):
         # add use_output_filename
         if "use_output_filename__switch" in parameter and parameter['use_output_filename__switch']:
             try:
-                outputfilename_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["use_output_filename__switch"])
-                toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
+                outputfilename_toolparameter = ToolParameter.objects.get(tool=desc, switch=parameter["use_output_filename__switch"])
+                toolparameter = ToolParameter.objects.get(tool=desc, switch=parameter["switch"])
                 toolparameter.use_output_filename = outputfilename_toolparameter
                 toolparameter.save()
             except ObjectDoesNotExist as e:
@@ -469,14 +463,21 @@ def create_tool(request, tool_dict):
         if "extension_param" in parameter:
             try:
                 extension = FileExtension.objects.get(pattern=parameter["extension_param"])
-                toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
+                toolparameter = ToolParameter.objects.get(tool=desc, switch=parameter["switch"])
                 toolparameter.extension_param = extension
                 toolparameter.save()
             except ObjectDoesNotExist as e:
                 logger.critical("Unable to add extension on parameter.extension field: %s" % e)
 
-    tool.save()
-    return tool
+    return desc
+
+
+def set_owner(djangouser, *obs):
+    for ob in obs:
+        if ob:
+            ob.created_by = ob.last_modified_by = djangouser
+            ob.save()
+
 
 from yabiadmin.crypto_utils import DecryptException
 

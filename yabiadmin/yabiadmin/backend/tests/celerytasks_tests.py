@@ -17,17 +17,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def create_workflow_with_job_and_a_task(obj):
+def create_workflow_with_job_and_a_task(testcase):
     demo_user = m.User.objects.get(name='demo')
-    obj.workflow = mommy.make('Workflow', user=demo_user)
-    obj.job = mommy.make('Job', workflow=obj.workflow, pk=obj.workflow.pk, order=0)
-    obj.task = mommy.make('Task', job=obj.job, pk=obj.job.pk)
-    obj.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
+    testcase.workflow = mommy.make('Workflow', user=demo_user)
+    testcase.job = mommy.make('Job', workflow=testcase.workflow, pk=testcase.workflow.pk, order=0)
+    testcase.task = mommy.make('Task', job=testcase.job, pk=testcase.job.pk)
+    testcase.tooldesc = mommy.make('ToolDesc', name='my-tool')
+    testcase.tool = mommy.make('Tool', desc=testcase.tooldesc, path='tool.sh')
 
-
-def delete_models(*args):
-    for model in args:
-        model.delete()
+    def cleanup():
+        testcase.tooldesc.delete()
+        testcase.task.delete()
+        testcase.job.delete()
+        testcase.workflow.delete()
+    testcase.addCleanup(cleanup)
 
 
 class FakeRequest(object):
@@ -68,9 +71,6 @@ class RetryOnErrorTest(unittest.TestCase):
         self.celery_current_task = FakeCeleryTask()
 
         create_workflow_with_job_and_a_task(self)
-
-    def tearDown(self):
-        delete_models(self.workflow, self.tool)
 
     def test_when_no_exceptions_returns_what_wrapped_fn_returns(self):
         self.setup_function_that_succeeds()
@@ -217,7 +217,6 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
 
     def tearDown(self):
         self.delete_log_messages()
-        delete_models(self.workflow, self.tool)
 
     def delete_log_messages(self):
         Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk + 1)).delete()

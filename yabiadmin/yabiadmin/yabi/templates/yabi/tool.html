@@ -1,9 +1,6 @@
 {% extends "admin/base_site_mako.html" %}
-{% load pytag %}
-{% load is_false %}
 
-
-{% if is_popup|is_false %}
+{% if not is_popup %}
 {% block block_breadcrumbs %}
 <div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Tool {{tool.display_name}}</div>
 {% endblock %}
@@ -14,7 +11,7 @@
 <div id="content-main">
 
 <h1>{{tool.display_name}}
-{% if tool.enabled|is_false %}
+{% if not tool.enabled %}
  (DISABLED)
 {% endif %}
  - Tool Definition</h1>

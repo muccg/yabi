@@ -28,6 +28,7 @@ import datetime
 import uuid
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
+from django.db.models import Q
 from django.db.transaction import is_managed
 from yabiadmin.yabi.models import BackendCredential, Tool
 from yabiadmin.exceptions import InvalidRequestError
@@ -35,7 +36,6 @@ from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger
 from yabiadmin.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse
-from .backendhelper import get_exec_backendcredential_for_uri
 import logging
 from six.moves import filter
 logger = logging.getLogger(__name__)
@@ -199,37 +199,29 @@ class EngineJob(Job):
             extensions = (self.other_files)
         return extensions
 
-    @property
-    def exec_credential(self):
-        rval = None
+    def _get_be_cred(self, backend, be_type):
+        if backend.is_nullbackend:
+            return None
+        full_term = Q(credential__user=self.workflow.user) & Q(backend=backend)
 
         try:
-            rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.backend)
+            rval = BackendCredential.objects.get(full_term)
+            return rval
         except (ObjectDoesNotExist, MultipleObjectsReturned):
-            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.backend))
-            ebcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.backend)
+            logger.critical('Invalid %s backend credentials for user: %s and backend: %s' % (be_type, self.workflow.user, self.tool.backend))
+            ebcs = BackendCredential.objects.filter(full_term)
             logger.debug("EBCS returned: %s" % ebcs)
             for bc in ebcs:
                 logger.debug("%s: Backend: %s Credential: %s" % (bc, bc.credential, bc.backend))
             raise
 
-        return rval
+    @property
+    def exec_credential(self):
+        return self._get_be_cred(self.tool.backend, 'execution')
 
     @property
     def fs_credential(self):
-        rval = None
-
-        try:
-            rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.fs_backend)
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
-            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend))
-            fsbcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.fs_backend)
-            logger.debug("FS Backend Credentials returned: %s" % fsbcs)
-            for bc in fsbcs:
-                logger.debug("%s: Backend: %s Credential: %s" % (bc, bc.credential, bc.backend))
-            raise
-
-        return rval
+        return self._get_be_cred(self.tool.fs_backend, 'FS')
 
     def update_dependencies(self):
         self.template.update_dependencies(self.workflow, ignored_patterns=DEPENDENCIES_EXCLUDED_PATTERNS)
@@ -248,6 +240,11 @@ class EngineJob(Job):
             task.status = STATUS_READY
             task.save()
 
+    def get_backend_uri(self, credential):
+        if credential is None:
+            return 'null://%s@localhost.localdomain/' % self.workflow.user.name
+        return credential.homedir_uri
+
     def add_job(self, job_dict):
         assert(job_dict)
         assert(job_dict["toolName"])
@@ -258,7 +255,9 @@ class EngineJob(Job):
         template.parse_parameter_description()
 
         self.job_dict = job_dict
-        self.tool = Tool.objects.get(name=job_dict["toolName"])
+        if "toolId" not in job_dict:
+            raise InvalidRequestError("Submitted job %s lacks toolId" % job_dict["toolName"])
+        self.tool = Tool.objects.get(id=job_dict["toolId"], desc__name=job_dict["toolName"])
         if not self.tool.enabled:
             raise InvalidRequestError("Can't process workflow with disabled tool '%s'" % self.tool.name)
 
@@ -273,9 +272,9 @@ class EngineJob(Job):
         self.command = str(template)                    # text description of command
 
         self.status = STATUS_PENDING
-        self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s" % (self.order + 1, self.tool.display_name))
-        self.exec_backend = self.exec_credential.homedir_uri
-        self.fs_backend = self.fs_credential.homedir_uri
+        self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s" % (self.order + 1, self.tool.get_display_name()))
+        self.exec_backend = self.get_backend_uri(self.exec_credential)
+        self.fs_backend = self.get_backend_uri(self.fs_credential)
         self.cpus = self.tool.cpus
         self.walltime = self.tool.walltime
         self.module = self.tool.module
@@ -298,10 +297,9 @@ class EngineJob(Job):
 
         try:
             self.update_dependencies()
-            be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
 
             input_files = self.get_input_files()
-            self.create_one_task_for_each_input_file(input_files, be)
+            self.create_one_task_for_each_input_file(input_files)
 
             # there must be at least one task for every job
             if not self.total_tasks():
@@ -336,7 +334,7 @@ class EngineJob(Job):
         input_files = [X for X in self.template.file_sets()]
         return input_files
 
-    def create_one_task_for_each_input_file(self, input_files, be):
+    def create_one_task_for_each_input_file(self, input_files):
         logger.debug("job %s is having tasks created for %s input files" % (self.pk, len(input_files)))
         assert is_managed() is True
         if len(input_files) == 0:
@@ -352,7 +350,6 @@ class EngineJob(Job):
         for task_num, input_file in enumerate(input_files, 1):
             task = EngineTask(job=self, status=STATUS_PENDING,
                               start_time=datetime.datetime.now(),
-                              execution_backend_credential=be,
                               task_num=task_num)
 
             task_name = left_padded_with_zeros.format(task_num) if count > 1 else ""

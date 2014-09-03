@@ -1,9 +1,7 @@
 {% extends "admin/base_site_mako.html" %}
-{% load pytag %}
-{% load is_false %}
 {% load dynamic_lookups %}
 
-{% if is_popup|is_false %}
+{% if not is_popup %}
 {% block block_breadcrumbs %}
 <div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Backend Credential Test</div>
 {% endblock %}
@@ -16,7 +14,7 @@
 
 <table>
     <tr>
-        <th>Description</th
+        <th>Description</th>
         <th>Yabi Username</th>
         <th>Username</th>
         <th>Home Dir</th>
@@ -28,7 +26,7 @@
     <tr>
     <td>{{bec.credential.description}}</td>
     <td>{{bec.credential.user.name}}</td>
-    <td>{{bec.credential.username}</td>
+    <td>{{bec.credential.username}}</td>
     <td>{{bec.homedir}}</td>
     <td>{{bec.visible}}</td>
     <td>{{bec.uri}}</td>
@@ -40,7 +38,7 @@
 
 <br/><br/>
 
-{% if error|is_false %}
+{% if not error %}
 <h3>File listing of {{bec.homedir_uri}}</h3>
 <table>
     <tr>
@@ -83,7 +81,7 @@
 </table>
 {% else %}
 <h3 class="error">{{error}}</h3>
-<p>{{error_help}}</p>
+<p>{% autoescape off %}{{error_help}}{% endautoescape %}</p>
 {% endif %}
 </div>
 {% endblock %}

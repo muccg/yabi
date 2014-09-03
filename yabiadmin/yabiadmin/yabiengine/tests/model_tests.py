@@ -3,27 +3,25 @@ from model_mommy import mommy
 from yabiadmin.yabiengine import models as m
 
 
-def create_workflow_with_job_and_2_tasks(obj):
+def create_workflow_with_job_and_2_tasks(testcase):
     demo_user = m.User.objects.get(name='demo')
-    obj.workflow = mommy.make('Workflow', user=demo_user)
-    obj.job = mommy.make('Job', workflow=obj.workflow, order=0)
-    obj.task = mommy.make('Task', job=obj.job)
-    obj.second_task = mommy.make('Task', job=obj.job)
-    obj.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
+    testcase.workflow = mommy.make('Workflow', user=demo_user)
+    testcase.job = mommy.make('Job', workflow=testcase.workflow, order=0)
+    testcase.task = mommy.make('Task', job=testcase.job)
+    testcase.second_task = mommy.make('Task', job=testcase.job)
+    testcase.tooldesc = mommy.make('ToolDesc', name='my-tool')
+    testcase.tool = mommy.make('Tool', desc=testcase.tooldesc, path='tool.sh')
 
-
-def delete_models(*args):
-    for model in args:
-        model.delete()
+    def cleanup():
+        testcase.workflow.delete()
+        testcase.tooldesc.delete()
+    testcase.addCleanup(cleanup)
 
 
 class TaskRetryingTest(unittest.TestCase):
 
     def setUp(self):
         create_workflow_with_job_and_2_tasks(self)
-
-    def tearDown(self):
-        delete_models(self.workflow, self.tool)
 
     def test_not_retrying_by_default(self):
         self.assertFalse(self.task.is_retrying)
@@ -39,9 +37,6 @@ class TaskRetryingOneTaskMarkedAsRetryingTest(unittest.TestCase):
 
         # We mark the second task as retrying, with an error msg
         self.second_task.mark_task_as_retrying("Big error")
-
-    def tearDown(self):
-        delete_models(self.workflow, self.tool)
 
     def test_task_is_retrying(self):
         second_task_reloaded = m.Task.objects.get(pk=self.second_task.pk)

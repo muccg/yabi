@@ -4,6 +4,7 @@
     "tags": [],
     "jobs": [{
             "toolName":"hostname",
+            "backendName":"Local Execution",
             "jobId":1,
             "valid":true,
             "parameterList":{
@@ -11,6 +12,7 @@
             }
         },{
             "toolName":"hostname",
+            "backendName":"Local Execution",
             "jobId":2,
             "valid":true,
             "parameterList":{
@@ -18,6 +20,7 @@
             }
         },{
             "toolName":"hostname",
+            "backendName":"Local Execution",
             "jobId":3,
             "valid":true,
             "parameterList":{
@@ -25,6 +28,7 @@
             }
         },{
             "toolName":"hostname",
+            "backendName":"Local Execution",
             "jobId":4,
             "valid":true,
             "parameterList":{
@@ -32,6 +36,7 @@
             }
         },{
             "toolName":"hostname",
+            "backendName":"Local Execution",
             "jobId":5,
             "valid":true,
             "parameterList":{
@@ -39,4 +44,3 @@
             }
         }]
 }
-

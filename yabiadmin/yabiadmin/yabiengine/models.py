@@ -25,7 +25,7 @@
 import json
 import os
 from django.db import models
-from yabiadmin.yabi.models import User, Backend, BackendCredential, Tool
+from yabiadmin.yabi.models import User, Backend, Tool
 from yabiadmin.yabiengine import backendhelper
 from ccg_django_utils import webhelpers
 from ccg_django_utils.webhelpers import url
@@ -96,6 +96,9 @@ class Workflow(models.Model, Editable, Status):
     abort_requested_on = models.DateTimeField(null=True)
     stageout = models.CharField(max_length=1000)
     original_json = models.TextField()
+
+    class Meta:
+        get_latest_by = "created_on"
 
     def __unicode__(self):
         return self.name
@@ -250,10 +253,10 @@ class Job(models.Model, Editable, Status):
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
         The order of the list being checked is therefore important.
         '''
-        for status in [STATUS_ERROR, 'exec:error', 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE, STATUS_ABORTED]:
+        for status in [STATUS_ERROR, STATUS_EXEC_ERROR, 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE, STATUS_ABORTED]:
             if [T for T in Task.objects.filter(job=self) if T.status == status]:
                 # we need to map the task status values to valid job status values
-                if status == 'exec:error':
+                if status == STATUS_EXEC_ERROR:
                     self.status = STATUS_ERROR
                 elif status.startswith('exec') or status in ['stageout', 'cleaning', 'stagein', 'mkdir']:
                     self.status = STATUS_RUNNING
@@ -272,6 +275,12 @@ class Job(models.Model, Editable, Status):
                 break
 
         return self.status
+
+    @property
+    def is_finished(self):
+        '''Returns True if all the Tasks of the Job finished.
+        Status could be COMPLETED, ABORTED or ERROR.'''
+        return all(map(lambda t: t.is_finished, Task.objects.filter(job=self)))
 
     @property
     def is_workflow_aborting(self):
@@ -328,12 +337,6 @@ class Task(models.Model, Editable, Status):
 
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
-
-    # the following field is a convenience pointer (not normalised) to the backendcredential table row used for the execution credential
-    # they are used by the task view to help group and count the tasks quickly and efficiently to load control the backend executer
-    # you should NOT reference these table links unless absolutely necessary. Use the uri fields exec_backend and fs_backend instead as these are serialised and permanent
-    # there are helper funtions to process those uri's (but they don't help us with complex SQL queries)
-    execution_backend_credential = models.ForeignKey(BackendCredential, null=True)
 
     envvars_json = models.TextField(blank=True)
 
@@ -464,6 +467,10 @@ class Task(models.Model, Editable, Status):
         if self.envvars_json is None or self.envvars_json.strip() == '':
             return {}
         return json.loads(self.envvars_json)
+
+    @property
+    def is_finished(self):
+        return self.status in TERMINATED_STATUSES
 
     def mark_task_as_retrying(self, message="Some error occurred"):
         self.is_retrying = True

@@ -40,7 +40,10 @@ function YabiTool(tooldef, collection, groupNode) {
   this.setupFootNode().appendTo(descNode);
 
   Y.Node.create('<div class="tool"/>')
-    .set("text", this.payload.displayName)
+    .set("text", this.payload.displayName || this.payload.defDisplayName)
+    .append(Y.Node.create('<span class="backend"/>')
+            .set("text", this.payload.backend)
+            .toggleView(this.payload.manyBackends && !this.payload.displayName))
     .append(addLink)
     .append(descNode)
     .appendTo(this.node)
@@ -191,23 +194,31 @@ YabiTool.prototype.matchesFilter = function(needle) {
 var YabiToolCache = (function() {
   var tools = {};
 
-  return {
-    get: function(name, success, failure) {
-      if (name in tools) {
-        window.setTimeout(function() { success(tools[name]); }, 0);
-      } else {
-        var url = appURL + 'ws/tool/' + escape(name);
-        var callbacks = {
-          success: function(transId, o) {
-            tools[name] = o;
-            success(o);
-          },
-          failure: function(transId, o) {
-            failure(o);
-          }
-        };
+  var cacheKey = function(name, id) {
+    return name + "-" + id;
+  };
 
-        Y.io(url, {on: callbacks});
+  var toolUrl = function(name, id) {
+    return appURL + 'ws/tool/' + escape(name) + '/' + id;
+  };
+
+  return {
+    get: function(name, id, success, failure) {
+      var key = cacheKey(name, id);
+      if (_.has(tools, key)) {
+        window.setTimeout(function() { success(tools[key]); }, 0);
+      } else {
+        Y.io(toolUrl(name, id), {
+          on: {
+            success: function(transId, o) {
+              tools[key] = o;
+              success(o);
+            },
+            failure: function(transId, o) {
+              failure(o);
+            }
+          }
+        });
       }
     }
   };

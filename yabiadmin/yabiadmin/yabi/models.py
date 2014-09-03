@@ -21,7 +21,7 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# -*- coding: utf-8 -*-
+
 import json
 import traceback
 from django.db import models
@@ -91,60 +91,24 @@ class FileType(Base):
     file_extensions_text.short_description = 'File Extensions'
 
 
-class Tool(Base):
+class ToolDesc(Base):
 
     class Meta:
         ordering = ("name",)
+        verbose_name = "tool description"
 
     name = models.CharField(max_length=255, unique=True)
-    display_name = models.CharField(max_length=255)
-    path = models.CharField(max_length=512, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    enabled = models.BooleanField(default=True)
-    backend = models.ForeignKey('Backend', verbose_name="Exec Backend")
-    fs_backend = models.ForeignKey('Backend', related_name="fs_backends", verbose_name="FS Backend")
-    use_same_dynamic_backend = models.BooleanField(default=True)
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     accepts_input = models.BooleanField(default=False)
-    cpus = models.CharField(max_length=64, null=True, blank=True)
-    walltime = models.CharField(max_length=64, null=True, blank=True)
-    module = models.TextField(null=True, blank=True)
-    queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
-    max_memory = models.CharField(max_length=64, null=True, blank=True)
-    job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
-    submission = models.TextField(blank=True)
-    lcopy_supported = models.BooleanField(default=True)
-    link_supported = models.BooleanField(default=True)
 
-    name.help_text = "Unique toolname for internal use."
-    display_name.help_text = "Tool name visible to users."
-    path.help_text = "The path to the binary for this file. Will normally just be binary name."
+    name.help_text = "Unique tool name."
     description.help_text = "The description that will be sent to the frontend for the user."
-    enabled.help_text = "Enable tool in frontend."
-    backend.help_text = "The execution backend for this tool."
-    fs_backend.help_text = "The filesystem backend for this tool."
-    use_same_dynamic_backend.help_text = "If checked, and both FS and Exec Backend's are dynamic, create just one instance and use that for both FS and Exec Backends."
     accepts_input.help_text = "If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
-    module.help_text = "Comma separated list of modules to load."
-    submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
-    lcopy_supported.help_text = "If this tool should use local copies on supported backends where appropriate."
-    link_supported.help_text = "If this tool should use symlinks on supported backends where appropriate."
 
-    def tool_groups_str(self):
-        return ",".join(["%s (%s)" % (tg.tool_group, tg.tool_set) for tg in self.toolgrouping_set.all()])
-
-    tool_groups_str.short_description = 'Belongs to Tool Groups'
-
-    @models.permalink
-    def view_url(self):
-        return ('tool_view', (), {'tool_id': self.id})
-
-    def tool_link(self):
-        return '<a href="%s">View</a>' % self.view_url()
-
-    tool_link.short_description = 'View'
-    tool_link.allow_tags = True
+    def __unicode__(self):
+        return self.name
 
     def input_filetype_extensions(self):
         '''
@@ -154,7 +118,7 @@ class Tool(Base):
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = reduce(lambda x, y: x + y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()], [])
         extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def input_filetype_extensions_for_batch_param(self):
         '''
@@ -164,31 +128,22 @@ class Tool(Base):
         if self.batch_on_param:
             filetypes = self.batch_on_param.accepted_filetypes.all()
             extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def output_filetype_extensions(self):
         '''Work out output file extensions for this tool and return a a list of them all'''
         extensions = [fe.file_extension.pattern for fe in self.tooloutputextension_set.all()]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def tool_dict(self):
         '''Gathers tool details into convenient dict for use by json or other models json'''
 
         tool_dict = {
             'name': self.name,
-            'display_name': self.display_name,
-            'path': self.path,
+            'display_name': self.name,
             'description': self.description,
-            'enabled': self.enabled,
-            'backend': self.backend.name,
-            'fs_backend': self.fs_backend.name,
+            'enabled': True,
             'accepts_input': self.accepts_input,
-            'cpus': self.cpus,
-            'walltime': self.walltime,
-            'module': self.module,
-            'queue': self.queue,
-            'max_memory': self.max_memory,
-            'job_type': self.job_type,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
             'parameter_list': list(self.toolparameter_set.order_by('fe_rank', 'id').values(
@@ -203,33 +158,83 @@ class Tool(Base):
             if tp.extension_param:
                 p["extension_param"] = tp.extension_param.pattern
 
-        return tool_dict
+        return self._decode_embedded_json(tool_dict)
 
-    def decode_embedded_json(self):
+    def _decode_embedded_json(self, tool_dict):
         # the possible_values field has json in it so we need to make it decode
         # or it will be double encoded
-        output = self.tool_dict()
-
-        for plist in output["parameter_list"]:
+        for plist in tool_dict["parameter_list"]:
             if "possible_values" in plist and plist["possible_values"]:
                 plist["possible_values"] = json.loads(plist["possible_values"])
 
-        return output
+        return tool_dict
 
     def json(self):
-        output = self.decode_embedded_json()
-        return json.dumps({'tool': output})
+        return json.dumps({'tool': self.tool_dict()})
 
     def json_pretty(self):
-        output = self.decode_embedded_json()
-        return json.dumps({'tool': output}, indent=4)
+        return json.dumps({'tool': self.tool_dict()}, indent=4)
+
+
+class Tool(Base):
+    desc = models.ForeignKey(ToolDesc, verbose_name="Tool")
+    path = models.CharField(max_length=512, blank=True)
+    display_name = models.CharField(max_length=255, blank=True)
+    enabled = models.BooleanField(default=True)
+    backend = models.ForeignKey('Backend', verbose_name="Exec Backend")
+    fs_backend = models.ForeignKey('Backend', related_name="fs_backends", verbose_name="FS Backend")
+    use_same_dynamic_backend = models.BooleanField(default=True)
+    cpus = models.CharField(max_length=64, null=True, blank=True)
+    walltime = models.CharField(max_length=64, null=True, blank=True)
+    module = models.TextField(null=True, blank=True)
+    queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
+    max_memory = models.CharField(max_length=64, null=True, blank=True)
+    job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
+    submission = models.TextField(blank=True)
+    lcopy_supported = models.BooleanField(default=True)
+    link_supported = models.BooleanField(default=True)
+
+    desc.help_text = "The tool definition"
+    path.help_text = "The path to the binary for this file. Will normally just be binary name."
+    display_name.help_text = "Optional text visible to users. If blank, then tool definition's name is used."
+    enabled.help_text = "Enable tool in frontend."
+    backend.help_text = "The execution backend for this tool."
+    fs_backend.help_text = "The filesystem backend for this tool."
+    use_same_dynamic_backend.help_text = "If checked, and both FS and Exec Backend's are dynamic, create just one instance and use that for both FS and Exec Backends."
+    module.help_text = "Comma separated list of modules to load."
+    submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
+    lcopy_supported.help_text = "If this tool should use local copies on supported backends where appropriate."
+    link_supported.help_text = "If this tool should use symlinks on supported backends where appropriate."
+
+    def get_display_name(self):
+        return self.display_name or self.desc.name
+
+    def tool_dict(self):
+        output = self.desc.tool_dict()
+        output.update({
+            'path': self.path,
+            'enabled': self.enabled,
+            'display_name': self.display_name or output['display_name'],
+            'backend': self.backend.name,
+            'fs_backend': self.fs_backend.name,
+            'cpus': self.cpus,
+            'walltime': self.walltime,
+            'module': self.module,
+            'queue': self.queue,
+            'max_memory': self.max_memory,
+            'job_type': self.job_type,
+        })
+        return output
+
+    def json_pretty(self):
+        return json.dumps({'tool': self.tool_dict()}, indent=4)
 
     def purge_from_cache(self):
         """Purge this tools entry description from cache"""
-        cache.delete(cache_keyname(self.name))
+        cache.delete("tool-%s" % self.id)
 
     def __unicode__(self):
-        return self.name
+        return "%s / %s" % (self.desc.name, self.backend.name)
 
 
 class ParameterSwitchUse(Base):
@@ -250,7 +255,7 @@ FILE_ASSIGNMENT_CHOICES = (
 
 
 class ToolParameter(Base):
-    tool = models.ForeignKey(Tool)
+    tool = models.ForeignKey(ToolDesc)
     switch = models.CharField(max_length=64)
     switch_use = models.ForeignKey(ParameterSwitchUse)
     rank = models.IntegerField(null=True, blank=True)
@@ -300,14 +305,14 @@ class ToolParameter(Base):
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = self.accepted_filetypes.all()
         extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     def input_filetype_extensions(self):
         '''Work out input file extensions for this toolparameter and return a a list of them all'''
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = self.accepted_filetypes.all()
         extensions = [ext.pattern for ext in reduce(lambda x, y: x + y, [list(ft.extensions.all()) for ft in filetypes], [])]
-        return list(set(extensions))  # remove duplicates
+        return sorted(set(extensions))  # remove duplicates
 
     @property
     def input_file(self):
@@ -315,7 +320,7 @@ class ToolParameter(Base):
 
 
 class ToolOutputExtension(Base):
-    tool = models.ForeignKey(Tool)
+    tool = models.ForeignKey(ToolDesc)
     file_extension = models.ForeignKey(FileExtension)
     must_exist = models.NullBooleanField(default=False)  # TODO this field not currently in use
     must_be_larger_than = models.PositiveIntegerField(null=True, blank=True)  # TODO this field not currently in use
@@ -344,7 +349,7 @@ class ToolGroup(Base):
 
 
 class ToolGrouping(Base):
-    tool = models.ForeignKey(Tool)
+    tool = models.ForeignKey(ToolDesc)
     tool_set = models.ForeignKey('ToolSet')
     tool_group = models.ForeignKey(ToolGroup)
 
@@ -454,6 +459,11 @@ class User(Base):
     @property
     def default_stagein(self):
         return self.default_stageout + settings.DEFAULT_STAGEIN_DIRNAME
+
+    def last_login(self):
+        return self.user.last_login
+
+    last_login.admin_order_field = 'user__last_login'
 
 
 class CredentialAccess:
@@ -619,6 +629,10 @@ class DynamicBackendConfiguration(Base):
         return self.name
 
 
+def is_nullbackend_scheme(scheme):
+    return scheme in ('null', 'selectfile')
+
+
 class Backend(Base):
     def __init__(self, *args, **kwargs):
         super(Backend, self).__init__(*args, **kwargs)
@@ -660,11 +674,15 @@ class Backend(Base):
         return urlunparse((self.scheme, netloc, self.path, '', '', ''))
 
     def __unicode__(self):
-        return "%s - %s://%s:%s%s" % (self.name, self.scheme, self.hostname, self.port, self.path)
+        return "%s - %s" % (self.name, self.uri)
 
     @models.permalink
     def get_absolute_url(self):
         return ('backend_view', (), {'backend_id': str(self.id)})
+
+    @property
+    def is_nullbackend(self):
+        return is_nullbackend_scheme(self.scheme)
 
 
 class HostKey(Base):

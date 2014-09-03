@@ -615,7 +615,7 @@ def sanitise(content, ruleset=default_ruleset):
     string with the sanitised (X)HTML.
     """
 
-    input = BeautifulSoup(content, "lxml")
+    input = BeautifulSoup(content, "html.parser")
     output = BeautifulSoup()
 
     context = {}

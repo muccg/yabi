@@ -27,7 +27,7 @@ from django.conf.urls.defaults import *
 # frontend webservices
 urlpatterns = patterns(
     'yabiadmin.yabi.ws_frontend_views',
-    url(r'^tool/(?P<toolname>[^/]+)[/]*$', 'tool', name='tool'),
+    url(r'^tool/(?P<toolname>[^/]*)(/(?P<toolid>\d+))?/?$', 'tool', name='tool'),
     url(r'^menu[/]*$', 'menu', name='menu'),
     url(r'^menu_saved_workflows[/]*$',
         'menu_saved_workflows', name='menu_saved_workflows'),
@@ -67,4 +67,5 @@ urlpatterns += patterns(
     url(r'^yabish/submitjob/?$', 'submitjob', name='submitjob'),
     url(r'^yabish/createstageindir/?$', 'createstageindir', name='createstageindir'),
     url(r'^yabish/is_stagein_required/?$', 'is_stagein_required', name='is_stagein_required'),
+    url(r'^yabish/backends/?$', 'list_backends', name='list_backends'),
 )

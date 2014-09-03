@@ -257,8 +257,8 @@ ToolCollectionYUI = YUI().use(
        * returns the list of jobs added.
        */
       YabiToolCollection.prototype.addToolToWorkflow = function(tool, provisional) {
-        var addJob = function(name, preload) {
-          var job = workflow.addJob(name, preload, false);
+        var addJob = function(name, id, preload) {
+          var job = workflow.addJob(name, id, preload, false);
           if (provisional) {
             job.container.setStyle("opacity", '0.1');
             job.optionsNode.hide();
@@ -269,14 +269,14 @@ ToolCollectionYUI = YUI().use(
         var jobs;
 
         if (!tool.isSavedWorkflow()) {
-          jobs = [addJob(tool.toString())];
+          jobs = [addJob(tool.toString(), tool.payload.toolId)];
         } else {
           if (workflow.isEmpty() && workflow.nameIsUnchanged()) {
             workflow.setInitialName(tool.getTitle());
           }
 
           jobs = _.map(tool.getWorkflowJobs(), function(job) {
-            return addJob(job.toolName, job.parameterList.parameter);
+            return addJob(job.toolName, job.toolId, job.parameterList.parameter);
           });
           workflow.workflowLoaded = false;
           workflow.setupJobsList = jobs;
