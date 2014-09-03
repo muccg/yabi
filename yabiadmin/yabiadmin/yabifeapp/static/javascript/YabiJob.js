@@ -618,7 +618,6 @@ YabiJob.prototype.solidify = function(obj) {
     var preloadValue = this.preloadValues[param['switch']] || null;
 
     if (this.editable || preloadValue) {
-      console.log("setting up a job param", param);
       var paramObj = new YabiJobParam(this, param,
             (param['switch'] == this.batchParameter),
             this.editable, preloadValue);
