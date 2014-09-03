@@ -857,11 +857,22 @@ YUI().use(
       };
 
       YabiWorkflow.prototype.loadDraft = function() {
+        var loadMigrateWorkflow = function(json) {
+          var ob;
+          if (json) {
+            ob = Y.JSON.parse(json);
+            if (!(ob && ob.jobs && _.all(ob.jobs, "toolId"))) {
+              // discard drafts from older versions which don't have toolId
+              ob = null;
+            }
+          }
+          return ob;
+        };
+
         if (this.editable) {
           this.draftLoaded = false;
-          var json = Y.Cookie.get("workflow");
-          if (json) {
-            var ob = Y.JSON.parse(json);
+          var ob = loadMigrateWorkflow(Y.Cookie.get("workflow"));
+          if (ob) {
             this.solidify(ob);
             this.setTags(ob.tags);
             this.setupJobsList = this.jobs;
