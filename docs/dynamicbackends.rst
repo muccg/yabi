@@ -125,10 +125,9 @@ Field                    Mandatory?    Description
  security_group_names       No         List of Security groups
 ======================  ============  =============
 
-An example would be the following configuration that it is used to start up `NeCTAR <http://nectar.org.au` instances.
+An example would be the following configuration that it is used to start up `NeCTAR`_ instances::
 
-::
-  {
+ {
     "instance_class": "nova",
     "auth_url": "https://keystone.rc.nectar.org.au:5000/v2.0/tokens/",
     "tenant": "pt-8173",
@@ -142,4 +141,6 @@ An example would be the following configuration that it is used to start up `NeC
     "security_group_names": [
         "default", "ssh", "icmp"
     ]
-  }
+ }
+
+.. _`NeCTAR`: http://nectar.org.au/
