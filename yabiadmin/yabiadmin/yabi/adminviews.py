@@ -65,7 +65,6 @@ class ToolGroupView:
         self.tools = set([])
 
     def sorted_tools(self):
-        logger.debug('')
         for tool in sorted(self.tools):
             yield tool
 
@@ -147,22 +146,16 @@ def modify_backend_by_name(request, scheme, hostname):
 
 @staff_member_required
 def user_tools(request, user_id):
-    logger.debug('')
+    from yabiadmin.yabi.ws_frontend_views import get_user_tools
     tooluser = get_object_or_404(User, pk=user_id)
-    tool_groupings = ToolGrouping.objects.filter(tool_set__users=tooluser)
-    unique_tool_groups = {}
-    for grouping in tool_groupings:
-        tool_group_name = grouping.tool_group.name
-        tool_name = grouping.tool.name
-        tgv = unique_tool_groups.setdefault(tool_group_name, ToolGroupView(tool_group_name))
-        tgv.tools.add(tool_name)
+    tools = get_user_tools(tooluser)
 
     return render_to_response("yabi/user_tools.html", {
         'user': request.user,
         'tooluser': tooluser,
         'title': 'Tool Listing',
         'root_path': urlresolvers.reverse('admin:index'),
-        'tool_groups': sorted(unique_tool_groups.values(), key=lambda tgv: tgv.name)})
+        'tool_groups': tools})
 
 
 @staff_member_required

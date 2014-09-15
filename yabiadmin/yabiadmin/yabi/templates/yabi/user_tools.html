@@ -17,14 +17,20 @@
 User {{tooluser.name}} has the following tools:
 
 <ul>
-{% for tool_group in tool_groups %}
+{% for tool_group, tools in tool_groups.items %}
 
-    <li>{{tool_group.name}}</li>
+    <li>{{tool_group}}</li>
 
-{% for tool in tool_group.sorted_tools %}
+{% for id, tool_data in tools.items %}
 
     <ul>
-        <li>{{tool}}</li>
+        <li>
+            {% if tool_data.displayName %}
+              {{tool_data.displayName}}
+            {% else %}
+              {{tool_data.defDisplayName}}
+            {% endif %}
+        </li>
     </ul>
 
 {% endfor %}

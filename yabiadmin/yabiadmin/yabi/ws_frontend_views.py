@@ -101,38 +101,8 @@ def menu_saved_workflows(request):
                         content_type="application/json")
 
 
-def menu_all_tools_toolset(user):
-    creds = BackendCredential.objects.filter(credential__user__user=user)
-    backends = list(creds.values_list("backend", flat=True))
-    backends.append(Backend.objects.get(name="nullbackend").id)
-    user_tools = Tool.objects.filter(enabled=True, backend__in=backends, fs_backend__in=backends)
-
-    qs = ToolGrouping.objects.filter(tool_set__users=user)
-    qs = qs.filter(tool__in=user_tools.values_list("desc", flat=True))
-    qs = qs.order_by("tool_group__name", "tool__name")
-    qs = qs.select_related("tool_group", "tool")
-    qs = qs.prefetch_related(
-        'tool__tooloutputextension_set__file_extension',
-        'tool__toolparameter_set__accepted_filetypes__extensions',
-        'tool__tool_set',
-    )
-
-    all_tools = OrderedDict()
-    for toolgroup in qs:
-        tg = all_tools.setdefault(toolgroup.tool_group.name, OrderedDict())
-        backend_tools = toolgroup.tool.tool_set.values_list("id", "backend__name", "display_name")
-        for backend_tool_id, backend_name, display_name in backend_tools:
-            tg.setdefault(backend_tool_id, {
-                "name": toolgroup.tool.name,
-                "displayName": display_name,
-                "defDisplayName": toolgroup.tool.name,
-                "description": toolgroup.tool.description,
-                "outputExtensions": toolgroup.tool.output_filetype_extensions(),
-                "inputExtensions": toolgroup.tool.input_filetype_extensions(),
-                "toolId": backend_tool_id,
-                "backend": backend_name,
-                "manyBackends": len(backend_tools) > 1,
-            })
+def menu_all_tools_toolset(django_user):
+    all_tools = get_user_tools(django_user.user)
 
     return {
         "name": "all_tools",
@@ -165,6 +135,42 @@ def menu_saved_workflows_toolset(user):
         "name": "saved_workflows",
         "toolgroups": toolgroups
     }
+
+
+def get_user_tools(user):
+    creds = BackendCredential.objects.filter(credential__user=user)
+    backends = list(creds.values_list("backend", flat=True))
+    backends.append(Backend.objects.get(name="nullbackend").id)
+    user_tools = Tool.objects.filter(enabled=True, backend__in=backends, fs_backend__in=backends)
+
+    qs = ToolGrouping.objects.filter(tool_set__users=user)
+    qs = qs.filter(tool__in=user_tools.values_list("desc", flat=True))
+    qs = qs.order_by("tool_group__name", "tool__name")
+    qs = qs.select_related("tool_group", "tool")
+    qs = qs.prefetch_related(
+        'tool__tooloutputextension_set__file_extension',
+        'tool__toolparameter_set__accepted_filetypes__extensions',
+        'tool__tool_set',
+    )
+
+    all_tools = OrderedDict()
+    for toolgroup in qs:
+        tg = all_tools.setdefault(toolgroup.tool_group.name, OrderedDict())
+        backend_tools = toolgroup.tool.tool_set.values_list("id", "backend__name", "display_name")
+        for backend_tool_id, backend_name, display_name in backend_tools:
+            tg.setdefault(backend_tool_id, {
+                "name": toolgroup.tool.name,
+                "displayName": display_name,
+                "defDisplayName": toolgroup.tool.name,
+                "description": toolgroup.tool.description,
+                "outputExtensions": toolgroup.tool.output_filetype_extensions(),
+                "inputExtensions": toolgroup.tool.input_filetype_extensions(),
+                "toolId": backend_tool_id,
+                "backend": backend_name,
+                "manyBackends": len(backend_tools) > 1,
+            })
+
+    return all_tools
 
 
 @authentication_required
