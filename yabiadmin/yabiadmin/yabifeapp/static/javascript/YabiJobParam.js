@@ -326,15 +326,20 @@ YabiJobParam.prototype.toggleDisplay = function(shouldDisplay) {
 YabiJobParam.prototype.emittedFiles = function() {
   var value = this.getValue();
 
-  if ((this.isInputFile) && (value !== '')) {
-    if (Y.Lang.isArray(value)) {
-      return value;
-    } else {
-      return [value];
-    }
-  } else {
-    return [];
+  if (value === '') {
+     return [];
   }
+  if (!(this.isInputFile || this.isOutputFile)) {
+     return [];
+  }
+
+  if (!Y.Lang.isArray(value)) {
+      value = [value];
+  }
+
+  return _.map(value, function(v) {
+     return Y.Lang.isString(v) ? new YabiJobFileValue(this.job, v) : v;
+  }, this);
 };
 
 
