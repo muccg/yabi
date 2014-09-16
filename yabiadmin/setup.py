@@ -4,7 +4,7 @@ from setuptools import setup
 packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags', 'yabiadmin.yabifeapp.management', 'yabiadmin.yabifeapp.management.commands', 'yabiadmin.backend.cloud']
 
 install_requires = [
-    'Django==1.5.4',
+    'Django==1.5.10',
     # pip > 1.4 doesn't pick up pytz, because of non-standard version number
     # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
     'pytz>=2013b',
@@ -13,28 +13,28 @@ install_requires = [
     'ccg-django-utils==0.2.1',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
-    'celery==3.1.12',
-    'amqp==1.4.5',
+    'celery==3.1.15',
+    'amqp==1.4.6',
     'amqplib==1.0.2',
-    'kombu==3.0.19',
-    'billiard==3.3.0.17',
-    'django-templatetag-sugar==0.1',
+    'kombu==3.0.23',
+    'billiard==3.3.0.18',
+    'django-templatetag-sugar==1.0',
     'ordereddict==1.1',
-    'python-memcached>=1.53,<2.0',
-    'Mako==0.5.0',
-    'South==0.7.6',
-    'django-extensions>=1.2.0,<1.2.0',
-    'beautifulsoup4>=4.3.2,<4.4.0',
-    'cssutils>=0.9.10,<0.10.0',
-    'httplib2>=0.8,<0.9',
+    'python-memcached==1.53',
+    'Mako==1.0.0',
+    'South==1.0',
+    'django-extensions==1.4.0',
+    'beautifulsoup4==4.3.2',
+    'cssutils==1.0',
+    'httplib2==0.9',
     'djamboloader==0.1.2',
-    'paramiko==1.12.1',
-    'boto==2.25',
-    'python-swiftclient==2.0.2',
-    'python-keystoneclient==0.6.0',
-    'python-dateutil>=2.1,<3.0',
+    'paramiko==1.14.1',
+    'boto==2.32.1',
+    'python-swiftclient==2.2.0',
+    'python-keystoneclient==0.10.1',
+    'python-dateutil==2.2',
     'yaphc==0.1.5',
-    'six>=1.5,<1.6',
+    'six==1.8',
     'flower>=0.7.0',
     'apache-libcloud==0.15.1',
     'ccg-libcloud-drivers==0.0.1',
@@ -42,33 +42,32 @@ install_requires = [
 
 # Compiled python modules which are usually provided by system packages
 install_requires_compiled = [
-    'SQLAlchemy>=0.7.10,<0.8.0',
     'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
 ]
 
 dev_requires = [
-    'flake8>=2.0,<2.1',
+    'flake8==2.2.3',
     'closure-linter==2.3.13',
     'Werkzeug',
     'gunicorn',
 ]
 
 tests_require = [
-    'requests==1.2.0',
+    'requests==2.4.1',
     'django-nose',
-    'nose==1.3.1',
+    'nose==1.3.4',
     'mockito>=0.5.0,<0.6.0',
     'sniffer==0.3.2',
     'pyinotify==0.9.4',
-    'model_mommy==1.2',
+    'model_mommy==1.2.2',
 ]
 
 postgresql_requires = [
-    'psycopg2>=2.5.0,<2.6.0',
+    'psycopg2==2.5.4',
 ]
 
 mysql_requires = [
-    'MySQL-python>=1.2.0,<1.3.0',
+    'MySQL-python==1.2.5',
 ]
 
 dependency_links = [
