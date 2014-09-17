@@ -27,6 +27,7 @@ from yabiadmin.yabi.models import Tool
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend import backend
 
+from pipes import quote as quote_argument
 import pickle
 import fnmatch
 import os.path
@@ -35,16 +36,6 @@ import re
 import logging
 import six
 logger = logging.getLogger(__name__)
-
-DEBUG = False
-
-
-# Helper function to do basic command argument quoting.
-def quote_argument(s):
-    ESCAPE_CHARS = r'\"'
-    for c in ESCAPE_CHARS:
-        s = s.replace(c, "\\" + c)
-    return '"' + s + '"'
 
 
 def levenshtein(a, b):

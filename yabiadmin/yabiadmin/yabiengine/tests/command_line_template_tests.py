@@ -14,15 +14,15 @@ class SwitchFilenameWithExtensionTest(unittest.TestCase):
 
     def test_when_no_extension_adds_extension(self):
         self.switch.set('test')
-        self.assertEquals('"test.bls"', '%s' % self.switch)
+        self.assertEquals('test.bls', '%s' % self.switch)
 
     def test_when_one_extension_changes_extension(self):
         self.switch.set('test.txt')
-        self.assertEquals('"test.bls"', '%s' % self.switch)
+        self.assertEquals('test.bls', '%s' % self.switch)
 
     def test_when_2_extensions_changes_last_extension(self):
         self.switch.set('test.fa.txt')
-        self.assertEquals('"test.fa.bls"', '%s' % self.switch)
+        self.assertEquals('test.fa.bls', '%s' % self.switch)
 
 
 class SwitchFilenameWithoutExtensionTest(unittest.TestCase):
@@ -32,11 +32,11 @@ class SwitchFilenameWithoutExtensionTest(unittest.TestCase):
 
     def test_when_no_extension_doesnot_add_extension(self):
         self.switch.set('test')
-        self.assertEquals('"test"', '%s' % self.switch)
+        self.assertEquals('test', '%s' % self.switch)
 
     def test_doesnot_change_extension(self):
         self.switch.set('test.txt')
-        self.assertEquals('"test.txt"', '%s' % self.switch)
+        self.assertEquals('test.txt', '%s' % self.switch)
 
 
 class CommandLineTemplateTest(unittest.TestCase):
@@ -95,17 +95,17 @@ class CommandLineTemplateTest(unittest.TestCase):
 
         command = self.render_command(self.job, job_dict)
 
-        self.assertEquals('tool.sh -arg1="value"', command)
+        self.assertEquals('tool.sh -arg1=value', command)
 
     def test_param_value_only(self):
         job_dict = self.job_dict_with_params({
             'switchName': '-arg2',
             'valid': True,
-            'value': ['value']})
+            'value': ['a value']})
 
         command = self.render_command(self.job, job_dict)
 
-        self.assertEquals('tool.sh "value"', command)
+        self.assertEquals("tool.sh 'a value'", command)
 
     def test_rank_respected(self):
         job_dict = self.job_dict_with_params({
@@ -119,7 +119,7 @@ class CommandLineTemplateTest(unittest.TestCase):
 
         command = self.render_command(self.job, job_dict)
 
-        self.assertEquals('tool.sh "other value" -arg1="value"', command)
+        self.assertEquals("tool.sh 'other value' -arg1=value", command)
 
     def test_direct_file_reference(self):
         job_dict = self.job_dict_with_params({
@@ -129,11 +129,11 @@ class CommandLineTemplateTest(unittest.TestCase):
                 'path': ['some', 'path'],
                 'root': 'sftp://demo@localhost:22/',
                 'type': 'file',
-                'filename': 'a.txt'}]})
+                'filename': 'a file.txt'}]})
 
         command = self.render_command(self.job, job_dict, uri_conversion='/tools/workdir/input/%(filename)s')
 
-        self.assertEquals('tool.sh "/tools/workdir/input/a.txt"', command)
+        self.assertEquals("tool.sh '/tools/workdir/input/a file.txt'", command)
 
         # TODO Assert file will be staged in?
         # for f in self.template.other_files():

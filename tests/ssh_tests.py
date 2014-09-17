@@ -75,7 +75,10 @@ class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
         FileUtils.setUp(self)
 
         admin.create_tool_dd(fs_backend_name='SFTP Backend', ex_backend_name='SSH Backend')
-        self.filename = self.create_tempfile()
+
+        PROBLEMATIC_CHARS = '"$\\\'`\t\x01'
+        fname = "fake_fasta_" + PROBLEMATIC_CHARS
+        self.filename = self.create_tempfile(fname_prefix=fname)
 
     def tearDown(self):
         models.Tool.objects.get(desc__name='dd').delete()

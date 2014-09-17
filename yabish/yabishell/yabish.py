@@ -161,6 +161,7 @@ class StageIn(object):
     def stagein_file(self, f, stagein_dir):
         uri = 'ws/fs/put?uri=%s' % quote(stagein_dir)
         fname = os.path.basename(f.relpath)
+        fname = quote(fname.encode('utf-8'))
         finfo = (fname, fname, f.fullpath)
         params = {}
         print('  Staging in file: %s (%s).' % (

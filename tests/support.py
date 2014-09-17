@@ -174,7 +174,7 @@ class FileUtils(object):
             elif os.path.isfile(f):
                 os.unlink(f)
 
-    def create_tempfile(self, size = 1024, parentdir = conf.tmpdir):
+    def create_tempfile(self, size=1024, parentdir=conf.tmpdir, fname_prefix="fake_fasta_"):
         import tempfile
         import stat
         import random as rand
@@ -189,7 +189,7 @@ class FileUtils(object):
         extra_args = {}
         if parentdir is not None:
             extra_args = {'dir': parentdir}
-        with tempfile.NamedTemporaryFile(prefix='fake_fasta_', suffix='.fa', delete=False, **extra_args) as f:
+        with tempfile.NamedTemporaryFile(prefix=fname_prefix, suffix='.fa', delete=False, **extra_args) as f:
             chunks = size / CHUNK_SIZE
             remaining = size % CHUNK_SIZE
             for i in range(chunks):
@@ -214,9 +214,10 @@ class FileUtils(object):
 
     def run_cksum_locally(self, filename):
         import subprocess
-        cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        from pipes import quote
+        cmd = subprocess.Popen('cksum %s' % quote(filename), shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         out, err = cmd.communicate()
         assert cmd.returncode == 0, 'ERROR: ' + err
         our_line = list(filter(lambda l: filename in l, out.split("\n")))[0]
-        expected_cksum, expected_size, rest = our_line.split()
+        expected_cksum, expected_size, rest = our_line.split(None, 2)
         return expected_cksum, expected_size
