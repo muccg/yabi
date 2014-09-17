@@ -21,7 +21,6 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 import os
-from pipes import quote
 import stat
 import shlex
 import shutil
@@ -78,7 +77,7 @@ class LocalExecBackend(ExecBackend):
             stderr = open(os.path.join(working_parts.path, 'STDERR.txt'), 'w')
 
             logger.debug('Running in {0}'.format(working_parts.path))
-            args = map(quote, shlex.split(self.task.command.encode('utf-8')))
+            args = shlex.split(self.task.command.encode('utf-8'))
 
             def set_remote_id(pid):
                 self.task.remote_id = pid
