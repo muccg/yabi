@@ -933,7 +933,7 @@ YUI().use(
         }
 
         function unselectFileIfInvalid(param, fileObj) {
-          var lsURL = appURL + 'ws/fs/ls?uri=' + escape(fileObj.toString());
+          var lsURL = appURL + 'ws/fs/ls?uri=' + encodeURIComponent(fileObj.toString());
 
           function onSuccess(transId, response) {
             var json = null;

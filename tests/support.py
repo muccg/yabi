@@ -218,6 +218,7 @@ class FileUtils(object):
         cmd = subprocess.Popen('cksum %s' % quote(filename), shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         out, err = cmd.communicate()
         assert cmd.returncode == 0, 'ERROR: ' + err
+        out = out.decode('utf-8')
         our_line = list(filter(lambda l: filename in l, out.split("\n")))[0]
         expected_cksum, expected_size, rest = our_line.split(None, 2)
         return expected_cksum, expected_size

@@ -110,7 +110,7 @@ def submission_script(template, working, command, modules, cpus, memory, walltim
         'envvars': envvars,
     }
 
-    return str(tmpl.render(**variables))
+    return tmpl.render_unicode(**variables)
 
 
 def get_host_key(hostname):

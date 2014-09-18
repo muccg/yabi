@@ -20,8 +20,6 @@ class SSHBackend(object):
     def tearDown(self):
         models.Backend.objects.get(name='SFTP Backend').delete()
         models.Backend.objects.get(name='SSH Backend').delete()
-        logger.debug(models.Backend.objects.filter(name='SFTP Backend').count())
-        logger.debug(models.Backend.objects.filter(name='SSH Backend').count())
 
         admin.cleanup_test_ssh_key()
 
@@ -69,16 +67,16 @@ class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
 
     def setUp(self):
         YabiTestCase.setUp(self)
-        logger.debug(models.Backend.objects.filter(name='SFTP Backend').count())
-        logger.debug(models.Backend.objects.filter(name='SSH Backend').count())
         SSHBackend.setUp(self)
         FileUtils.setUp(self)
 
         admin.create_tool_dd(fs_backend_name='SFTP Backend', ex_backend_name='SSH Backend')
 
-        PROBLEMATIC_CHARS = '"$\\\'`\t\x01'
-        fname = "fake_fasta_" + PROBLEMATIC_CHARS
+        UNICODE_LAMBDA = u'\u03BB'
+        PROBLEMATIC_CHARS = '"$\\\'`\t\x01' + UNICODE_LAMBDA
+        fname = 'fake_fasta_' + PROBLEMATIC_CHARS
         self.filename = self.create_tempfile(fname_prefix=fname)
+
 
     def tearDown(self):
         models.Tool.objects.get(desc__name='dd').delete()
@@ -87,7 +85,7 @@ class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
         YabiTestCase.tearDown(self)
 
     def test_dd(self):
-        result = self.yabi.run(['dd', 'if=%s' % self.filename, 'of=output_file',
+        result = self.yabi.run(['dd', 'if=%s' % self.filename.encode("utf-8"), 'of=output_file',
                                 '--backend', 'SSH Backend'])
         self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 

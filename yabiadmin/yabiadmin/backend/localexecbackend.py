@@ -20,6 +20,8 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+from __future__ import unicode_literals
+import io
 import os
 import stat
 import shlex
@@ -111,7 +113,7 @@ class LocalExecBackend(ExecBackend):
     def create_script(self, script_contents):
         script_name = os.path.join(self.temp_directory,
                                    '%s%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
-        with open(script_name, 'w') as f:
+        with io.open(script_name, 'w', encoding="utf-8") as f:
             f.write(script_contents)
         st = os.stat(script_name)
         os.chmod(script_name, st.st_mode | stat.S_IEXEC)

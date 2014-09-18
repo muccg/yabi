@@ -99,7 +99,7 @@ class StageIn(object):
         for f in allfiles:
             rel_path, fname = os.path.split(f.relpath)
             file_uri = self.stagein_file(f, stagein_dir + rel_path)
-            files_to_uris[f.relpath] = file_uri
+            files_to_uris[f.relpath.encode("utf-8")] = file_uri
         print("Staging in finished.")
         return files_to_uris
 
@@ -299,7 +299,8 @@ class CommandLineArguments(object):
     def local_files(self):
         # if argument has "=" return right side else return argument
         args_and_values = list(map(lambda a: a.split('=', 1)[1] if '=' in a else a, self.args))
-        return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), args_and_values)
+        args = map(lambda x: x.decode("utf-8"), args_and_values)
+        return [arg for arg in args if os.path.isfile(arg) or os.path.isdir(arg)]
 
     def substitute_file_urls(self, urls):
         def file_to_url(arg):

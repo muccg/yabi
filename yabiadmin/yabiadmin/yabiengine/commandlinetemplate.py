@@ -21,7 +21,6 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-
 import os
 from yabiadmin.yabi.models import Tool
 from yabiadmin.yabiengine.urihelper import uriparse
@@ -143,10 +142,10 @@ class Switch(Arg):
         return self.switchuse % {'switch': self.flag, 'value': self.value}
 
     def __str__(self):
-        return "<Switch:%s Value:%s>" % (self.flag, self.value)
+        return u"<Switch:%s Value:%s>" % (self.flag, self.value)
 
     def __repr__(self):
-        return str(self)
+        return self.__str__().encode("utf-8")
 
     def render(self, output=None):
         if output:
