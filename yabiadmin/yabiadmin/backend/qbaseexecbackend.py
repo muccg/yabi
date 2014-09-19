@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import logging
 from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
 logger = logging.getLogger(__name__)
