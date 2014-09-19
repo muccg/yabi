@@ -21,6 +21,7 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+import base64
 import os
 from yabiadmin.yabi.models import Tool
 from yabiadmin.yabiengine.urihelper import uriparse
@@ -369,14 +370,15 @@ class CommandTemplate(object):
         return "%s (%s)" % (str(self.command), str(self.arguments))
 
     def serialise(self):
-        return pickle.dumps([self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches])
+        return base64.encodestring(pickle.dumps([self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches]))
 
     def deserialise(self, data):
+        data = base64.decodestring(data)
         try:
-            self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches = pickle.loads(str(data))
+            self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches = pickle.loads(data)
         except ImportError:
             # might be caused by frontend editing causing \n's to be replaced with \r\n's
-            self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches = pickle.loads(str(data).replace('\r\n', '\n'))
+            self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches = pickle.loads(data.replace('\r\n', '\n'))
 
     def set_uri_conversion(self, string):
         self.uri_conversion_string = string

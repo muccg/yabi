@@ -212,7 +212,8 @@ class Job(models.Model, Editable, Status):
     task_total = models.IntegerField(null=True, blank=True)
 
     command = models.TextField()                # store here a string representation of the template
-    command_template = models.TextField(null=True, blank=True)               # store here the serialised version of the template
+    # Base64 encoded TODO change to BinaryField when moving to Django 1.6+
+    command_template = models.TextField(null=True, blank=True)               # store here the serialised version of the template.
 
     # TODO: delete these columns from the DB table
     # batch_files = models.TextField(blank=True, null=True)
