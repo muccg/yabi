@@ -335,7 +335,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             };
 
             fileEl.href = appURL + 'preview?uri=' +
-                escape(invoker.object.toString());
+                encodeURIComponent(invoker.object.toString());
 
             /* Both browse and non-browse mode use the preview button, but they
              * need to add them at different points in the tree, so we'll build
@@ -520,7 +520,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         }
 
         var jsUrl, jsCallback, jsTransaction;
-        jsUrl = baseURL + '?src=' + escape(srcstring) + '&dst=' + escape(dest);
+        jsUrl = baseURL + '?src=' + encodeURIComponent(srcstring) + '&dst=' + encodeURIComponent(dest);
         jsCallback = {
           success: this.copyResponse,
           failure: function(transId, o) {
@@ -714,7 +714,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        * download file via web service call
        */
       YabiFileSelector.prototype.downloadFile = function(file) {
-        window.location = appURL + 'ws/fs/get?uri=' + escape(file.toString());
+        window.location = appURL + 'ws/fs/get?uri=' + encodeURIComponent(file.toString());
       };
 
       /**
@@ -723,7 +723,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        * download file via zget web service call
        */
       YabiFileSelector.prototype.downloadDirectory = function(directory) {
-        window.location = appURL + 'ws/fs/zget?uri=' + escape(
+        window.location = appURL + 'ws/fs/zget?uri=' + encodeURIComponent(
             directory.toString());
       };
 
@@ -736,7 +736,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
         //load json
         var jsUrl, jsCallback, jsTransaction;
-        jsUrl = baseURL + '?uri=' + escape(file.toString());
+        jsUrl = baseURL + '?uri=' + encodeURIComponent(file.toString());
         jsCallback = {
           success: this.deleteRemoteResponse,
           failure: function(transId, o) {
@@ -833,7 +833,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         {
           path += '/';
         }
-        jsUrl = baseURL + '?uri=' + escape(path);
+        jsUrl = baseURL + '?uri=' + encodeURIComponent(path);
         jsCallback = {
           success: this.hydrateResponse,
           failure: function(transId, o, args) {
@@ -1021,7 +1021,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         this.file = file;
         this.loadCallbackFired = false;
         this.topLevelIndex = topLevelIndex;
-        this.uri = appURL + 'preview?uri=' + escape(file.toString());
+        this.uri = appURL + 'preview?uri=' + encodeURIComponent(file.toString());
 
         this.previous = this.getPrevious();
         this.next = this.getNext();
@@ -1183,7 +1183,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         };
 
         var url = appURL + 'preview/metadata?uri=' +
-            escape(this.file.toString());
+            encodeURIComponent(this.file.toString());
         Y.io(url, { on: callbacks });
       };
 
