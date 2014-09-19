@@ -1007,7 +1007,7 @@ YUI().use(
         };
         var cfg = {
           method: 'POST',
-          data: 'taglist=' + escape(this.tagInputEl.value),
+          data: 'taglist=' + encodeURIComponent(this.tagInputEl.value),
           on: jsCallback,
           'arguments': {
             target: this,
