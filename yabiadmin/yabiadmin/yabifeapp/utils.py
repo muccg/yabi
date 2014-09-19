@@ -97,6 +97,7 @@ def preview_key(uri):
     # as it's not uncommon for file names within YABI to be greater than the
     # 250 character limit memcache imposes on key names. As a result, we'll
     # hash the file name and accept the (extremely slight) risk of collisions.
+    uri = uri.encode("utf-8")
     file_hash = hashlib.sha512(uri).hexdigest()
     return str("-preview-%s" % file_hash)
 
