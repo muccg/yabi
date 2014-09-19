@@ -520,7 +520,8 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         }
 
         var jsUrl, jsCallback, jsTransaction;
-        jsUrl = baseURL + '?src=' + encodeURIComponent(srcstring) + '&dst=' + encodeURIComponent(dest);
+        jsUrl = baseURL + '?src=' + encodeURIComponent(srcstring) +
+                          '&dst=' + encodeURIComponent(dest);
         jsCallback = {
           success: this.copyResponse,
           failure: function(transId, o) {
