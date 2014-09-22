@@ -443,6 +443,9 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
+        'syslog': {
+            'format': 'YABI [%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
+        },
         'verbose': {
             'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
         },
@@ -501,7 +504,7 @@ LOGGING = {
             'class': 'logging.handlers.SysLogHandler',
             'address': '/dev/log',
             'facility': 'local4',
-            'formatter': 'verbose'
+            'formatter': 'syslog'
         },
         'mail_admins': {
             'level': 'ERROR',
@@ -518,26 +521,26 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'syslog'],
             'level': 'INFO',
         },
         'django': {
-            'handlers': ['console', 'django_file'],
+            'handlers': ['console', 'django_file', 'syslog'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['console', 'django_file', 'mail_admins'],
+            'handlers': ['console', 'django_file', 'mail_admins', 'syslog'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.db.backends': {
-            'handlers': ['console', 'db_logfile', 'mail_admins'],
+            'handlers': ['console', 'db_logfile', 'mail_admins', 'syslog'],
             'level': 'WARNING',
             'propagate': False,
         },
         'yabiadmin': {
-            'handlers': ['console', 'file', 'yabi_db_handler'],
+            'handlers': ['console', 'file', 'yabi_db_handler', 'syslog'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
