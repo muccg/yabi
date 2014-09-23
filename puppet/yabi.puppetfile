@@ -11,6 +11,10 @@ mod "stahnma/epel", "0.0.6"
 mod "rodjek/logrotate", "1.1.1"
 mod "netmanagers/fail2ban", "1.4.0"
 
+mod "saz/rsyslog",
+  :git => "git://github.com/saz/puppet-rsyslog.git",
+  :ref => "v3.4.0"
+
 mod "muccg/profile",
   :git => "git://github.com/muccg/puppet-profile.git",
   :ref => "1.0.3"
@@ -42,3 +46,7 @@ mod "muccg/ccgapache",
 mod "muccg/django",
   :git => "git://github.com/muccg/puppet-django.git",
   :ref => "1.0.2"
+
+mod "muccg/monit",
+  :git => "git://github.com/muccg/puppet-monit.git",
+  :ref => "0.0.4"

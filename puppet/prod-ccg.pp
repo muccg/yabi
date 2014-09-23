@@ -10,6 +10,7 @@ node default {
   include repo::pgrpms
   include repo::ccgcentos
   include globals
+  include profile::rsyslog
 
   $django_config = {
     deployment             => 'prod',

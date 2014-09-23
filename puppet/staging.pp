@@ -10,6 +10,7 @@ node default {
   include repo::ccgtesting
   include globals
   include ccgdatabase::postgresql::devel
+  include profile::rsyslog
 
   # There are some leaked local secrets here we don't care about
   $django_config = {
