@@ -7,18 +7,10 @@ from south.v2 import DataMigration
 from django.db import models
 
 
-def is_base64_encoded(s):
-    try:
-        base64.decodestring(s)
-        return True
-    except binascii.Error:
-        return False
-
-
 class Migration(DataMigration):
     def forwards(self, orm):
         for job in orm['yabiengine.Job'].objects.all():
-            if not (job.command_template is None or is_base64_encoded(job.command_template)):
+            if job.command_template is not None:
                 job.command_template = base64.encodestring(job.command_template)
                 job.save()
 
