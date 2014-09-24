@@ -18,7 +18,7 @@ def is_base64_encoded(s):
 class Migration(DataMigration):
     def forwards(self, orm):
         for job in orm['yabiengine.Job'].objects.all():
-            if not is_base64_encoded(job.command_template):
+            if not (job.command_template is None or is_base64_encoded(job.command_template)):
                 job.command_template = base64.encodestring(job.command_template)
                 job.save()
 
