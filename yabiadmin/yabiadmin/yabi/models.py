@@ -890,6 +890,10 @@ def signal_tool_post_save(sender, **kwargs):
         raise
 
 
+def lowercase_username(sender, instance, *args, **kwargs):
+    instance.username = instance.username.lower()
+
+
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         logger.debug('Creating user profile for %s' % instance.username)
@@ -899,6 +903,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 # connect up signals
 from django.db.models.signals import post_save, pre_save
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
+pre_save.connect(lowercase_username, sender=DjangoUser, dispatch_uid="lowercase_username")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
 post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
