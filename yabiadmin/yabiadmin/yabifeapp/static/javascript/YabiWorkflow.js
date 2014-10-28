@@ -960,7 +960,7 @@ YUI().use(
 
         function setPreviousFileSelectorValues(param) {
           _(param.value).filter("filename").forEach(function(value) {
-            var fileObj = new YabiSimpleFileValue(value.root, value.filename);
+            var fileObj = new YabiSimpleFileValue(value.pathComponents, value.filename);
             param.fileSelector.selectFile(fileObj);
             unselectFileIfInvalid(param, fileObj);
           });
