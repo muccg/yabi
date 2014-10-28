@@ -234,8 +234,8 @@ MANAGERS = ADMINS
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
 if env.get("auth_ldap_server", ""):
     AUTHENTICATION_BACKENDS = [
-        'ccg_django_utils.auth.backends.LDAPBackend',
-        'ccg_django_utils.auth.backends.NoAuthModelBackend',
+        'ccg.auth.backends.LDAPBackend',
+        'ccg.auth.backends.NoAuthModelBackend',
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 else:
@@ -252,6 +252,8 @@ AUTH_LDAP_USEROC = env.get("auth_ldap_useroc", 'inetorgperson')
 AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", 'uniqueMember')
 AUTH_LDAP_USERDN = env.get("auth_ldap_userdn", 'ou=People')
 LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
+
+AUTH_LDAP_CASE_SENSITIVE_USERNAMES = False
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
