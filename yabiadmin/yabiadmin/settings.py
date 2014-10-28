@@ -239,7 +239,7 @@ if env.get("auth_ldap_server", ""):
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 else:
-    AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+    AUTHENTICATION_BACKENDS = ['yabiadmin.authbackends.CaseInsensitiveUsernameModelBackend']
     AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 
 AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", [])
