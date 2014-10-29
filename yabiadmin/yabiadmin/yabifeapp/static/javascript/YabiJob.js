@@ -48,7 +48,9 @@ function YabiJob(toolName, toolId, jobId, preloadValues) {
     .appendTo(this.jobNode);
   this.outputsNode = Y.Node.create('<div class="jobOutputs">outputs: *</div>')
     .appendTo(this.jobNode);
-  this.optionsMissingNode = Y.Node.create('<div class="jobOptionsMissing">options: <span class="invalidInput">mandatory options are missing</span></div>')
+  var optionsHtml = '<div class="jobOptionsMissing">options: ' +
+    '<span class="invalidInput">mandatory options are missing</span></div>';
+  this.optionsMissingNode = Y.Node.create(optionsHtml)
     .appendTo(this.jobNode).hide();
 
   //___OPTIONS NODE___
