@@ -265,7 +265,7 @@ class ParamDef(object):
 class YabiArgumentParser(object):
     def __init__(self, tool):
         self.paramdefs = self.init_paramdefs(tool)
-        self.positional_paramdefs = list(filter(lambda x: x.switch_use == 'valueOnly', self.paramdefs))
+        self.positional_paramdefs = list(filter(lambda x: x.switch_use in ('valueOnly', 'redirect'), self.paramdefs))
 
     def parse_args(self, arguments):
         arguments_copy = copy.copy(arguments)
