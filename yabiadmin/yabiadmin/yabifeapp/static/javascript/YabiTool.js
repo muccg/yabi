@@ -71,7 +71,7 @@ YabiTool.prototype.setupDescNode = function(descNode) {
         .appendTo(list);
     });
   } else {
-    descNode.set("text", this.payload.description);
+    descNode.setHTML(this.payload.description);
   }
 };
 
