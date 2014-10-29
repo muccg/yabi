@@ -580,6 +580,27 @@ display:inline;
     text-shadow:none;
 }
 
+.jobOptionsMissing {
+    text-shadow:none;
+    font-size: 90%;
+}
+
+/* TODO DRY
+ * This is just made to look similar to invalid extensions, it probably could be
+ * refactored, but I'll just follow what the rest of the code is doing for now
+ */
+.jobOptionsMissing span {
+    background: none repeat scroll 0 0 #f66;
+    border: 1px solid #f66;
+    color: #fff;
+    border-radius: 8px;
+    display: inline;
+    line-height: 1.6em;
+    padding: 0 7px;
+    position: relative;
+    border-radius: 8px;
+}
+
 .selectedJobContainer h1 {
     font-size:105%;
     margin-bottom: 0px;
