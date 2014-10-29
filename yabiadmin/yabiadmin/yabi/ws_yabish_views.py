@@ -277,7 +277,7 @@ class YabiArgumentParser(object):
             raise ParsingError('Unknown option: %s' % ','.join(unknown_options))
 
         # All unhandled arguments have to be positional arguments
-        if len(unhandled_args) != len(self.positional_paramdefs):
+        if len(unhandled_args) > len(self.positional_paramdefs):
             pos_param_names = ', '.join([p.name for p in self.positional_paramdefs])
             raise ParsingError('Tool expects %d positional arguments (%s) but %d (%s) were passed in.' %
                                (len(self.positional_paramdefs), pos_param_names,
@@ -315,6 +315,8 @@ class YabiArgumentParser(object):
     def parse_positionals(self, unhandled_args):
         positionals = []
         for pos_paramdef in self.positional_paramdefs:
+            if len(unhandled_args) == 0:
+                break
             pos_paramdef.consume_values(unhandled_args)
             positionals.append(pos_paramdef.parsed_argument())
         return positionals
