@@ -359,7 +359,9 @@ def create_tool(desc, tool_dict):
             fs_backend = Backend.objects.get(name='nullbackend')
 
         tool = Tool(desc=desc,
+                    path=tool_dict["path"],
                     enabled=tool_dict["enabled"],
+                    display_name=tool_dict["display_name"],
                     backend=backend,
                     fs_backend=fs_backend,
                     cpus=tool_dict["cpus"],
@@ -378,8 +380,6 @@ def create_tool(desc, tool_dict):
 def create_tool_desc(tool_dict):
     # create the tool
     desc = ToolDesc(name=tool_dict["name"],
-                    display_name=tool_dict["display_name"],
-                    path=tool_dict["path"],
                     description=tool_dict["description"],
                     accepts_input=tool_dict["accepts_input"])
     desc.save()
