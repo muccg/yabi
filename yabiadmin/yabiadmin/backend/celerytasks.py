@@ -306,7 +306,7 @@ def spawn_ready_tasks(job_id):
             for task in ready_tasks:
                 spawn_status[task.pk] = spawn_task(task)
             if not all(spawn_status.values()):
-                not_spawned = [e[0] for e in spawn_status.items() if e[1] == False]
+                not_spawned = [e[0] for e in spawn_status.items() if not e[1]]
                 job_logger.info("Couldn't spawn tasks: %s", not_spawned)
                 current_task = get_current_celery_task()
                 current_task.retry(countdown=TASK_LIMIT_REACHED_RETRY_INTERVAL)
@@ -684,11 +684,11 @@ def delete_all_syslog_messages(workflow_id):
 
 def running_task_count(be, user):
     running_tasks = Task.objects.filter(job__workflow__user=user, job__exec_backend=be,
-            status_requested__isnull=False,
-            status_complete__isnull=True,
-            status_error__isnull=True,
-            status_exec_error__isnull=True,
-            status_aborted__isnull=True,
-            status_blocked__isnull=True).count()
+                                        status_requested__isnull=False,
+                                        status_complete__isnull=True,
+                                        status_error__isnull=True,
+                                        status_exec_error__isnull=True,
+                                        status_aborted__isnull=True,
+                                        status_blocked__isnull=True).count()
 
     return running_tasks
