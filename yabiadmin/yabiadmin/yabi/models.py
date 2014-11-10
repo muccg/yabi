@@ -716,8 +716,8 @@ class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True, verbose_name="User Directory")
-    visible = models.BooleanField()
-    default_stageout = models.BooleanField()
+    visible = models.BooleanField(default=False)
+    default_stageout = models.BooleanField(default=False)
     submission = models.TextField(blank=True)
 
     homedir.help_text = "This must not start with a / but must end with a /.<br/>This value will be combined with the Backend path field to create a valid URI."
