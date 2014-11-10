@@ -232,7 +232,7 @@ class BackendAdmin(AdminBase):
         }),
         ('Execution Backends', {
             'classes': ('execbackend-only',),
-            'fields': ('submission', 'temporary_directory')
+            'fields': ('submission', 'temporary_directory', 'tasks_per_user')
         }),
     )
 

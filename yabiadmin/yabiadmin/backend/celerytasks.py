@@ -51,6 +51,7 @@ app = celery.Celery('yabiadmin.backend.celerytasks')
 app.config_from_object('django.conf:settings')
 
 DYNBE_READY_POLL_INTERVAL = getattr(settings, 'DYNBE_READY_POLL_INTERVAL', 60)
+TASK_LIMIT_REACHED_RETRY_INTERVAL = getattr(settings, 'TASK_LIMIT_REACHED_RETRY_INTERVAL', 10)
 
 
 # Celery uses its own logging setup. All our custom logging setup has to be
@@ -282,7 +283,7 @@ def create_db_tasks(job_id):
         raise
 
 
-@app.task()
+@app.task(max_retries=None)
 def spawn_ready_tasks(job_id):
     if job_id is None:
         logger.info("spawn_ready_tasks received no job_id. Skipping processing.")
@@ -295,21 +296,30 @@ def spawn_ready_tasks(job_id):
         logger.debug(ready_tasks)
         aborting = job.is_workflow_aborting
 
-        for task in ready_tasks:
-            if aborting:
-                task.set_status(STATUS_ABORTED)
-                task.save()
-            else:
-                spawn_task(task.pk)
-                # need to update task.job.status here when all tasks for job spawned ?
-
         if aborting:
             abort_job(job)
+            for task in ready_tasks:
+                task.set_status(STATUS_ABORTED)
+                task.save()
+        else:
+            spawn_status = {}
+            for task in ready_tasks:
+                spawn_status[task.pk] = spawn_task(task)
+            if not all(spawn_status.values()):
+                not_spawned = [e[0] for e in spawn_status.items() if e[1] == False]
+                job_logger.info("Couldn't spawn tasks: %s", not_spawned)
+                current_task = get_current_celery_task()
+                current_task.retry(countdown=TASK_LIMIT_REACHED_RETRY_INTERVAL)
+            # need to update task.job.status here when all tasks for job spawned ?
 
         job_logger.info("Finished spawn_ready_tasks for Job %s", job_id)
 
         return job_id
-
+    except celery.exceptions.RetryTaskError:
+        # This is normal operation, Celery is signaling to the Worker
+        # that this task should be retried by throwing an RetryTaskError
+        # Just re-raise it
+        raise
     except Exception:
         job_logger.exception("Exception when spawning tasks for job {0}".format(job_id))
         mark_job_as_error(job_id)
@@ -325,19 +335,35 @@ def on_job_finished(job_id):
 
 # Celery Tasks working on a Yabi Task
 
-
 @transaction.commit_on_success()
-@log_it('task')
-def spawn_task(task_id):
-    task = Task.objects.get(pk=task_id)
-    if task.is_workflow_aborting:
-        change_task_status(task_id, STATUS_ABORTED)
-        return
+def spawn_task(task):
+    task_logger = create_task_logger(logger, task.pk)
+    task_logger.info("Starting spawn_task for task %s.", task.pk)
+    if _tasks_per_user_reached_limit(task):
+        return False
     task.set_status('requested')
     task.save()
     transaction.commit()
-    task_chain = chain(stage_in_files.s(task_id), submit_task.s(), poll_task_status.s(), stage_out_files.s(), clean_up_task.s())
+    task_chain = chain(stage_in_files.s(task.pk), submit_task.s(), poll_task_status.s(), stage_out_files.s(), clean_up_task.s())
     task_chain.apply_async()
+    task_logger.info("Finished spawn_task for task %s.", task.pk)
+    return True
+
+
+def _tasks_per_user_reached_limit(task):
+    exec_backend = task.job.exec_backend
+    tasks_per_user = task.job.tool.backend.tasks_per_user
+    if tasks_per_user is None:
+        # No limits
+        return False
+    if tasks_per_user == 0:
+        logger.info("Can't spawn task %s. Execution backend %s has task_per_user set to 0. No task execution allowed.", task.pk, task.job.exec_backend)
+        return True
+
+    running_tasks = running_task_count(be=exec_backend, user=task.job.workflow.user)
+    if running_tasks >= tasks_per_user:
+        logger.info("Can't spawn task %s. Tasks per user limit reached! Execution backend %s has task_per_user set to %s and there are %s currently running tasks", task.pk, task.job.exec_backend, tasks_per_user, running_tasks)
+        return True
 
 
 def retry_current_celery_task(original_function_name, task_id, exc, countdown, polling_task=False):
@@ -654,3 +680,15 @@ def delete_all_syslog_messages(workflow_id):
         Q(table_name='job') & Q(table_id__in=job_ids) |
         Q(table_name='task') & Q(table_id__in=task_ids)
     ).delete()
+
+
+def running_task_count(be, user):
+    running_tasks = Task.objects.filter(job__workflow__user=user, job__exec_backend=be,
+            status_requested__isnull=False,
+            status_complete__isnull=True,
+            status_error__isnull=True,
+            status_exec_error__isnull=True,
+            status_aborted__isnull=True,
+            status_blocked__isnull=True).count()
+
+    return running_tasks

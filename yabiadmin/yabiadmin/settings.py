@@ -391,6 +391,10 @@ CELERYD_LOG_FORMAT = "YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(li
 # How much to wait between polling whether the Dynamic Backend is ready for usage
 # DYNBE_READY_POLL_INTERVAL = 120
 
+# How much to wait between retrying a task if the task limit on Backends has
+# been reached.
+# TASK_LIMIT_REACHED_RETRY_INTERVAL = 120
+
 # ## PREVIEW SETTINGS
 
 # The truncate key controls whether the file may be previewed in truncated form

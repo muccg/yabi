@@ -649,6 +649,7 @@ class Backend(Base):
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
     submission = models.TextField(blank=True)
+    tasks_per_user = models.PositiveIntegerField(null=True, blank=True)
     dynamic_backend = models.BooleanField(default=False)
     dynamic_backend_configuration = models.ForeignKey(DynamicBackendConfiguration, null=True, blank=True)
 
@@ -661,6 +662,7 @@ class Backend(Base):
     lcopy_supported.help_text = "Backend supports 'cp' localised copies."
     link_supported.help_text = "Backend supports 'ln' localised symlinking."
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
+    tasks_per_user.help_text = "The number of simultaneous tasks the backends should execute for each user. 0 means do not execute jobs for this backend. Blank means no limits."
     dynamic_backend.help_text = "Is this Backend dynamic? Dynamic backends can be created dynamically on demand. For example Amazon EC2 or LXC (Linux Containers)."
     dynamic_backend_configuration.help_text = "The configuration used to create the Dynamic Backend.Set on Dynamic Backends only!"
     temporary_directory.help_text = 'Only to be set on execution backends. Temporary directory used for temporary execution scripts. Blank means "/tmp".'
