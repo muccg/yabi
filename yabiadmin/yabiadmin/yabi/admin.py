@@ -28,13 +28,12 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
 from ccg_django_utils import webhelpers
-from ccg.webservices.ext import ExtJsonInterface
 
 from yabiadmin.yabi.models import *
 from yabiadmin.yabi.forms import *
 
 
-class AdminBase(ExtJsonInterface, admin.ModelAdmin):
+class AdminBase(admin.ModelAdmin):
     save_as = True
 
     def save_model(self, request, obj, form, change):

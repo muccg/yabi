@@ -26,7 +26,7 @@ import httplib
 from urllib import urlencode
 import copy
 import os
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.conf import settings
 from django.http import HttpResponse
 import logging
