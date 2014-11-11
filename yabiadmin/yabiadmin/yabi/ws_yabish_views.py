@@ -65,7 +65,7 @@ def is_stagein_required(request):
 
 
 @authentication_required
-@transaction.commit_manually
+@transaction.non_atomic_requests
 def submitjob(request):
     logger.debug(request.user.username)
 

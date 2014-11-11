@@ -335,7 +335,6 @@ def on_job_finished(job_id):
 
 # Celery Tasks working on a Yabi Task
 
-@transaction.commit_on_success()
 def spawn_task(task):
     task_logger = create_task_logger(logger, task.pk)
     task_logger.info("Starting spawn_task for task %s.", task.pk)
@@ -343,7 +342,6 @@ def spawn_task(task):
         return False
     task.set_status('requested')
     task.save()
-    transaction.commit()
     task_chain = chain(stage_in_files.s(task.pk), submit_task.s(), poll_task_status.s(), stage_out_files.s(), clean_up_task.s())
     task_chain.apply_async()
     task_logger.info("Finished spawn_task for task %s.", task.pk)
@@ -385,7 +383,6 @@ def retry_current_celery_task(original_function_name, task_id, exc, countdown, p
         except Exception:
             # Never fail on saving this
             logger.exception("Failed on saving retry_count for task %d", task_id)
-            transaction.rollback()
 
         raise
     except Exception as ex:
@@ -466,7 +463,6 @@ def submit_task(task_id):
     if abort_task_if_needed(task):
         return None
     change_task_status(task.pk, STATUS_EXEC)
-    transaction.commit()
     # Re-fetch task
     task = EngineTask.objects.get(pk=task_id)
     backend.submit_task(task)
@@ -607,38 +603,31 @@ def abort_job(job, update_workflow=True):
 # TODO TSZ move to another file?
 
 
-@transaction.commit_manually()
 def change_task_status(task_id, status):
     task_logger = create_task_logger(logger, task_id)
     try:
-        task_logger.debug("Setting status of task {0} to {1}".format(task_id, status))
-        task = Task.objects.get(pk=task_id)
-        task.set_status(status)
-        task.save()
-        transaction.commit()
+        with transaction.atomic():
+            task_logger.debug("Setting status of task {0} to {1}".format(task_id, status))
+            task = Task.objects.get(pk=task_id)
+            task.set_status(status)
+            task.save()
 
-        job_old_status = task.job.status
-        job_status = task.job.update_status()
-        job_status_changed = (job_old_status != job_status)
+            job_old_status = task.job.status
+            job_status = task.job.update_status()
+            job_status_changed = (job_old_status != job_status)
 
-        if job_status_changed:
-            transaction.commit()
-            old_status = task.job.workflow.status
-            task.job.workflow.update_status()
-            # commit before submission of Celery Tasks
-            transaction.commit()
-            if task.job.is_finished:
-                on_job_finished.apply_async((task.job.pk,))
-            new_status = task.job.workflow.status
-            if old_status != new_status and new_status == STATUS_COMPLETE:
-                on_workflow_completed.apply_async((task.job.workflow.pk,))
-            else:
-                process_workflow_jobs_if_needed(task)
-
-        transaction.commit()
+            if job_status_changed:
+                old_status = task.job.workflow.status
+                task.job.workflow.update_status()
+                if task.job.is_finished:
+                    on_job_finished.apply_async((task.job.pk,))
+                new_status = task.job.workflow.status
+                if old_status != new_status and new_status == STATUS_COMPLETE:
+                    on_workflow_completed.apply_async((task.job.workflow.pk,))
+                else:
+                    process_workflow_jobs_if_needed(task)
 
     except Exception:
-        transaction.rollback()
         task_logger.exception("Exception when updating task's {0} status to {1}".format(task_id, status))
         raise
 
@@ -656,16 +645,13 @@ def process_workflow_jobs_if_needed(task):
 
 
 @log_it('workflow')
-@transaction.commit_manually()
 def request_workflow_abort(workflow_id, yabiuser=None):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     if (workflow.abort_requested_on is not None) or workflow.status in (STATUS_COMPLETE, STATUS_ERROR):
-        transaction.commit()
         return False
     workflow.abort_requested_on = datetime.now()
     workflow.abort_requested_by = yabiuser
     workflow.save()
-    transaction.commit()
     abort_workflow.apply_async((workflow_id,))
     return True
 
