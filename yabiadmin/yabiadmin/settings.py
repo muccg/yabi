@@ -45,12 +45,13 @@ DEBUG = not PRODUCTION
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
+ATOMIC_REQUESTS = True
+
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'ccg_django_utils.middleware.ssl.SSLRedirect',
     'django.contrib.messages.middleware.MessageMiddleware'
