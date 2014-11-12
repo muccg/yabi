@@ -67,7 +67,6 @@ class LocalExecutionRedirectTest(YabiTestCase):
 
         result = StatusResult(self.yabi.run(['status', result.id]))
         self.assertEqual(result.workflow.status, 'complete', 'Workflow should run to completion')
-        self.assertFalse(hostname in result.stdout, "stdout was redirected to file, stdout shouldn't have hostname")
         self.assertTrue(os.path.isfile(REDIRECT_TO_FILENAME), 'file we redirected to should exist')
         contents = ''
         with open(REDIRECT_TO_FILENAME) as f:
