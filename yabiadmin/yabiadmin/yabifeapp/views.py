@@ -24,7 +24,7 @@
 
 import json
 import os
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import render_to_response

@@ -4,14 +4,12 @@ from setuptools import setup
 packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags', 'yabiadmin.yabifeapp.management', 'yabiadmin.yabifeapp.management.commands', 'yabiadmin.backend.cloud']
 
 install_requires = [
-    'Django==1.5.10',
+    'Django==1.6.8',
     # pip > 1.4 doesn't pick up pytz, because of non-standard version number
     # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
     'pytz>=2013b',
-    'ccg-webservices==0.1.2',
-    'ccg-introspect==0.1.2',
     'ccg-django-utils==0.2.1',
-    'ccg-auth==0.3.3',
+    'ccg-auth==0.3.4',
     'anyjson==0.3.3',
     'celery==3.1.15',
     'amqp==1.4.6',
@@ -27,7 +25,7 @@ install_requires = [
     'beautifulsoup4==4.3.2',
     'cssutils==1.0',
     'httplib2==0.9',
-    'djamboloader==0.1.2',
+    'djamboloader==0.1.4',
     'paramiko==1.14.1',
     'boto==2.32.1',
     'python-swiftclient==2.2.0',
@@ -72,15 +70,13 @@ mysql_requires = [
 
 dependency_links = [
     'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.2.1.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-webservices-0.1.2.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-introspect-0.1.2.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.3.tar.gz',
+    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.4.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://bitbucket.org/ccgmurdoch/libcloud-drivers/downloads/ccg-libcloud-drivers-0.0.1.tar.gz',
 
-    # 'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+    # 'https://github.com/muccg/djamboloader/archive/0.1.3.tar.gz',
     # Temporary fix
-    'http://repo.ccgapps.com.au/djamboloader-0.1.2.tar.gz',
+    'http://repo.ccgapps.com.au/djamboloader-0.1.4.tar.gz',
 ]
 
 importlib_available = True
@@ -94,7 +90,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='9.1.2',
+      version='9.2.0',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',

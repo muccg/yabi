@@ -45,12 +45,13 @@ DEBUG = not PRODUCTION
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
+ATOMIC_REQUESTS = True
+
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'ccg_django_utils.middleware.ssl.SSLRedirect',
     'django.contrib.messages.middleware.MessageMiddleware'
@@ -234,12 +235,12 @@ MANAGERS = ADMINS
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
 if env.get("auth_ldap_server", ""):
     AUTHENTICATION_BACKENDS = [
-        'ccg_django_utils.auth.backends.LDAPBackend',
-        'ccg_django_utils.auth.backends.NoAuthModelBackend',
+        'ccg.auth.backends.LDAPBackend',
+        'ccg.auth.backends.NoAuthModelBackend',
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 else:
-    AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+    AUTHENTICATION_BACKENDS = ['yabiadmin.authbackends.CaseInsensitiveUsernameModelBackend']
     AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 
 AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", [])
@@ -252,6 +253,8 @@ AUTH_LDAP_USEROC = env.get("auth_ldap_useroc", 'inetorgperson')
 AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", 'uniqueMember')
 AUTH_LDAP_USERDN = env.get("auth_ldap_userdn", 'ou=People')
 LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
+
+AUTH_LDAP_CASE_SENSITIVE_USERNAMES = False
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
@@ -388,6 +391,10 @@ CELERYD_LOG_FORMAT = "YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(li
 
 # How much to wait between polling whether the Dynamic Backend is ready for usage
 # DYNBE_READY_POLL_INTERVAL = 120
+
+# How much to wait between retrying a task if the task limit on Backends has
+# been reached.
+# TASK_LIMIT_REACHED_RETRY_INTERVAL = 120
 
 # ## PREVIEW SETTINGS
 

@@ -30,9 +30,16 @@ node default {
   package {$packages: ensure => installed}
 
   # tests need firefox and a virtual X server
-  $testingpackages = ['firefox', 'xorg-x11-server-Xvfb', 'dbus-x11']
+  $testingpackages = ['xorg-x11-server-Xvfb', 'dbus-x11']
   package {$testingpackages:
     ensure => installed,
+  }
+
+  # TODO
+  # Remove the specific version when the problem described below is solved:
+  # https://support.mozilla.org/en-US/questions/1025819?esab=a&s=gdk_window_get_visual&r=0&as=s
+  package {'firefox':
+    ensure => '31.1.0-5.el6.centos',
   }
 
   # fakes3 is required for tests

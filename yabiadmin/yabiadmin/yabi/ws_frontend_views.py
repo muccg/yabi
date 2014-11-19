@@ -367,7 +367,7 @@ def put(request):
 
 
 @authentication_required
-@transaction.commit_manually
+@transaction.non_atomic_requests
 def submit_workflow(request):
     try:
         yabiuser = User.objects.get(name=request.user.username)

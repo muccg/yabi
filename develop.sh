@@ -23,16 +23,15 @@ TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
 PIP_OPTS="--download-cache ~/.pip/cache"
 PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
 
-if [ "${YABI_CONFIG}" = "" ]; then
-    YABI_CONFIG="dev_postgresql"
-fi
+# Default config
+YABI_CONFIG="dev_postgresql"
 
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_lint) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_lint) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -534,6 +533,10 @@ case ${PROJECT} in
     exit 1
     ;;
 esac
+
+if [ "${ACTION}" = "test" ]; then
+    ACTION="test_postgresql"
+fi
 
 case $ACTION in
 pythonversion)

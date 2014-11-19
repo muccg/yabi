@@ -20,7 +20,7 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 urlpatterns = patterns(
     'yabiadmin.yabi.adminviews',
