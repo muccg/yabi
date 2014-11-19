@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
@@ -21,11 +20,19 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# -*- coding: utf-8 -*-
-from django.conf.urls import *
+from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
 
-urlpatterns = patterns(
-    'yabiadmin.yabiengine.views',
-    url(r'^workflow_summary/(?P<workflow_id>\d+)/$', 'workflow_summary', name='workflow_summary'),
-    url(r'^task_json/(?P<task>\d+)[/]*$', 'task_json', name='task_json'),
-)
+
+class CaseInsensitiveUsernameModelBackend(ModelBackend):
+    def authenticate(self, username=None, password=None, **kwargs):
+        UserModel = get_user_model()
+        if username is None:
+            username = kwargs.get(UserModel.USERNAME_FIELD)
+        username = username.lower()
+        try:
+            user = UserModel._default_manager.get_by_natural_key(username)
+            if user.check_password(password):
+                return user
+        except UserModel.DoesNotExist:
+            return None

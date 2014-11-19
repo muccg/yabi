@@ -649,6 +649,7 @@ class Backend(Base):
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
     submission = models.TextField(blank=True)
+    tasks_per_user = models.PositiveIntegerField(null=True, blank=True)
     dynamic_backend = models.BooleanField(default=False)
     dynamic_backend_configuration = models.ForeignKey(DynamicBackendConfiguration, null=True, blank=True)
 
@@ -661,6 +662,7 @@ class Backend(Base):
     lcopy_supported.help_text = "Backend supports 'cp' localised copies."
     link_supported.help_text = "Backend supports 'ln' localised symlinking."
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
+    tasks_per_user.help_text = "The number of simultaneous tasks the backends should execute for each user. 0 means do not execute jobs for this backend. Blank means no limits."
     dynamic_backend.help_text = "Is this Backend dynamic? Dynamic backends can be created dynamically on demand. For example Amazon EC2 or LXC (Linux Containers)."
     dynamic_backend_configuration.help_text = "The configuration used to create the Dynamic Backend.Set on Dynamic Backends only!"
     temporary_directory.help_text = 'Only to be set on execution backends. Temporary directory used for temporary execution scripts. Blank means "/tmp".'
@@ -714,8 +716,8 @@ class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True, verbose_name="User Directory")
-    visible = models.BooleanField()
-    default_stageout = models.BooleanField()
+    visible = models.BooleanField(default=False)
+    default_stageout = models.BooleanField(default=False)
     submission = models.TextField(blank=True)
 
     homedir.help_text = "This must not start with a / but must end with a /.<br/>This value will be combined with the Backend path field to create a valid URI."
@@ -890,6 +892,10 @@ def signal_tool_post_save(sender, **kwargs):
         raise
 
 
+def lowercase_username(sender, instance, *args, **kwargs):
+    instance.username = instance.username.lower()
+
+
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         logger.debug('Creating user profile for %s' % instance.username)
@@ -899,6 +905,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 # connect up signals
 from django.db.models.signals import post_save, pre_save
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
+pre_save.connect(lowercase_username, sender=DjangoUser, dispatch_uid="lowercase_username")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
 post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")

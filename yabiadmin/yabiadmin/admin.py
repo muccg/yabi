@@ -21,7 +21,6 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 from django.contrib import admin
-from ccg.webservices.ext import ExtJsonInterface
 
 import django.contrib.auth.admin
 import django.contrib.auth.models
@@ -33,7 +32,7 @@ import yabiadmin.yabiengine.admin
 
 # Overrides for the default django.contrib.auth ModelAdmin subclasses that
 # include the JSON mixin.
-class GroupAdmin(ExtJsonInterface, django.contrib.auth.admin.GroupAdmin):
+class GroupAdmin(django.contrib.auth.admin.GroupAdmin):
     def queryset(self, request):
         if request.user.is_superuser:
             return django.contrib.auth.models.Group.objects.all()
@@ -41,7 +40,7 @@ class GroupAdmin(ExtJsonInterface, django.contrib.auth.admin.GroupAdmin):
         return django.contrib.auth.models.Group.objects.none()
 
 
-class UserAdmin(ExtJsonInterface, django.contrib.auth.admin.UserAdmin):
+class UserAdmin(django.contrib.auth.admin.UserAdmin):
     def queryset(self, request):
         if request.user.is_superuser:
             return django.contrib.auth.models.User.objects.all()

@@ -8,7 +8,7 @@ from yabiadmin.yabi.models import Credential
 
 class CredentialTests(unittest.TestCase):
     def setUp(self):
-        self.django_user = DjangoUser.objects.create(username=six.u('győzike'))
+        self.django_user = DjangoUser.objects.create(username=u'győzike')
         self.django_user.set_password('pass')
         self.django_user.save()
         self.user = self.django_user.get_profile()
@@ -43,7 +43,7 @@ class CredentialTests(unittest.TestCase):
 
     def test_cache_keyname_replaces_unicode_character(self):
         access = self.credential.get_credential_access()
-        self.assertTrue('\\xc3\\x85\\xc2\\x91' in access.keyname, access.keyname)
+        self.assertTrue('\\xc5\\x91' in access.keyname, access.keyname)
 
     def test_cache(self):
         access = self.credential.get_credential_access()

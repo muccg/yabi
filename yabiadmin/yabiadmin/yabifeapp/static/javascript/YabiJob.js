@@ -48,6 +48,10 @@ function YabiJob(toolName, toolId, jobId, preloadValues) {
     .appendTo(this.jobNode);
   this.outputsNode = Y.Node.create('<div class="jobOutputs">outputs: *</div>')
     .appendTo(this.jobNode);
+  var optionsHtml = '<div class="jobOptionsMissing">options: ' +
+    '<span class="invalidInput">mandatory options are missing</span></div>';
+  this.optionsMissingNode = Y.Node.create(optionsHtml)
+    .appendTo(this.jobNode).hide();
 
   //___OPTIONS NODE___
   this.optionsNode = Y.Node.create('<div class="jobOptionsContainer"/>');
@@ -188,10 +192,16 @@ YabiJob.prototype.updateTitle = function() {
  * iterates over params and checks their .valid flag
  */
 YabiJob.prototype.checkValid = function(propagate) {
-  this.valid = _.every(this.params, "valid");
+  var invalidParams = _.reject(this.params, "valid");
+  var inputFilesInvalid = _.any(invalidParams, "isInputFile");
+  var otherParamsInvalid = !_.every(invalidParams, "isInputFile");
+
+  this.valid = invalidParams.length == 0;
 
   this.inputsNode.all(".acceptedExtensionList")
-    .toggleClass("invalidAcceptedExtensionList", !this.valid);
+    .toggleClass("invalidAcceptedExtensionList", inputFilesInvalid);
+
+  this.optionsMissingNode.toggleView(otherParamsInvalid);
 
   if (propagate) {
     this.propagateFiles();

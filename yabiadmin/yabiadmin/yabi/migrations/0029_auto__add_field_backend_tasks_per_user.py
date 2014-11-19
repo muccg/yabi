@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-import base64
-import binascii
-from south.utils import datetime_utils as datetime
+import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
 
 
-class Migration(DataMigration):
+class Migration(SchemaMigration):
+
     def forwards(self, orm):
-        for job in orm['yabiengine.Job'].objects.all():
-            if job.command_template is not None:
-                job.command_template = base64.encodestring(job.command_template)
-                job.save()
+        # Adding field 'Backend.tasks_per_user'
+        db.add_column(u'yabi_backend', 'tasks_per_user',
+                      self.gf('django.db.models.fields.PositiveIntegerField')(null=True, blank=True),
+                      keep_default=False)
+
 
     def backwards(self, orm):
-        for job in orm['yabiengine.Job'].objects.all():
-            job.command_template = base64.decodestring(job.command_template)
-            job.save()
+        # Deleting field 'Backend.tasks_per_user'
+        db.delete_column(u'yabi_backend', 'tasks_per_user')
+
 
     models = {
         u'auth.group': {
@@ -74,7 +74,39 @@ class Migration(DataMigration):
             'port': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'scheme': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'tasks_per_user': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'temporary_directory': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'})
+        },
+        u'yabi.backendcredential': {
+            'Meta': {'object_name': 'BackendCredential'},
+            'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Backend']"}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'backendcredential_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'credential': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Credential']"}),
+            'default_stageout': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'homedir': ('django.db.models.fields.CharField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'backendcredential_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
+            'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'visible': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+        },
+        u'yabi.credential': {
+            'Meta': {'object_name': 'Credential'},
+            'backends': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.Backend']", 'null': 'True', 'through': u"orm['yabi.BackendCredential']", 'blank': 'True'}),
+            'cert': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'credential_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'}),
+            'expires_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'credential_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
+            'password': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'}),
+            'security_state': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0', 'blank': 'True'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.User']"}),
+            'username': ('django.db.models.fields.CharField', [], {'max_length': '512'})
         },
         u'yabi.dynamicbackendconfiguration': {
             'Meta': {'object_name': 'DynamicBackendConfiguration'},
@@ -94,6 +126,41 @@ class Migration(DataMigration):
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'fileextension_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'pattern': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '64'})
+        },
+        u'yabi.filetype': {
+            'Meta': {'object_name': 'FileType'},
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'filetype_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'extensions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabi.FileExtension']", 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'filetype_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+        },
+        u'yabi.hostkey': {
+            'Meta': {'object_name': 'HostKey'},
+            'allowed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'data': ('django.db.models.fields.TextField', [], {'max_length': '16384'}),
+            'fingerprint': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            'hostname': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key_type': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'})
+        },
+        u'yabi.parameterswitchuse': {
+            'Meta': {'object_name': 'ParameterSwitchUse'},
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'parameterswitchuse_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'display_text': ('django.db.models.fields.CharField', [], {'max_length': '30'}),
+            'formatstring': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'parameterswitchuse_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'})
         },
         u'yabi.tool': {
             'Meta': {'object_name': 'Tool'},
@@ -164,6 +231,32 @@ class Migration(DataMigration):
             'must_exist': ('django.db.models.fields.NullBooleanField', [], {'default': 'False', 'null': 'True', 'blank': 'True'}),
             'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"})
         },
+        u'yabi.toolparameter': {
+            'Meta': {'object_name': 'ToolParameter'},
+            'accepted_filetypes': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['yabi.FileType']", 'symmetrical': 'False', 'blank': 'True'}),
+            'batch_bundle_files': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'common': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'toolparameter_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'default_value': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'extension_param': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.FileExtension']", 'null': 'True', 'blank': 'True'}),
+            'fe_rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'file_assignment': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
+            'helptext': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'hidden': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'toolparameter_modifiers'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
+            'mandatory': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'output_file': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'possible_values': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'rank': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'sensitive_data': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'switch': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            'switch_use': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ParameterSwitchUse']"}),
+            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolDesc']"}),
+            'use_output_filename': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.ToolParameter']", 'null': 'True', 'blank': 'True'})
+        },
         u'yabi.toolset': {
             'Meta': {'object_name': 'ToolSet'},
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'toolset_creators'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['auth.User']"}),
@@ -186,145 +279,12 @@ class Migration(DataMigration):
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'}),
             'user_option_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
-        u'yabiengine.dynamicbackendinstance': {
-            'Meta': {'object_name': 'DynamicBackendInstance'},
-            'configuration': ('django.db.models.fields.TextField', [], {}),
-            'created_for_job': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Job']"}),
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'destroyed_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'hostname': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'instance_handle': ('django.db.models.fields.CharField', [], {'max_length': '256'})
-        },
-        u'yabiengine.job': {
-            'Meta': {'object_name': 'Job'},
-            'command': ('django.db.models.fields.TextField', [], {}),
-            'command_template': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'cpus': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
-            'dynamic_backends': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['yabiengine.DynamicBackendInstance']", 'null': 'True', 'through': u"orm['yabiengine.JobDynamicBackend']", 'blank': 'True'}),
-            'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'exec_backend': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'fs_backend': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'job_type': ('django.db.models.fields.CharField', [], {'default': "'single'", 'max_length': '40', 'null': 'True', 'blank': 'True'}),
-            'max_memory': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
-            'module': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'order': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'preferred_stagein_method': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
-            'preferred_stageout_method': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
-            'queue': ('django.db.models.fields.CharField', [], {'default': "'normal'", 'max_length': '50', 'null': 'True', 'blank': 'True'}),
-            'stageout': ('django.db.models.fields.CharField', [], {'max_length': '1000', 'null': 'True'}),
-            'start_time': ('django.db.models.fields.DateTimeField', [], {}),
-            'status': ('django.db.models.fields.CharField', [], {'max_length': '64', 'blank': 'True'}),
-            'task_total': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'tool': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Tool']", 'null': 'True'}),
-            'walltime': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
-            'workflow': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Workflow']"})
-        },
-        u'yabiengine.jobdynamicbackend': {
-            'Meta': {'object_name': 'JobDynamicBackend'},
-            'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.Backend']"}),
-            'be_type': ('django.db.models.fields.CharField', [], {'max_length': '2'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'instance': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.DynamicBackendInstance']"}),
-            'job': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Job']"})
-        },
-        u'yabiengine.queuedworkflow': {
-            'Meta': {'object_name': 'QueuedWorkflow'},
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'workflow': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Workflow']"})
-        },
-        u'yabiengine.savedworkflow': {
-            'Meta': {'object_name': 'SavedWorkflow'},
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'db_index': 'True', 'blank': 'True'}),
-            'creator': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.User']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'json': ('django.db.models.fields.TextField', [], {}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
-        },
-        u'yabiengine.stagein': {
-            'Meta': {'object_name': 'StageIn'},
-            'dst': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'method': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
-            'order': ('django.db.models.fields.IntegerField', [], {}),
-            'src': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'task': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Task']"})
-        },
-        u'yabiengine.syslog': {
-            'Meta': {'object_name': 'Syslog'},
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'message': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'table_id': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
-            'table_name': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True'})
-        },
-        u'yabiengine.tag': {
-            'Meta': {'object_name': 'Tag'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'value': ('django.db.models.fields.CharField', [], {'max_length': '255'})
-        },
-        u'yabiengine.task': {
-            'Meta': {'object_name': 'Task'},
-            'command': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'envvars_json': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'error_msg': ('django.db.models.fields.CharField', [], {'max_length': '1000', 'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_retrying': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'job': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Job']"}),
-            'job_identifier': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
-            'percent_complete': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'remote_id': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
-            'remote_info': ('django.db.models.fields.CharField', [], {'max_length': '2048', 'null': 'True', 'blank': 'True'}),
-            'retry_count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_aborted': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_blocked': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_cleaning': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_complete': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_error': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec_active': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec_cleanup': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec_done': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec_error': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec_pending': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec_running': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_exec_unsubmitted': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_mkdir': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_pending': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_ready': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_requested': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_stagein': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status_stageout': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'task_num': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'working_dir': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'})
-        },
-        u'yabiengine.workflow': {
-            'Meta': {'object_name': 'Workflow'},
-            'abort_requested_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'aborted_workflows'", 'null': 'True', 'to': u"orm['yabi.User']"}),
-            'abort_requested_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'db_index': 'True', 'blank': 'True'}),
-            'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'original_json': ('django.db.models.fields.TextField', [], {}),
-            'stageout': ('django.db.models.fields.CharField', [], {'max_length': '1000'}),
-            'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'status': ('django.db.models.fields.TextField', [], {'max_length': '64', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabi.User']"})
-        },
-        u'yabiengine.workflowtag': {
-            'Meta': {'object_name': 'WorkflowTag'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Tag']"}),
-            'workflow': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['yabiengine.Workflow']"})
+        u'yabi.yabicache': {
+            'Meta': {'object_name': 'YabiCache', 'db_table': "'yabi_cache'"},
+            'cache_key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255', 'primary_key': 'True'}),
+            'expires': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True'}),
+            'value': ('django.db.models.fields.TextField', [], {})
         }
     }
 
-    complete_apps = ['yabiengine']
-    symmetrical = True
+    complete_apps = ['yabi']

@@ -29,7 +29,6 @@ import uuid
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
 from django.db.models import Q
-from django.db.transaction import is_managed
 from yabiadmin.yabi.models import BackendCredential, Tool
 from yabiadmin.exceptions import InvalidRequestError
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
@@ -100,39 +99,37 @@ class EngineWorkflow(Workflow):
     def get_jobs(self):
         return EngineJob.objects.filter(workflow=self).order_by("order")
 
-    @transaction.commit_on_success
+    def _determine_stageout_dir(self, workflow_dict):
+        if 'default_stageout' in workflow_dict and workflow_dict['default_stageout']:
+            default_stageout = workflow_dict['default_stageout']
+        else:
+            default_stageout = self.user.default_stageout
+
+        return "%s%s/" % (default_stageout, self.name)
+
     def create_jobs(self):
         wfl_logger = create_workflow_logger(logger, self.pk)
         logger.debug('----- Creating jobs for workflow id %d -----' % self.pk)
 
         try:
-            workflow_dict = json.loads(self.original_json)
+            with transaction.atomic():
+                workflow_dict = json.loads(self.original_json)
 
-            # sort out the stageout directory
-            if 'default_stageout' in workflow_dict and workflow_dict['default_stageout']:
-                default_stageout = workflow_dict['default_stageout']
-            else:
-                default_stageout = self.user.default_stageout
+                self.stageout = self._determine_stageout_dir(workflow_dict)
+                self.save()
 
-            self.stageout = "%s%s/" % (default_stageout, self.name)
-            self.save()
+                for i, job_dict in enumerate(workflow_dict["jobs"]):
+                    job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
+                    job.add_job(job_dict)
+                wfl_logger.info("Created %d jobs for workflow %d", i, self.pk)
 
-            # save the jobs
-            for i, job_dict in enumerate(workflow_dict["jobs"]):
-                job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
-                job.add_job(job_dict)
-            wfl_logger.info("Created %d jobs for workflow %d", i, self.pk)
-
-            self.status = STATUS_READY
-            self.save()
-
+                self.status = STATUS_READY
+                self.save()
         except Exception:
-            transaction.rollback()
             wfl_logger.exception("Exception during creating jobs for workflow {0}".format(self.pk))
 
             self.status = STATUS_ERROR
             self.save()
-            transaction.commit()
 
             raise
 
@@ -284,7 +281,7 @@ class EngineJob(Job):
 
         self.save()
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def create_tasks(self):
         job_logger = create_job_logger(logger, self.pk)
         logger.debug('----- creating tasks for Job %s -----' % self.pk)
@@ -295,38 +292,22 @@ class EngineJob(Job):
             job_logger.info("Another process_jobs() must have picked up job %s already" % self.pk)
             return
 
-        try:
-            self.update_dependencies()
+        self.update_dependencies()
 
-            input_files = self.get_input_files()
-            self.create_one_task_for_each_input_file(input_files)
+        input_files = self.get_input_files()
+        self.create_one_task_for_each_input_file(input_files)
 
-            # there must be at least one task for every job
-            if not self.total_tasks():
-                job_logger.critical('No tasks for job: %s' % self.pk)
-                self.status = STATUS_ERROR
-                self.workflow.status = STATUS_ERROR
-                self.save()
-                self.workflow.save()
-                transaction.commit()
-                raise Exception('No tasks for job: %s' % self.pk)
+        # there must be at least one task for every job
+        if not self.total_tasks():
+            job_logger.critical('No tasks for job: %s' % self.pk)
+            raise Exception('No tasks for job: %s' % self.pk)
 
-            # mark job as ready so it can be requested by a backend
-            self.status = STATUS_READY
-            self.save()
-            self.make_tasks_ready()
+        # mark job as ready so it can be requested by a backend
+        self.status = STATUS_READY
+        self.save()
+        self.make_tasks_ready()
 
-            return self.total_tasks()
-
-        except:
-            transaction.rollback()
-            job_logger.exception("Error while creating db tasks for job %d", self.pk)
-            # We couldn't sucessfully create tasks for the job so we will set
-            # the status to PENDING (ie. allowing a retry to pick it up again)
-            self.status = STATUS_PENDING
-            self.save()
-            transaction.commit()
-            raise
+        return self.total_tasks()
 
     def get_input_files(self):
         if self.template.command.is_select_file:
@@ -336,7 +317,6 @@ class EngineJob(Job):
 
     def create_one_task_for_each_input_file(self, input_files):
         logger.debug("job %s is having tasks created for %s input files" % (self.pk, len(input_files)))
-        assert is_managed() is True
         if len(input_files) == 0:
             input_files = [None]
 

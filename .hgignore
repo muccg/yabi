@@ -3,6 +3,7 @@ syntax: glob
 *.pyc
 *.log
 *.pid
+*.fa
 
 yabiadmin/yabiadmin/build
 yabiadmin/yabiadmin/scratch
