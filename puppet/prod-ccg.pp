@@ -5,6 +5,7 @@ node default {
   include ccgcommon::source
   include ccgapache
   include python
+  include repo
   include repo::ius
   include repo::pgrpms
   include repo::ccgcentos
