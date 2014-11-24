@@ -8,7 +8,9 @@ node default {
   include repo
   include repo::repo::ius
   include repo::repo::ccgcentos
-  include yum::repo::pgdg93
+  class { 'yum::repo::pgdg93':
+    stage => 'setup',
+  }
   include globals
   include profile::rsyslog
 

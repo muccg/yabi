@@ -7,7 +7,9 @@ node default {
   include repo
   include repo::repo::ius
   include repo::repo::ccgtesting
-  include yum::repo::pgdg93
+  class { 'yum::repo::pgdg93':
+    stage => 'setup',
+  }
   include ccgdatabase::postgresql::devel
   include ccgdatabase::mysql::devel
   include environmentmodules
