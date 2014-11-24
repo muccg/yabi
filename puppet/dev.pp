@@ -6,8 +6,8 @@ node default {
   include python
   include repo
   include repo::repo::ius
-  include repo::repo::pgrpms
   include repo::repo::ccgtesting
+  include yum::repo::pgdg93
   include ccgdatabase::postgresql::devel
   include ccgdatabase::mysql::devel
 

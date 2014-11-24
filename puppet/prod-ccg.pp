@@ -7,8 +7,8 @@ node default {
   include python
   include repo
   include repo::repo::ius
-  include repo::repo::pgrpms
   include repo::repo::ccgcentos
+  include yum::repo::pgdg93
   include globals
   include profile::rsyslog
 

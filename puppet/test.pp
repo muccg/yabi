@@ -6,8 +6,8 @@ node default {
   include ccgapache
   include repo
   include repo::repo::ius
-  include repo::repo::pgrpms
   include repo::repo::ccgtesting
+  include yum::repo::pgdg93
   include ccgdatabase::mysql::devel
   include ccgdatabase::postgresql::devel
 
