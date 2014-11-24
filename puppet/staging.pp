@@ -5,9 +5,9 @@ node default {
   include ccgapache
   include python
   include repo::sydney
-  include repo::ius
-  include repo::pgrpms
-  include repo::ccgtesting
+  include repo::repo::ius
+  include repo::repo::pgrpms
+  include repo::repo::ccgtesting
   include globals
   include ccgdatabase::postgresql::devel
   include profile::rsyslog

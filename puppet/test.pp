@@ -5,9 +5,9 @@ node default {
   include python
   include ccgapache
   include repo
-  include repo::ius
-  include repo::pgrpms
-  include repo::ccgtesting
+  include repo::repo::ius
+  include repo::repo::pgrpms
+  include repo::repo::ccgtesting
   include ccgdatabase::mysql::devel
   include ccgdatabase::postgresql::devel
 

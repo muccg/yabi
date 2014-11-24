@@ -6,9 +6,9 @@ node default {
   include ccgapache
   include python
   include repo
-  include repo::ius
-  include repo::pgrpms
-  include repo::ccgcentos
+  include repo::repo::ius
+  include repo::repo::pgrpms
+  include repo::repo::ccgcentos
   include globals
   include profile::rsyslog
 
