@@ -4,7 +4,6 @@ node default {
   include ccgcommon::source
   include python
   include ccgapache
-  include repo::epel
   include repo::ius
   include repo::pgrpms
   include repo::ccgtesting
