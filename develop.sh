@@ -94,7 +94,7 @@ ci_ssh_agent() {
 ci_remote_build() {
     time ccg ${AWS_BUILD_INSTANCE} boot
     time ccg ${AWS_BUILD_INSTANCE} puppet
-    time ccg ${AWS_BUILD_INSTANCE} shutdown:50
+    time ccg ${AWS_BUILD_INSTANCE} shutdown:240
 
     SSH_OPTS="-o StrictHostKeyChecking\=no"
     RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
