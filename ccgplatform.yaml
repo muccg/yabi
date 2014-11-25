@@ -32,7 +32,7 @@ instances:
       - ./develop.sh syncmigrate
 
   aws_yabi_test:
-    extends: centos_65_aws_oregon
+    extends: centos_66_aws_oregon
     pre_puppet:
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
@@ -48,7 +48,7 @@ instances:
     aws_instance_type: m3.medium
 
   aws_syd_yabi_staging:
-    extends: centos_65_aws_syd
+    extends: centos_66_aws_syd
     pre_puppet: 
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
