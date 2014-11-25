@@ -5,6 +5,7 @@ node default {
   include python
   include ccgapache
   include repo
+  include repo::upgrade
   include repo::repo::ius
   include repo::repo::ccgtesting
   include repo::repo::ccgdeps
