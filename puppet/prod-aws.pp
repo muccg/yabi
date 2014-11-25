@@ -8,6 +8,7 @@ node default {
   include repo::sydney
   include repo::repo::ius
   include repo::repo::ccgcentos
+  include repo::repo::ccgdeps
   class { 'yum::repo::pgdg93':
     stage => 'setup',
   }
