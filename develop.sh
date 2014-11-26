@@ -519,8 +519,9 @@ dbtest() {
     stopyabi
     dropdb
     startyabi
-    trap stopyabi EXIT
+    trap stopyabi EXIT SIGINT SIGTERM
     do_nosetests
+    exit $?
 }
 
 
