@@ -4,6 +4,7 @@ from .fixture_helpers import admin
 import os
 import tarfile
 from six.moves import filter
+import logging
 
 from yabiadmin.yabi import models
 
