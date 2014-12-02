@@ -13,7 +13,7 @@ instances:
     extends: centos_64_lxc
     pre_puppet: 
       - which git || sudo yum install -y -q git
-      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: dev.pp
     post_puppet: 
       - ./develop.sh install
@@ -35,7 +35,7 @@ instances:
     extends: centos_66_aws_oregon
     pre_puppet:
       - which git || sudo yum install -y -q git
-      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: test.pp
     aws_instance_type: m3.large
 
@@ -43,7 +43,7 @@ instances:
     extends: centos_65_aws_oregon
     pre_puppet:
       - which git || sudo yum install -y -q git
-      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: torque-test.pp
     aws_instance_type: m3.medium
 
@@ -51,14 +51,14 @@ instances:
     extends: centos_66_aws_syd
     pre_puppet: 
       - which git || sudo yum install -y -q git
-      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: staging.pp
 
   local-staging:
     extends: centos_64_lxc
     pre_puppet: 
       - which git || sudo yum install -y -q git
-      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: staging.pp
 
   aws_rpmbuild_centos6:
@@ -74,6 +74,6 @@ instances:
     extends: centos_prod_aws_syd
     pre_puppet: 
       - which git || sudo yum install -y -q git
-      - which librarian-puppet || sudo gem install librarian-puppet -v 1.0.4
+      - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: prod-aws.pp
     aws_instance_type: c3.large
