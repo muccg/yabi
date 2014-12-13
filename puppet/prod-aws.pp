@@ -27,7 +27,7 @@ node default {
     memcache              => $globals::memcache_syd,
     secret_key            => $globals::secretkey_aws_yabi,
     admin_email           => $globals::system_email,
-    allowed_hosts         => 'www.ccgapps.com.au ccgapps.com.au localhost',
+    allowed_hosts         => '.ccgapps.com.au localhost',
     aws_access_key_id     => $globals::yabi_aws_access_key_id,
     aws_secret_access_key => $globals::yabi_aws_secret_access_key,
   }

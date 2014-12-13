@@ -31,7 +31,7 @@ node default {
     ldap_dont_require_cert => true,
     secret_key             => $globals::secretkey_ccg_yabi,
     admin_email            => $globals::system_email,
-    allowed_hosts          => 'ccg.murdoch.edu.au localhost',
+    allowed_hosts          => '.ccg.murdoch.edu.au localhost',
     torque_path            => '/opt/torque/2.3.13/bin',
     sge_path               => '/opt/sge6/bin/linux-x64',
     aws_access_key_id      => $globals::yabi_aws_access_key_id,

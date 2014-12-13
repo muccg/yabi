@@ -27,7 +27,7 @@ node default {
     memcache    => $globals::memcache_syd,
     secret_key  => 'isbfiusbef)#$)(#)((@',
     admin_email => $globals::system_email,
-    allowed_hosts => 'localhost',
+    allowed_hosts => '.ccgapps.com.au localhost',
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
