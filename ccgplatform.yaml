@@ -10,7 +10,7 @@ ccgpuppet:
 instances:
 
   yabi:
-    extends: centos_64_lxc
+    extends: centos_66_lxc
     pre_puppet: 
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
@@ -55,7 +55,7 @@ instances:
     puppet_manifest: staging.pp
 
   local-staging:
-    extends: centos_64_lxc
+    extends: centos_66_lxc
     pre_puppet: 
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
