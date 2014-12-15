@@ -1,5 +1,7 @@
 #
 node default {
+  $custom_hostname = 'aws-syd-yabi-staging.ec2.ccgapps.com.au'
+
   include ccgcommon
   include ccgcommon::source
   include ccgapache
