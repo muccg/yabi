@@ -1,5 +1,8 @@
 #
 node default {
+  # rabbitmq fails to start without this set in dev
+  $custom_hostname = 'localhost'
+
   include ccgcommon
   include ccgcommon::source
   include ccgapache
