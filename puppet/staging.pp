@@ -1,12 +1,16 @@
 #
 node default {
+  $custom_hostname = 'aws-syd-yabi-staging.ec2.ccgapps.com.au'
+
   include ccgcommon
   include ccgcommon::source
   include ccgapache
   include python
   include repo::sydney
+  include repo::upgrade
   include repo::repo::ius
   include repo::repo::ccgtesting
+  include repo::repo::ccgdeps
   class { 'yum::repo::pgdg93':
     stage => 'setup',
   }
@@ -25,7 +29,7 @@ node default {
     memcache    => $globals::memcache_syd,
     secret_key  => 'isbfiusbef)#$)(#)((@',
     admin_email => $globals::system_email,
-    allowed_hosts => 'localhost',
+    allowed_hosts => '.ccgapps.com.au localhost',
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']

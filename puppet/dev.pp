@@ -1,12 +1,17 @@
 #
 node default {
+  # rabbitmq fails to start without this set in dev
+  $custom_hostname = 'localhost'
+
   include ccgcommon
   include ccgcommon::source
   include ccgapache
   include python
   include repo
+  include repo::upgrade
   include repo::repo::ius
   include repo::repo::ccgtesting
+  include repo::repo::ccgdeps
   class { 'yum::repo::pgdg93':
     stage => 'setup',
   }

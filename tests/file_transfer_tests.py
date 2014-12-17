@@ -4,10 +4,14 @@ from .fixture_helpers import admin
 import os
 import tarfile
 from six.moves import filter
+import logging
 
 from yabiadmin.yabi import models
 
 ONE_GB = 1 * 1024 * 1024 * 1024
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 class FileUploadTest(YabiTestCase, FileUtils):
 
@@ -46,6 +50,7 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
         FileUtils.setUp(self)
         FILESIZE = ONE_GB / 1024
         self.filename = self.create_tempfile(size=FILESIZE)
+        logger.debug("temp file {0}".format(self.filename))
         self.setUpAdmin()
 
     def tearDown(self):
@@ -77,9 +82,11 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
         self._test_dd()
 
     def _test_dd(self):
+        logger.debug("dd if={0} of=output_file".format(self.filename))
         result = self.yabi.run(['dd', 'if=%s'%self.filename, 'of=output_file'])
         self.assertEqual(result.status, 0, "Yabish command shouldn't return error!")
 
+        logger.debug("performing checksum")
         expected_cksum, expected_size = self.run_cksum_locally(self.filename)
         copy_cksum, copy_size = self.run_cksum_locally('output_file')
         if os.path.isfile('output_file'):
