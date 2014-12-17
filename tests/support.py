@@ -74,8 +74,6 @@ class StatusResult(Result):
     def extract_workflow_properties(self, wfl_text):
         props = dict.fromkeys(StatusResult.WORKFLOW_PROPERTIES)
         for line in filter(lambda l: l.strip(), wfl_text.split("\n")):
-            if '=== STATUS ===' in line:
-                continue
             name, value = line.split(":", 1)
             props[name] = value
         return props
@@ -83,7 +81,8 @@ class StatusResult(Result):
     def create_workflow_from_stdout(self):
         if self.status != 0:
             raise Exception('yabish status returned non zero code')
-        wfl_text, jobs_text = self.stdout.split('=== JOBS ===')
+        text_before, our_text = self.stdout.split('=== STATUS ===')
+        wfl_text, jobs_text = our_text.split('=== JOBS ===')
         jobs = self.extract_jobs(jobs_text)
         workflow_props = self.extract_workflow_properties(wfl_text)
         workflow_props['jobs'] = jobs
