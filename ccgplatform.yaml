@@ -37,7 +37,7 @@ instances:
       - which git || sudo yum install -y -q git
       - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: test.pp
-    aws_instance_type: m3.large
+    aws_instance_type: c3.large
 
   aws_yabi_torque_test:
     extends: centos_65_aws_oregon
