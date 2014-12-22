@@ -105,7 +105,6 @@ class Yabi(object):
 
     def __init__(self):
         self.shargs = ['--yabi-url', conf.yabiurl] if conf.yabiurl else []
-        self.shargs.append('--yabi-debug')
         self.setup_data_dir()
 
     def setup_data_dir(self):
