@@ -381,7 +381,7 @@ startyabiadmin() {
     syncmigrate
 
     case ${YABI_CONFIG} in
-    DISABLE_GUNICORN_test_*)
+    test_*)
         ${VIRTUALENV}/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
         ;;
     *)
