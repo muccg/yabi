@@ -419,7 +419,7 @@ def retry_on_error(original_function):
             countdown = backoff(request.retries)
             retry_celery_task(exc, countdown)
 
-        if task_id is not None:
+        if task_id is not None and is_task_retrying(task_id):
             task_logger.info('Task %s recovered from error' % task_id)
             remove_task_retrying_mark(task_id)
 
@@ -544,6 +544,11 @@ def mark_job_as_error(job_id):
     job.save()
     job.workflow.update_status()
     wfl_logger.info("Workflow {0} encountered an error.".format(job.workflow.pk))
+
+
+def is_task_retrying(task_id):
+    task = Task.objects.get(pk=task_id)
+    return task.is_retrying
 
 
 def mark_task_as_retrying(task_id, message="Some error occurred"):
