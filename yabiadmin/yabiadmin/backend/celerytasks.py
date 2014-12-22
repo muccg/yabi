@@ -24,7 +24,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from functools import partial, wraps
-from django.db import transaction
 from datetime import datetime
 from celery import chain
 from celery.utils.log import get_task_logger
