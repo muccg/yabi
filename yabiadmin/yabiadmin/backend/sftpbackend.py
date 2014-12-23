@@ -38,7 +38,6 @@ import time
 import logging
 from itertools import dropwhile
 from functools import reduce
-from pooling import get_ssh_pool_manager
 
 logger = logging.getLogger(__name__)
 
