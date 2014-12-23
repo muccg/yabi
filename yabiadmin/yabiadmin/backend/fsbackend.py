@@ -41,6 +41,8 @@ from six.moves import map
 
 logger = logging.getLogger(__name__)
 
+pool_manager = get_ssh_pool_manager()
+
 
 def stream_watcher(identifier, stream):
 
@@ -87,8 +89,10 @@ class FSBackend(BaseBackend):
 
     @staticmethod
     def remote_copy(yabiusername, src_uri, dst_uri):
-        FSBackend.remote_copy_recurse(yabiusername, src_uri, dst_uri)
-        get_ssh_pool_manager().release()
+        try:
+            FSBackend.remote_copy_recurse(yabiusername, src_uri, dst_uri)
+        finally:
+            pool_manager.release()
 
     @staticmethod
     def remote_copy_recurse(yabiusername, src_uri, dst_uri):
