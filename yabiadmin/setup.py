@@ -73,10 +73,7 @@ dependency_links = [
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.4.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://bitbucket.org/ccgmurdoch/libcloud-drivers/downloads/ccg-libcloud-drivers-0.0.1.tar.gz',
-
-    # 'https://github.com/muccg/djamboloader/archive/0.1.3.tar.gz',
-    # Temporary fix
-    'http://repo.ccgapps.com.au/djamboloader-0.1.4.tar.gz',
+    'https://github.com/muccg/djamboloader/archive/0.1.4.tar.gz#egg=djamboloader-0.1.4',
 ]
 
 importlib_available = True
