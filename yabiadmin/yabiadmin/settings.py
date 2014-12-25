@@ -284,7 +284,7 @@ else:
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
-ALLOWED_HOSTS = env.get("allowed_hosts", "").split()
+ALLOWED_HOSTS = env.get("allowed_hosts", "localhost").split()
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
