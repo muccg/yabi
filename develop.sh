@@ -13,7 +13,8 @@ PROJECT="$2"
 
 PORT='8000'
 
-PROJECT_NAME='yabi'
+# yabiadmin is legacy, but occurs in many many places in code/config
+PROJECT_NAME='yabiadmin'
 AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
