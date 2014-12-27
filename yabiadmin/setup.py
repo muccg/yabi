@@ -48,6 +48,8 @@ dev_requires = [
     'closure-linter==2.3.13',
     'Werkzeug',
     'gunicorn',
+    'uwsgi==2.0.8',
+    'uwsgitop',
 ]
 
 tests_require = [

@@ -36,10 +36,18 @@ To install the dependencies on CentOS (tested on 6.4):
     http://www.rabbitmq.com/install-rpm.html
 
 
-To install the dependencies on Ubuntu (tested on 13.4):
+To install the dependencies on Ubuntu (tested on 14.04):
 
 
   o Python is installed by default.
+
+  o Build chain:
+
+    $ sudo apt-get install build-essential
+
+  o For uwsgi dependencies:
+
+    $ sudo apt-get install libpcre3 libpcre3-dev
 
   o For all the other dependencies but RabbitMQ:
 
