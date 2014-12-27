@@ -40,7 +40,7 @@ PRODUCTION = env.get("production", False)
 SSL_ENABLED = PRODUCTION
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = not PRODUCTION
+DEBUG = env.get("debug", not PRODUCTION)
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
