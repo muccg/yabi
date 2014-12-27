@@ -1,12 +1,16 @@
 #
 node default {
+<<<<<<< HEAD
   # rabbitmq fails to start without this set in dev
   $custom_hostname = 'localhost'
 
+=======
+>>>>>>> 909d81c7f7953a3bfadeb5c0525f54e0cac24b48
   include ccgcommon
   include ccgcommon::source
   include ccgapache
   include python
+<<<<<<< HEAD
   include repo
   include repo::upgrade
   include repo::repo::ius
@@ -25,6 +29,44 @@ node default {
   # postgresql databases
   ccgdatabase::postgresql::db {'dev_yabi': user => 'yabiapp', password => 'yabiapp'}
   ccgdatabase::postgresql::db {'test_yabi': user => 'yabiapp', password => 'yabiapp'}
+=======
+  include repo::epel
+  include repo::ius
+  include repo::pgrpms
+  include repo::ccgtesting
+
+  class {'postgresql':
+    datadir              => '/var/lib/pgsql/9.3/data',
+    bindir               => '/usr/pgsql-9.3/bin',
+    client_package_name  => 'postgresql93',
+    server_package_name  => 'postgresql93-server',
+    devel_package_name   => 'postgresql93-devel',
+    service_name         => 'postgresql-9.3',
+  }
+
+  include postgresql::devel
+
+  # mysql databases
+  class { 'mysql::server':
+    #root_password    => 'test',
+  }
+  mysql::db { 'dev_yabi':
+    user     => 'yabiapp',
+    password => 'yabiapp'
+  }
+  mysql::db { 'test_yabi':
+    user     => 'yabiapp',
+    password => 'yabiapp'
+  }
+
+  # postgresql databases/users
+  ccgdatabase::postgresql{'dev_yabi': user => 'yabiapp', password => 'yabiapp'}
+  postgresql::db { 'test_yabi':
+    user     => 'yabiapp',
+    password => 'yabiapp',
+    require  => Postgresql::Database_User['yabiapp'],
+  }
+>>>>>>> 909d81c7f7953a3bfadeb5c0525f54e0cac24b48
 
   # Package deps for yabi
   case $::osfamily {
