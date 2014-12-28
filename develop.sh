@@ -286,7 +286,6 @@ stopprocess() {
         kill $pid
     else
         kill -- -$pgrpid
-	kill -INT $pid;   # hack for uwsgi
     fi
 
     for I in {1..30}
@@ -316,7 +315,7 @@ stopprocess() {
 
 stopyabiadmin() {
     echo "Stopping Yabi admin"
-    stopprocess yabiadmin-develop.pid "kill_process_group"
+    uwsgi --stop yabiadmin-develop.pid
 }
 
 
