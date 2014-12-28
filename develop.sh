@@ -315,7 +315,9 @@ stopprocess() {
 
 stopyabiadmin() {
     echo "Stopping Yabi admin"
-    uwsgi --stop yabiadmin-develop.pid
+    . ${VIRTUALENV}/bin/activate || true
+    uwsgi --stop yabiadmin-develop.pid || true
+    stopprocess yabiadmin-develop.pid
 }
 
 
