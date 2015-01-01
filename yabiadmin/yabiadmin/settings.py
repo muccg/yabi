@@ -256,6 +256,11 @@ LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
 
 AUTH_LDAP_CASE_SENSITIVE_USERNAMES = False
 
+# This honours the X-Forwarded-Host header set by our nginx frontend when
+# constructing redirect URLS.
+# see: https://docs.djangoproject.com/en/1.4/ref/settings/#use-x-forwarded-host
+USE_X_FORWARDED_HOST = env.get("use_x_forwarded_host", True)
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 if env.get("memcache", ""):
