@@ -15,9 +15,8 @@ Dependencies
 ------------
 
     o python (we are currently using 2.7.6)
-    o Gcc
-    o Mercurial
-    o Virtualenv
+    o GCC
+    o Virtualenv (for Python 2.7)
     o Postgresql
     o libxslt-devel, libxml2-devel
     o RabbitMQ (and Erlang)
@@ -25,11 +24,15 @@ Dependencies
 
 To install the dependencies on CentOS (tested on 6.4):
 
-  o Python is installed by default.
+  o Python 2.7 is required. Typically we install that using packages from https://iuscommunity.org/.
+
+  o For uwsgi dependencies:
+
+    $ sudo yum install pcre pcre-devel
 
   o For all the other dependencies but RabbitMQ, with the EPEL repository enabled:
 
-    # yum install gcc mercurial python-virtualenv postgresql-devel mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel
+    # sudo yum install gcc mercurial python-virtualenv postgresql-devel mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel
 
   o To install RabbitMQ follow the instructions at:
 
