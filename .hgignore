@@ -4,6 +4,7 @@ syntax: glob
 *.log
 *.pid
 *.fa
+*.swp
 
 yabiadmin/yabiadmin/build
 yabiadmin/yabiadmin/scratch
@@ -16,6 +17,8 @@ yabiadmin/yabiadmin.egg-info/
 yabish/build/
 yabish/yabish.egg-info/
 
-virt_yabi/
+virt_*/
 docs/virt_docs
 docs/_build
+
+tmp/
