@@ -506,13 +506,14 @@ LOGGING = {
             'when': 'midnight',
             'formatter': 'db'
         },
-        'syslog': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.SysLogHandler',
-            'address': '/dev/log',
-            'facility': 'local4',
-            'formatter': 'syslog'
-        },
+# Docker container chokes on this
+#        'syslog': {
+#            'level': 'DEBUG',
+#            'class': 'logging.handlers.SysLogHandler',
+#            'address': '/dev/log',
+#            'facility': 'local4',
+#            'formatter': 'syslog'
+#        },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -528,26 +529,31 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file', 'syslog'],
+#            'handlers': ['console', 'file', 'syslog'],
+            'handlers': ['console', 'file'],
             'level': 'INFO',
         },
         'django': {
-            'handlers': ['console', 'django_file', 'syslog'],
+#            'handlers': ['console', 'django_file', 'syslog'],
+            'handlers': ['console', 'django_file'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['console', 'django_file', 'mail_admins', 'syslog'],
+#            'handlers': ['console', 'django_file', 'mail_admins', 'syslog'],
+            'handlers': ['console', 'django_file'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.db.backends': {
-            'handlers': ['console', 'db_logfile', 'mail_admins', 'syslog'],
+#            'handlers': ['console', 'db_logfile', 'mail_admins', 'syslog'],
+            'handlers': ['console', 'db_logfile'],
             'level': 'WARNING',
             'propagate': False,
         },
         'yabiadmin': {
-            'handlers': ['console', 'file', 'yabi_db_handler', 'syslog'],
+#            'handlers': ['console', 'file', 'yabi_db_handler', 'syslog'],
+            'handlers': ['console', 'file', 'yabi_db_handler'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
