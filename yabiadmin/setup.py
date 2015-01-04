@@ -36,6 +36,8 @@ install_requires = [
     'flower>=0.7.0',
     'apache-libcloud==0.15.1',
     'ccg-libcloud-drivers==0.0.1',
+    'uwsgi==2.0.8',
+    'uwsgitop',
 ]
 
 # Compiled python modules which are usually provided by system packages
@@ -48,8 +50,6 @@ dev_requires = [
     'closure-linter==2.3.13',
     'Werkzeug',
     'gunicorn',
-    'uwsgi==2.0.8',
-    'uwsgitop',
 ]
 
 tests_require = [
