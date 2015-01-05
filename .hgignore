@@ -22,3 +22,4 @@ docs/virt_docs
 docs/_build
 
 tmp/
+log/
