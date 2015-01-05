@@ -164,7 +164,7 @@ DATABASES = {
         'NAME': env.get("dbname", "dev_yabi"),
         'USER': env.get("dbuser", "yabiapp"),
         'PASSWORD': env.get("dbpass", "yabiapp"),
-        'HOST': env.get("dbserver", ""),
+        'HOST': env.get("dbserver", "localhost"),
         'PORT': env.get("dbport", ""),
     }
 }
@@ -263,7 +263,7 @@ if env.get("memcache", ""):
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
             'LOCATION': env.getlist("memcache"),
-            'KEYSPACE': "%(project_name)s-prod" % env
+            'KEYSPACE': "yabi"
         }
     }
 
