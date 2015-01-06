@@ -327,7 +327,7 @@ DEFAULT_CRED_CACHE_TIME = 60 * 60 * 24                   # 1 day default
 # ## CELERY ###
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
 # BROKER_URL = 'django://'
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+BROKER_URL =  env.get("celery_broker", 'amqp://guest:guest@localhost:5672//')
 
 # http://celery.readthedocs.org/en/latest/whatsnew-3.1.html#last-version-to-enable-pickle-by-default
 # Pickle is unsecure, but to ensure that we won't fail on existing messages
