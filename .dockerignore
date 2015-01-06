@@ -14,3 +14,4 @@ sql
 tmp
 */log/*
 */scratch/*
+yabi_data_dir
