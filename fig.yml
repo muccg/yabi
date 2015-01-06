@@ -53,8 +53,8 @@ celery:
     - CELERY_APP=yabiadmin.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
-#  volumes:
-#    - .:/app
+  volumes:
+    - .:/app
   links:
     - db
     - mq
