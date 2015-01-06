@@ -1,0 +1,16 @@
+.git
+virt_*
+docs
+screenshots
+*.pyc
+*.log
+*.pid
+*.fa
+*egg-info*
+json
+images
+puppet
+sql
+tmp
+*/log/*
+*/scratch/*

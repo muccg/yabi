@@ -42,3 +42,18 @@ uwsgi:
     - db
     - mq
     - cache
+
+# Create a celery container using the yabi_uwsgi container from above
+# Passing through the celery command invokes celery
+# Work in progress
+celery:
+  image: yabi_uwsgi
+  command: celery
+  environment:
+    - CELERY_APP=yabiadmin.backend.celerytasks
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+#  volumes:
+#    - .:/app
+  links:
+    - db
+    - mq
