@@ -29,8 +29,11 @@ cache:
 #    - "80:80"
 #      #    - "443:443"
 
-uwsgi:
+web:
   build: .
+  command: runserver
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
   volumes:
     - .:/app
   ports:
@@ -47,7 +50,7 @@ uwsgi:
 # Passing through the celery command invokes celery
 # Work in progress
 celery:
-  image: yabi_uwsgi
+  image: yabi_web
   command: celery
   environment:
     - CELERY_APP=yabiadmin.backend.celerytasks

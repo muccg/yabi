@@ -39,6 +39,7 @@ install_requires = [
     'uwsgi==2.0.8',
     'uwsgitop',
     'pyinotify==0.9.4',
+    'Werkzeug',
 ]
 
 # Compiled python modules which are usually provided by system packages
@@ -49,8 +50,6 @@ install_requires_compiled = [
 dev_requires = [
     'flake8==2.2.3',
     'closure-linter==2.3.13',
-    'Werkzeug',
-    'gunicorn',
 ]
 
 tests_require = [

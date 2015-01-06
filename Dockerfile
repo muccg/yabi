@@ -47,4 +47,4 @@ EXPOSE 8000 8001 9000 9001
 VOLUME ["/app"]
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["uwsgi"]
+CMD ["runserver"]

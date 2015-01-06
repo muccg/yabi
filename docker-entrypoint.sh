@@ -98,4 +98,30 @@ if [ "$1" = 'uwsgi' ]; then
     exit $?
 fi
 
-echo "FATAL: Command not provided [celery|uwsgi]"
+# start up a runserver instance
+if [ "$1" = 'runserver' ]; then
+    echo "[Run] Starting runserver"
+
+    if [[ -z "$RUNSERVER_PORT" ]] ; then
+        RUNSERVER_PORT="8000"
+    fi
+    if [[ -z "$DJANGO_SETTINGS_MODULE" ]] ; then
+        DJANGO_SETTINGS_MODULE="django.settings"
+    fi
+
+    if [[ -z "$RUNSERVER_OPTS" ]] ; then
+        RUNSERVER_OPTS="runserver_plus 0.0.0.0:${RUNSERVER_PORT} --settings=${DJANGO_SETTINGS_MODULE}"
+    fi
+
+    echo "RUNSERVER_PORT is ${RUNSERVER_PORT}"
+    echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
+    echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
+
+    django-admin.py ${RUNSERVER_OPTS}
+    exit $?
+fi
+
+echo "[RUN]: Builtin command not provided [runserver|celery|uwsgi]"
+echo "[RUN]: $@"
+
+exec "$@"
