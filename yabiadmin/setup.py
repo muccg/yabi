@@ -38,6 +38,7 @@ install_requires = [
     'ccg-libcloud-drivers==0.0.1',
     'uwsgi==2.0.8',
     'uwsgitop',
+    'pyinotify==0.9.4',
 ]
 
 # Compiled python modules which are usually provided by system packages
@@ -58,7 +59,6 @@ tests_require = [
     'nose==1.3.4',
     'mockito>=0.5.0,<0.6.0',
     'sniffer==0.3.2',
-    'pyinotify==0.9.4',
     'model_mommy==1.2.2',
 ]
 
