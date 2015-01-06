@@ -26,20 +26,21 @@ RUN apt-get update && apt-get install -y curl \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN env --unset=DEBIAN_FRONTEND
 
-RUN addgroup celery
-RUN adduser --disabled-password --home /app --no-create-home --system -q --ingroup celery celery
+RUN addgroup ccg-user
+RUN adduser --disabled-password --home /app --no-create-home --system -q --ingroup ccg-user ccg-user
+RUN mkdir /app && chown ccg-user:ccg-user /app
 
-ADD yabiadmin/setup.py /app/yabiadmin/
+COPY yabiadmin/setup.py /app/yabiadmin/setup.py
 WORKDIR /app/yabiadmin
 
 # Install only dependencies first to use the build cache more efficiently
 # This will be redone only if setup.py changes
 RUN INSTALL_ONLY_DEPENDENCIES=True pip install --process-dependency-links .
+
 # Python deps not in setup.py
 RUN pip install psycopg2==2.5.4
 
 COPY . /app
-WORKDIR /app/yabiadmin
 RUN pip install --process-dependency-links --no-deps -e .
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh

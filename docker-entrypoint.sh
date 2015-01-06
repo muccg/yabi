@@ -4,8 +4,6 @@
 if [ "$1" = 'celery' ]; then
     echo "[Run] Starting celery"
 
-    chown -R celery:celery /app
-
     if [[ -z "$CELERY_CONFIG_MODULE" ]] ; then
         CELERY_CONFIG_MODULE="settings"
     fi
@@ -80,7 +78,7 @@ if [ "$1" = 'celery' ]; then
     
     export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE
 
-    gosu celery /usr/local/bin/celery worker ${CELERY_OPTS}
+    gosu ccg-user celery worker ${CELERY_OPTS}
     exit $?
 fi
 
