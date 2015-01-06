@@ -34,6 +34,7 @@ web:
   command: runserver
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - CELERY_BROKER=amqp://admin:admin@mq:5672//
   volumes:
     - .:/app
   ports:
@@ -53,6 +54,7 @@ celery:
   image: yabi_web
   command: celery
   environment:
+    - CELERY_BROKER=amqp://admin:admin@mq:5672//
     - CELERY_APP=yabiadmin.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
