@@ -51,6 +51,7 @@ celery:
   command: celery
   environment:
     - CELERY_APP=yabiadmin.backend.celerytasks
+    - CELERY_AUTORELOAD=1
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
 #  volumes:
 #    - .:/app

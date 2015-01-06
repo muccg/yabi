@@ -24,8 +24,13 @@ if [ "$1" = 'celery' ]; then
     if [[ -z "$CELERY_OPTIMIZATION" ]] ; then
         CELERY_OPTIMIZATION="fair"
     fi
+    if [[ -z "$CELERY_AUTORELOAD" ]] ; then
+        CELERY_AUTORELOAD=""
+    else
+        CELERY_AUTORELOAD="--autoreload"
+    fi
     if [[ -z "$CELERY_OPTS" ]] ; then
-        CELERY_OPTS="-A ${CELERY_APP} -E --loglevel=${CELERY_LOGLEVEL} -O${CELERY_OPTIMIZATION} -b ${CELERY_BROKER}"
+        CELERY_OPTS="-A ${CELERY_APP} -E --loglevel=${CELERY_LOGLEVEL} -O${CELERY_OPTIMIZATION} -b ${CELERY_BROKER} ${CELERY_AUTORELOAD}"
     fi
     if [[ -z "$DJANGO_SETTINGS_MODULE" ]] ; then
         DJANGO_SETTINGS_MODULE="django.settings"
