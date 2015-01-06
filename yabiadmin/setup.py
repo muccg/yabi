@@ -1,7 +1,24 @@
 import os
 from setuptools import setup
 
-packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags', 'yabiadmin.yabifeapp.management', 'yabiadmin.yabifeapp.management.commands', 'yabiadmin.backend.cloud']
+INSTALL_ONLY_DEPENDENCIES = 'INSTALL_ONLY_DEPENDENCIES' in os.environ
+
+if 'INSTALL_ONLY_DEPENDENCIES' in os.environ:
+    packages = []
+    package_data = {}
+    package_scripts = []
+else:
+    packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags', 'yabiadmin.yabifeapp.management', 'yabiadmin.yabifeapp.management.commands', 'yabiadmin.backend.cloud']
+
+    package_data = {
+        '': ["%s/%s" % (dirglob, fileglob)
+              for dirglob in (["."] + ['/'.join(['*'] * num) for num in range(1, 15)])                         # yui is deeply nested
+              for fileglob in ['*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg', '*.feature']] +
+              ['*/features/*.py'] # step definitions and terrain files for lettuce tests
+    }
+
+    package_scripts = ["yabiadmin/yabiadmin-manage.py", "yabiadmin/yabicelery.py"]
+
 
 install_requires = [
     'Django==1.6.8',
@@ -94,14 +111,9 @@ setup(name='yabiadmin',
       author='Centre for Comparative Genomics',
       author_email='yabi@ccg.murdoch.edu.au',
       packages=packages,
-      package_data={
-          '': ["%s/%s" % (dirglob, fileglob)
-              for dirglob in (["."] + ['/'.join(['*'] * num) for num in range(1, 15)])                         # yui is deeply nested
-              for fileglob in ['*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg', '*.feature']] +
-              ['*/features/*.py'] # step definitions and terrain files for lettuce tests
-      },
+      package_data=package_data,
       zip_safe=False,
-      scripts=["yabiadmin/yabiadmin-manage.py", "yabiadmin/yabicelery.py"],
+      scripts=package_scripts,
       install_requires=install_requires,
       dependency_links=dependency_links,
       extras_require={

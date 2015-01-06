@@ -26,22 +26,24 @@ RUN apt-get update && apt-get install -y curl \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN env --unset=DEBIAN_FRONTEND
 
-# This will be cached and speed up consecutive builds
-#COPY yabiadmin/requirements.txt /
-#RUN pip install --process-dependency-links -r /requirements.txt
-
-# Python deps not in setup.py
-RUN pip install psycopg2==2.5.4
-
 RUN addgroup celery
 RUN adduser --disabled-password --home /app --no-create-home --system -q --ingroup celery celery
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
+ADD yabiadmin/setup.py /app/yabiadmin/
+WORKDIR /app/yabiadmin
+
+# Install only dependencies first to use the build cache more efficiently
+# This will be redone only if setup.py changes
+RUN INSTALL_ONLY_DEPENDENCIES=True pip install --process-dependency-links .
+# Python deps not in setup.py
+RUN pip install psycopg2==2.5.4
+
 COPY . /app
 WORKDIR /app/yabiadmin
-RUN pip install --process-dependency-links -e .
+RUN pip install --process-dependency-links --no-deps -e .
 
 EXPOSE 8000 8001 9000 9001
 VOLUME ["/app"]
