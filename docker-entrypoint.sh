@@ -13,7 +13,7 @@ if [ "$1" = 'celery' ]; then
         CELERYD_CHDIR=`pwd`
     fi
     if [[ -z "$CELERY_BROKER" ]] ; then
-        CELERY_BROKER="amqp://admin:admin@mq:5672//"
+        CELERY_BROKER="amqp://guest:guest@mq:5672//"
     fi
     if [[ -z "$CELERY_APP" ]] ; then
         CELERY_APP="app.celerytasks"
@@ -117,14 +117,18 @@ if [ "$1" = 'runserver' ]; then
     if [[ -z "$MEMCACHE" ]] ; then
         MEMCACHE="cache:11211"
     fi
+    if [[ -z "$CELERY_BROKER" ]] ; then
+        CELERY_BROKER="amqp://guest:guest@mq:5672//"
+    fi
 
     echo "DEPLOYMENT is ${DEPLOYMENT}"
     echo "PRODUCTION is ${PRODUCTION}"
     echo "DEBUG is ${DEBUG}"
     echo "DBSERVER is ${DBSERVER}"
     echo "MEMCACHE is ${MEMCACHE}"
+    echo "CELERY_BROKER is ${CELERY_BROKER}"
 
-    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE
+    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE CELERY_BROKER
 
     if [[ -z "$RUNSERVER_PORT" ]] ; then
         RUNSERVER_PORT="8000"
