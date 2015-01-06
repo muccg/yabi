@@ -145,6 +145,8 @@ if [ "$1" = 'runserver' ]; then
     echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
+    django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE}
+    django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE}
     django-admin.py ${RUNSERVER_OPTS}
     exit $?
 fi

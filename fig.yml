@@ -1,3 +1,4 @@
+# https://github.com/docker-library/postgres/tree/master/9.3
 db:
   image: postgres:9.3
   environment:
@@ -35,6 +36,10 @@ web:
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
     - CELERY_BROKER=amqp://admin:admin@mq:5672//
+    - DBUSER=yabiapp
+    - DBPASS=yabiapp
+    - DBNAME=yabiapp
+    - DBPASS=yabiapp
   volumes:
     - .:/app
   ports:
@@ -58,6 +63,10 @@ celery:
     - CELERY_APP=yabiadmin.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DBUSER=yabiapp
+    - DBPASS=yabiapp
+    - DBNAME=yabiapp
+    - DBPASS=yabiapp
   volumes:
     - .:/app
   links:
