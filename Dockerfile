@@ -29,9 +29,6 @@ RUN env --unset=DEBIAN_FRONTEND
 RUN addgroup celery
 RUN adduser --disabled-password --home /app --no-create-home --system -q --ingroup celery celery
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 ADD yabiadmin/setup.py /app/yabiadmin/
 WORKDIR /app/yabiadmin
 
@@ -44,6 +41,9 @@ RUN pip install psycopg2==2.5.4
 COPY . /app
 WORKDIR /app/yabiadmin
 RUN pip install --process-dependency-links --no-deps -e .
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 8000 8001 9000 9001
 VOLUME ["/app"]

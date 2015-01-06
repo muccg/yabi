@@ -102,6 +102,30 @@ fi
 if [ "$1" = 'runserver' ]; then
     echo "[Run] Starting runserver"
 
+    if [[ -z "$DEPLOYMENT" ]] ; then
+        DEPLOYMENT="dev"
+    fi
+    if [[ -z "$PRODUCTION" ]] ; then
+        PRODUCTION=0
+    fi
+    if [[ -z "$DEBUG" ]] ; then
+        DEBUG=1
+    fi
+    if [[ -z "$DBSERVER" ]] ; then
+        DBSERVER="db"
+    fi
+    if [[ -z "$MEMCACHE" ]] ; then
+        MEMCACHE="cache:11211"
+    fi
+
+    echo "DEPLOYMENT is ${DEPLOYMENT}"
+    echo "PRODUCTION is ${PRODUCTION}"
+    echo "DEBUG is ${DEBUG}"
+    echo "DBSERVER is ${DBSERVER}"
+    echo "MEMCACHE is ${MEMCACHE}"
+
+    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE
+
     if [[ -z "$RUNSERVER_PORT" ]] ; then
         RUNSERVER_PORT="8000"
     fi
