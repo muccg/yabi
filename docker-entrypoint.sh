@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 # start up a celery instance
 if [ "$1" = 'celery' ]; then
@@ -7,37 +6,88 @@ if [ "$1" = 'celery' ]; then
 
     chown -R celery:celery /app
 
-    # TODO expose these as env vars to allow them to be set
+    if [[ -z "$CELERY_CONFIG_MODULE" ]] ; then
+        CELERY_CONFIG_MODULE="settings"
+    fi
+    if [[ -z "$CELERYD_CHDIR" ]] ; then
+        CELERYD_CHDIR=`pwd`
+    fi
+    if [[ -z "$CELERY_BROKER" ]] ; then
+        CELERY_BROKER="amqp://admin:admin@mq:5672//"
+    fi
+    if [[ -z "$CELERY_APP" ]] ; then
+        CELERY_APP="app.celerytasks"
+    fi
+    if [[ -z "$CELERY_LOGLEVEL" ]] ; then
+        CELERY_LOGLEVEL="DEBUG"
+    fi
+    if [[ -z "$CELERY_OPTIMIZATION" ]] ; then
+        CELERY_OPTIMIZATION="fair"
+    fi
+    if [[ -z "$CELERY_OPTS" ]] ; then
+        CELERY_OPTS="-A ${CELERY_APP} -E --loglevel=${CELERY_LOGLEVEL} -O${CELERY_OPTIMIZATION} -b ${CELERY_BROKER}"
+    fi
+    if [[ -z "$DJANGO_SETTINGS_MODULE" ]] ; then
+        DJANGO_SETTINGS_MODULE="django.settings"
+    fi
+    if [[ -z "$DJANGO_PROJECT_DIR" ]] ; then
+        DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
+    fi
+    if [[ -z "$PROJECT_DIRECTORY" ]] ; then
+        PROJECT_DIRECTORY="${CELERYD_CHDIR}"
+    fi
 
-    # Environment taken from develop.sh
-    DJANGO_SETTINGS_MODULE="yabiadmin.settings"
-    CELERY_CONFIG_MODULE="settings"
-    #CELERYD_OPTS="-A yabiadmin.backend.celerytasks -E --loglevel=DEBUG -Ofair -b amqp://guest:**@mq:5672//"
-    #CELERYD_OPTS="-A yabiadmin.backend.celerytasks -E --loglevel=DEBUG -Ofair -b amqp://guest@mq:5672//"
-    CELERYD_OPTS="-A yabiadmin.backend.celerytasks -E --loglevel=DEBUG -Ofair -b amqp://admin:admin@mq:5672//"
-    DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
-    PROJECT_DIRECTORY="${CELERYD_CHDIR}"
+    echo "CELERY_CONFIG_MODULE is ${CELERY_CONFIG_MODULE}"
+    echo "CELERYD_CHDIR is ${CELERYD_CHDIR}"
+    echo "CELERY_BROKER is ${CELERY_BROKER}"
+    echo "CELERY_APP is ${CELERY_APP}"
+    echo "CELERY_LOGLEVEL is ${CELERY_LOGLEVEL}"
+    echo "CELERY_OPTIMIZATION is ${CELERY_OPTIMIZATION}"
+    echo "CELERY_OPTS is ${CELERY_OPTS}"
+    echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
+    echo "DJANGO_PROJECT_DIR is ${DJANGO_PROJECT_DIR}"
+    echo "PROJECT_DIRECTORY is ${PROJECT_DIRECTORY}"
+     
+    export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR PROJECT_DIRECTORY CELERYD_CHDIR
 
-    export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
+    if [[ -z "$DEPLOYMENT" ]] ; then
+        DEPLOYMENT="dev"
+    fi
+    if [[ -z "$PRODUCTION" ]] ; then
+        PRODUCTION=0
+    fi
+    if [[ -z "$DEBUG" ]] ; then
+        DEBUG=1
+    fi
+    if [[ -z "$DBSERVER" ]] ; then
+        DBSERVER="db"
+    fi
+    if [[ -z "$MEMCACHE" ]] ; then
+        MEMCACHE="cache:11211"
+    fi
 
-    # TODO once again these need to be env vars, hard coded while we get it running
-
-    DEPLOYMENT=dev
-    PRODUCTION=0
-    DEBUG=1
-    DBSERVER=db
-    MEMCACHE=cache:11211
+    echo "DEPLOYMENT is ${DEPLOYMENT}"
+    echo "PRODUCTION is ${PRODUCTION}"
+    echo "DEBUG is ${DEBUG}"
+    echo "DBSERVER is ${DBSERVER}"
+    echo "MEMCACHE is ${MEMCACHE}"
     
     export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE
 
-    gosu celery /usr/local/bin/celery worker ${CELERYD_OPTS}
+    gosu celery /usr/local/bin/celery worker ${CELERY_OPTS}
     exit $?
 fi
 
 # start up a uwsgi instance
 if [ "$1" = 'uwsgi' ]; then
     echo "[Run] Starting uwsgi"
-    UWSGI_OPTS="/app/uwsgi/docker.ini"
+
+    if [[ -z "$UWSGI_OPTS" ]] ; then
+        UWSGI_OPTS="/app/uwsgi/docker.ini"
+    fi
+
+    echo "UWSGI_OPTS is ${UWSGI_OPTS}"
+
     /usr/local/bin/uwsgi ${UWSGI_OPTS}
     exit $?
 fi

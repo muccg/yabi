@@ -49,6 +49,9 @@ uwsgi:
 celery:
   image: yabi_uwsgi
   command: celery
+  environment:
+    - CELERY_APP=yabiadmin.backend.celerytasks
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
 #  volumes:
 #    - .:/app
   links:
