@@ -15,11 +15,15 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN env --unset=DEBIAN_FRONTEND
 
-ADD . /app
+ADD yabiadmin/setup.py /app/yabiadmin/
 WORKDIR /app/yabiadmin
 
-RUN pip install --process-dependency-links .
+RUN INSTALL_ONLY_DEPENDENCIES=True pip install --process-dependency-links .
 RUN pip install psycopg2==2.5.4
+
+ADD . /app
+WORKDIR /app/yabiadmin
+RUN pip install --no-deps .
 
 EXPOSE 8000 8001 9000 9001
 
