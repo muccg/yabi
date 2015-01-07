@@ -57,6 +57,13 @@ install_requires = [
     'uwsgitop',
     'pyinotify==0.9.4',
     'Werkzeug',
+    # for tests
+    'requests==2.4.1',
+    'django-nose',
+    'nose==1.3.4',
+    'mockito>=0.5.0,<0.6.0',
+    'sniffer==0.3.2',
+    'model_mommy==1.2.2',
 ]
 
 # Compiled python modules which are usually provided by system packages
