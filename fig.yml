@@ -43,7 +43,8 @@ web:
     - DBUSER=yabiapp
     - DBPASS=yabiapp
     - DBNAME=yabiapp
-    - DBPASS=yabiapp
+    - WRITABLE_DIRECTORY=/data
+    - LOG_DIRECTORY=/data/log
   volumes:
     - .:/app
   ports:
@@ -73,6 +74,8 @@ celery:
     - DBPORT=5432
     - DBUSER=yabiapp
     - DBPASS=yabiapp
+    - WRITABLE_DIRECTORY=/data
+    - LOG_DIRECTORY=/data/log
   volumes:
     - .:/app
   links:
