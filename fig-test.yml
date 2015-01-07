@@ -63,8 +63,8 @@ celerytest:
     - DBPASS=yabiapp
     - DBNAME=yabiapp
     - DBPASS=yabiapp
-  volumes:
-    - .:/app
+  volumes_from:
+    - webtest
   links:
     - dbtest
     - mqtest
@@ -85,8 +85,8 @@ testhost:
     - DBPASS=yabiapp
     - DBNAME=yabiapp
     - DBPASS=yabiapp
-  volumes:
-    - .:/app
+  volumes_from:
+    - webtest
   links:
     - dbtest
     - webtest
