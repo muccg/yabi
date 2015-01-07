@@ -143,6 +143,9 @@ if [ "$1" = 'runserver' ]; then
     echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
+    # wait for everything to start up
+    sleep 5
+
     gosu ccg-user django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE}
     HOME=/app gosu ccg-user django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE}
     gosu ccg-user django-admin.py ${RUNSERVER_OPTS}
@@ -158,10 +161,10 @@ if [ "$1" = 'runtests' ]; then
     NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
     IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
     IGNORES="${IGNORES} -a !external_service"
-    TEST_CASES="tests yabiadmin/yabiadmin"
+    TEST_CASES="/app/tests /app/yabiadmin/yabiadmin"
 
     # wait for everything to start up
-    sleep 5
+    sleep 10
 
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
     ${NOSETESTS} ${IGNORES} ${TEST_CASES}
