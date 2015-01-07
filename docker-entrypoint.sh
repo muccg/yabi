@@ -171,11 +171,9 @@ if [ "$1" = 'runserver' ]; then
     echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
-    # wait for everything to start up
-    sleep 5
-
     gosu ccg-user django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE}
     HOME=/data gosu ccg-user django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE}
+    gosu ccg-user django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE}
     gosu ccg-user django-admin.py ${RUNSERVER_OPTS}
     exit $?
 fi
@@ -184,8 +182,16 @@ fi
 if [ "$1" = 'runtests' ]; then
     echo "[Run] Starting tests"
 
+    if [[ -z "$RUNSERVER_PORT" ]] ; then
+        RUNSERVER_PORT="8000"
+    fi
+    if [[ -z "$RUNSERVER_HOST" ]] ; then
+        RUNSERVER_HOST="webtest"
+    fi
+
     dockerwait $QUEUESERVER $QUEUEPORT
     dockerwait $DBSERVER $DBPORT
+    dockerwait $RUNSERVER_HOST $RUNSERVER_PORT
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
     COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
@@ -193,9 +199,6 @@ if [ "$1" = 'runtests' ]; then
     IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
     IGNORES="${IGNORES} -a !external_service"
     TEST_CASES="/app/tests /app/yabiadmin/yabiadmin"
-
-    # wait for everything to start up
-    sleep 10
 
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
     ${NOSETESTS} ${IGNORES} ${TEST_CASES}
