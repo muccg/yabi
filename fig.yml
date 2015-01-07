@@ -20,15 +20,16 @@ cache:
   expose:
     - "11211"
 
-#nginx:
-#  image: nginx:1.7
-#  volumes:
-#          - nginx:/etc/nginx:ro
-#  links:
-#    - yabi
-#  ports:
-#    - "80:80"
-#      #    - "443:443"
+nginx:
+  image: nginx:1.7
+  volumes:
+    - nginx:/etc/nginx
+  links:
+    - uwsgi
+  expose:
+    - "8443"
+  ports:
+    - "443:8443"
 
 web:
   build: .
@@ -49,9 +50,26 @@ web:
     - .:/app
   ports:
     - "8000:8000"
-    - "8001:8001"
+  links:
+    - db
+    - mq
+    - cache
+
+uwsgi:
+  image: yabi_web
+  command: uwsgi
+  environment:
+    - QUEUESERVER=mq
+    - QUEUEPORT=5672
+    - DBSERVER=db
+    - DBPORT=5432
+  volumes:
+    - .:/app
+  ports:
     - "9000:9000"
     - "9001:9001"
+    - "9100:9100"
+    - "9101:9101"
   links:
     - db
     - mq
