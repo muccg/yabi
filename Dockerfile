@@ -1,3 +1,4 @@
+#
 FROM muccg/python-base:ubuntu14.04-2.7
 MAINTAINER ccg <ccgdevops@googlegroups.com>
 
@@ -36,12 +37,16 @@ WORKDIR /app/yabiadmin
 # Install only dependencies first to use the build cache more efficiently
 # This will be redone only if setup.py changes
 RUN INSTALL_ONLY_DEPENDENCIES=True pip install --process-dependency-links .
-
 # Python deps not in setup.py
 RUN pip install psycopg2==2.5.4
 
 COPY . /app
 RUN pip install --process-dependency-links --no-deps -e .
+
+WORKDIR /app/yabish
+RUN pip install --process-dependency-links -e .
+
+WORKDIR /app
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
