@@ -14,16 +14,6 @@ RUN apt-get update && apt-get install -y \
   libxml2-dev \
   libxslt1-dev
 
-# snippet from postgres dockerfile
-# grab gosu for easy step-down from root
-RUN gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4
-RUN apt-get update && apt-get install -y curl \
-        && curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
-        && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture).asc" \
-        && gpg --verify /usr/local/bin/gosu.asc \
-        && rm /usr/local/bin/gosu.asc \
-        && chmod +x /usr/local/bin/gosu
-
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN env --unset=DEBIAN_FRONTEND
 
@@ -54,5 +44,7 @@ RUN chmod +x /docker-entrypoint.sh
 EXPOSE 8000 8001 9000 9001
 VOLUME ["/app", "/data"]
 
+USER ccg-user
+ENV HOME /data
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["runserver"]

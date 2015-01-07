@@ -14,6 +14,9 @@ function dockerwait {
     exec 6<&-
 }
 
+echo "HOME is ${HOME}"
+echo "WHOAMI is `whoami`"
+
 # start up a celery instance
 if [ "$1" = 'celery' ]; then
     echo "[Run] Starting celery"
@@ -95,7 +98,7 @@ if [ "$1" = 'celery' ]; then
     
     export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE
 
-    gosu ccg-user celery worker ${CELERY_OPTS}
+    celery worker ${CELERY_OPTS}
     exit $?
 fi
 
@@ -109,7 +112,7 @@ if [ "$1" = 'uwsgi' ]; then
 
     echo "UWSGI_OPTS is ${UWSGI_OPTS}"
 
-    gosu ccg-user uwsgi ${UWSGI_OPTS}
+    uwsgi ${UWSGI_OPTS}
     exit $?
 fi
 
@@ -171,10 +174,10 @@ if [ "$1" = 'runserver' ]; then
     echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
-    gosu ccg-user django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE}
-    HOME=/data gosu ccg-user django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE}
-    gosu ccg-user django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE}
-    gosu ccg-user django-admin.py ${RUNSERVER_OPTS}
+    django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE}
+    django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE}
+    django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE}
+    django-admin.py ${RUNSERVER_OPTS}
     exit $?
 fi
 
