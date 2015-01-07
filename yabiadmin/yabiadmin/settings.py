@@ -117,7 +117,7 @@ MEDIA_ROOT = os.path.join(WEBAPP_ROOT, 'static', 'media')
 MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(WEBAPP_ROOT, 'scratch')
+WRITABLE_DIRECTORY = env.get('writable_directory', os.path.join(WEBAPP_ROOT, 'scratch'))
 if not os.path.exists(WRITABLE_DIRECTORY):
     os.mkdir(WRITABLE_DIRECTORY)
 
