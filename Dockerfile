@@ -28,8 +28,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN env --unset=DEBIAN_FRONTEND
 
 RUN addgroup ccg-user
-RUN adduser --disabled-password --home /app --no-create-home --system -q --ingroup ccg-user ccg-user
-RUN mkdir /app && chown ccg-user:ccg-user /app
+RUN adduser --disabled-password --home /data --no-create-home --system -q --ingroup ccg-user ccg-user
+RUN mkdir /data && chown ccg-user:ccg-user /data
 
 COPY yabiadmin/setup.py /app/yabiadmin/setup.py
 WORKDIR /app/yabiadmin
@@ -52,7 +52,7 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 8000 8001 9000 9001
-VOLUME ["/app"]
+VOLUME ["/app", "/data"]
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["runserver"]
