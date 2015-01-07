@@ -149,7 +149,26 @@ if [ "$1" = 'runserver' ]; then
     exit $?
 fi
 
-echo "[RUN]: Builtin command not provided [runserver|celery|uwsgi]"
+# run tests
+if [ "$1" = 'runtests' ]; then
+    echo "[Run] Starting tests"
+
+    XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
+    COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
+    NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
+    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    IGNORES="${IGNORES} -a !external_service"
+    TEST_CASES="tests yabiadmin/yabiadmin"
+
+    # wait for everything to start up
+    sleep 5
+
+    echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+    ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+    exit $?
+fi
+
+echo "[RUN]: Builtin command not provided [runtests|runserver|celery|uwsgi]"
 echo "[RUN]: $@"
 
 exec "$@"
