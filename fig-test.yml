@@ -74,10 +74,13 @@ testhost:
   image: yabi_webtest
   command: runtests
   environment:
+    - QUEUESERVER=mqtest
+    - QUEUEPORT=5672
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
     - CELERY_BROKER=amqp://admin:admin@mqtest:5672//
     - CELERY_APP=yabiadmin.backend.celerytasks
     - DBSERVER=dbtest
+    - DBPORT=5432
     - DBUSER=yabiapp
     - DBPASS=yabiapp
     - DBNAME=yabiapp
