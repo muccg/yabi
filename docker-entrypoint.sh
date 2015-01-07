@@ -141,6 +141,9 @@ if [ "$1" = 'runserver' ]; then
     if [[ -z "$WRITABLE_DIRECTORY" ]] ; then
 	WRITABLE_DIRECTORY="/data/scratch"
     fi
+    if [[ -z "$LOG_DIRECTORY" ]] ; then
+	LOG_DIRECTORY="/data/log"
+    fi
 
     echo "DEPLOYMENT is ${DEPLOYMENT}"
     echo "PRODUCTION is ${PRODUCTION}"
@@ -149,8 +152,9 @@ if [ "$1" = 'runserver' ]; then
     echo "MEMCACHE is ${MEMCACHE}"
     echo "CELERY_BROKER is ${CELERY_BROKER}"
     echo "WRITABLE_DIRECTORY is ${WRITABLE_DIRECTORY}"
+    echo "LOG_DIRECTORY is ${LOG_DIRECTORY}"
 
-    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE CELERY_BROKER WRITABLE_DIRECTORY
+    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE CELERY_BROKER WRITABLE_DIRECTORY LOG_DIRECTORY
 
     if [[ -z "$RUNSERVER_PORT" ]] ; then
         RUNSERVER_PORT="8000"
@@ -179,6 +183,9 @@ fi
 # run tests
 if [ "$1" = 'runtests' ]; then
     echo "[Run] Starting tests"
+
+    dockerwait $QUEUESERVER $QUEUEPORT
+    dockerwait $DBSERVER $DBPORT
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
     COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
