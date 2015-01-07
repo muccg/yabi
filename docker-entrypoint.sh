@@ -106,6 +106,9 @@ fi
 if [ "$1" = 'uwsgi' ]; then
     echo "[Run] Starting uwsgi"
 
+    dockerwait $QUEUESERVER $QUEUEPORT
+    dockerwait $DBSERVER $DBPORT
+
     if [[ -z "$UWSGI_OPTS" ]] ; then
         UWSGI_OPTS="/app/uwsgi/docker.ini"
     fi
