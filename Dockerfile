@@ -46,7 +46,7 @@ RUN pip install --process-dependency-links --no-deps -e .
 WORKDIR /app/yabish
 RUN pip install --process-dependency-links -e .
 
-WORKDIR /app
+WORKDIR /data
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
