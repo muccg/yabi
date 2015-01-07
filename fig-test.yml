@@ -1,0 +1,84 @@
+# https://github.com/docker-library/postgres/tree/master/9.3
+dbtest:
+  image: postgres:9.3
+  environment:
+    - POSTGRES_USER=yabiapp
+    - POSTGRES_PASSWORD=yabiapp
+  ports:
+    - "5432:5432"
+
+mqtest:
+  image: tutum/rabbitmq
+  environment:
+    - RABBITMQ_PASS=admin
+  ports:
+    - "5672:5672"
+    - "15672:15672"
+
+cachetest:
+  image: memcached
+  expose:
+    - "11211"
+
+webtest:
+  build: .
+  command: runserver
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - CELERY_BROKER=amqp://admin:admin@mqtest:5672//
+    - DBSERVER=dbtest
+    - DBUSER=yabiapp
+    - DBPASS=yabiapp
+    - DBNAME=yabiapp
+    - DBPASS=yabiapp
+    - MEMCACHE=cachetest:11211
+  volumes:
+    - .:/app
+  ports:
+    - "8000:8000"
+    - "8001:8001"
+    - "9000:9000"
+    - "9001:9001"
+  links:
+    - dbtest
+    - mqtest
+    - cachetest
+
+celerytest:
+  image: yabi_webtest
+  command: celery
+  environment:
+    - CELERY_BROKER=amqp://admin:admin@mqtest:5672//
+    - CELERY_APP=yabiadmin.backend.celerytasks
+    - CELERY_AUTORELOAD=1
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DBSERVER=dbtest
+    - DBUSER=yabiapp
+    - DBPASS=yabiapp
+    - DBNAME=yabiapp
+    - DBPASS=yabiapp
+  volumes:
+    - .:/app
+  links:
+    - dbtest
+    - mqtest
+
+# runs the tests against the stack above
+testhost:
+  image: yabi_webtest
+  command: runtests
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - CELERY_BROKER=amqp://admin:admin@mqtest:5672//
+    - CELERY_APP=yabiadmin.backend.celerytasks
+    - DBSERVER=dbtest
+    - DBUSER=yabiapp
+    - DBPASS=yabiapp
+    - DBNAME=yabiapp
+    - DBPASS=yabiapp
+  volumes:
+    - .:/app
+  links:
+    - dbtest
+    - webtest
+    - mqtest
