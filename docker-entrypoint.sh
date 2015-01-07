@@ -1,8 +1,25 @@
 #!/bin/bash
 
+
+function dockerwait {
+    # $1 host
+    # $2 port
+    while ! exec 6<>/dev/tcp/$1/$2; do
+        echo "$(date) - waiting to connect $1 $2"
+        sleep 1
+    done
+    echo "$(date) - connected to $1 $2"
+
+    exec 6>&-
+    exec 6<&-
+}
+
 # start up a celery instance
 if [ "$1" = 'celery' ]; then
     echo "[Run] Starting celery"
+
+    dockerwait $QUEUESERVER $QUEUEPORT
+    dockerwait $DBSERVER $DBPORT
 
     if [[ -z "$CELERY_CONFIG_MODULE" ]] ; then
         CELERY_CONFIG_MODULE="settings"
@@ -100,6 +117,9 @@ fi
 if [ "$1" = 'runserver' ]; then
     echo "[Run] Starting runserver"
 
+    dockerwait $QUEUESERVER $QUEUEPORT
+    dockerwait $DBSERVER $DBPORT
+
     if [[ -z "$DEPLOYMENT" ]] ; then
         DEPLOYMENT="dev"
     fi
@@ -118,6 +138,9 @@ if [ "$1" = 'runserver' ]; then
     if [[ -z "$CELERY_BROKER" ]] ; then
         CELERY_BROKER="amqp://guest:guest@mq:5672//"
     fi
+    if [[ -z "$WRITABLE_DIRECTORY" ]] ; then
+	WRITABLE_DIRECTORY="/data/scratch"
+    fi
 
     echo "DEPLOYMENT is ${DEPLOYMENT}"
     echo "PRODUCTION is ${PRODUCTION}"
@@ -125,8 +148,9 @@ if [ "$1" = 'runserver' ]; then
     echo "DBSERVER is ${DBSERVER}"
     echo "MEMCACHE is ${MEMCACHE}"
     echo "CELERY_BROKER is ${CELERY_BROKER}"
+    echo "WRITABLE_DIRECTORY is ${WRITABLE_DIRECTORY}"
 
-    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE CELERY_BROKER
+    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE CELERY_BROKER WRITABLE_DIRECTORY
 
     if [[ -z "$RUNSERVER_PORT" ]] ; then
         RUNSERVER_PORT="8000"
