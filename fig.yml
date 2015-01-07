@@ -34,8 +34,12 @@ web:
   build: .
   command: runserver
   environment:
+    - QUEUESERVER=mq
+    - QUEUEPORT=5672
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
     - CELERY_BROKER=amqp://admin:admin@mq:5672//
+    - DBSERVER=db
+    - DBPORT=5432
     - DBUSER=yabiapp
     - DBPASS=yabiapp
     - DBNAME=yabiapp
@@ -59,13 +63,15 @@ celery:
   image: yabi_web
   command: celery
   environment:
+    - QUEUESERVER=mq
+    - QUEUEPORT=5672
     - CELERY_BROKER=amqp://admin:admin@mq:5672//
     - CELERY_APP=yabiadmin.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DBSERVER=db
+    - DBPORT=5432
     - DBUSER=yabiapp
-    - DBPASS=yabiapp
-    - DBNAME=yabiapp
     - DBPASS=yabiapp
   volumes:
     - .:/app
