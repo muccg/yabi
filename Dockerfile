@@ -36,15 +36,15 @@ RUN pip install --process-dependency-links --no-deps -e .
 WORKDIR /app/yabish
 RUN pip install --process-dependency-links -e .
 
-WORKDIR /data
+EXPOSE 8000 9000 9001 9100 9101
+VOLUME ["/app", "/data"]
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-EXPOSE 8000 8001 9000 9001
-VOLUME ["/app", "/data"]
-
 USER ccg-user
 ENV HOME /data
+WORKDIR /data
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["runserver"]
