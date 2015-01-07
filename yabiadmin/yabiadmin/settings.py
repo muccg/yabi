@@ -450,7 +450,9 @@ JAVASCRIPT_LIBRARIES = {
 # The logging settings here apply only to the Django WSGI process.
 # Celery is left to hijack the root logger. We add our custom handlers after
 # that in yabiadmin.backend.celerytasks.
-CCG_LOG_DIRECTORY = os.path.join(WEBAPP_ROOT, "log")
+CCG_LOG_DIRECTORY = env.get('log_directory', os.path.join(WEBAPP_ROOT, "log"))
+if not os.path.exists(CCG_LOG_DIRECTORY):
+    os.mkdir(CCG_LOG_DIRECTORY)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
