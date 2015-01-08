@@ -35,17 +35,11 @@ web:
   build: .
   command: runserver
   environment:
-    - QUEUESERVER=mq
-    - QUEUEPORT=5672
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
-    - CELERY_BROKER=amqp://admin:admin@mq:5672//
-    - DBSERVER=db
-    - DBPORT=5432
     - DBUSER=yabiapp
-    - DBPASS=yabiapp
-    - DBNAME=yabiapp
-    - WRITABLE_DIRECTORY=/data
-    - LOG_DIRECTORY=/data/log
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
   volumes:
     - .:/app
   ports:
@@ -59,10 +53,10 @@ uwsgi:
   image: yabi_web
   command: uwsgi
   environment:
-    - QUEUESERVER=mq
-    - QUEUEPORT=5672
-    - DBSERVER=db
-    - DBPORT=5432
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+      # note: uwsgi ini file sets environment
   volumes:
     - .:/app
   ports:
@@ -75,25 +69,16 @@ uwsgi:
     - mq
     - cache
 
-# Create a celery container using the yabi_uwsgi container from above
-# Passing through the celery command invokes celery
-# Work in progress
 celery:
   image: yabi_web
   command: celery
   environment:
-    - QUEUESERVER=mq
-    - QUEUEPORT=5672
-    - CELERY_BROKER=amqp://admin:admin@mq:5672//
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
     - CELERY_APP=yabiadmin.backend.celerytasks
     - CELERY_AUTORELOAD=1
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
-    - DBSERVER=db
-    - DBPORT=5432
     - DBUSER=yabiapp
-    - DBPASS=yabiapp
-    - WRITABLE_DIRECTORY=/data
-    - LOG_DIRECTORY=/data/log
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
   volumes:
     - .:/app
   links:

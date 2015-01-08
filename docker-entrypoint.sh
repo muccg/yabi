@@ -1,9 +1,11 @@
 #!/bin/bash
 
 
+# wait for a given host:port to become available
+#
+# $1 host
+# $2 port
 function dockerwait {
-    # $1 host
-    # $2 port
     while ! exec 6<>/dev/tcp/$1/$2; do
         echo "$(date) - waiting to connect $1 $2"
         sleep 1
@@ -14,51 +16,57 @@ function dockerwait {
     exec 6<&-
 }
 
-echo "HOME is ${HOME}"
-echo "WHOAMI is `whoami`"
 
-# start up a celery instance
-if [ "$1" = 'celery' ]; then
-    echo "[Run] Starting celery"
+# wait for services to become available
+# this prevents race conditions using fig
+function wait_for_services {
+    if [[ "$WAIT_FOR_QUEUE" ]] ; then
+        dockerwait $QUEUESERVER $QUEUEPORT
+    fi
+    if [[ "$WAIT_FOR_DB" ]] ; then
+        dockerwait $DBSERVER $DBPORT
+    fi
+    if [[ "$WAIT_FOR_CACHE" ]] ; then
+        dockerwait $CACHESERVER $CACHEPORT
+    fi
+    if [[ "$WAIT_FOR_WEB" ]] ; then
+        dockerwait $WEBSERVER $WEBPORT
+    fi
+}
 
-    dockerwait $QUEUESERVER $QUEUEPORT
-    dockerwait $DBSERVER $DBPORT
 
-    if [[ -z "$CELERY_CONFIG_MODULE" ]] ; then
-        CELERY_CONFIG_MODULE="settings"
-    fi
-    if [[ -z "$CELERYD_CHDIR" ]] ; then
-        CELERYD_CHDIR=`pwd`
-    fi
-    if [[ -z "$CELERY_BROKER" ]] ; then
-        CELERY_BROKER="amqp://guest:guest@mq:5672//"
-    fi
-    if [[ -z "$CELERY_APP" ]] ; then
-        CELERY_APP="app.celerytasks"
-    fi
-    if [[ -z "$CELERY_LOGLEVEL" ]] ; then
-        CELERY_LOGLEVEL="DEBUG"
-    fi
-    if [[ -z "$CELERY_OPTIMIZATION" ]] ; then
-        CELERY_OPTIMIZATION="fair"
-    fi
+function defaults {
+    : ${QUEUESERVER:="mq"}
+    : ${QUEUEPORT:="5672"}
+    : ${DBSERVER:="db"}
+    : ${DBPORT:="5432"}
+    : ${WEBSERVER="web"}
+    : ${WEBPORT="8000"}
+    : ${CACHESERVER="cache"}
+    : ${CACHEPORT="11211"}
+
+    : ${DBUSER="webapp"}
+    : ${DBNAME="${DBUSER}"}
+    : ${DBPASS="${DBUSER}"}
+    export DBSERVER DBPORT DBUSER DBNAME DBPASS
+}
+
+
+function celery_defaults {
+    : ${CELERY_CONFIG_MODULE="settings"}
+    : ${CELERYD_CHDIR=`pwd`}
+    : ${CELERY_BROKER="amqp://admin:admin@${QUEUESERVER}:${QUEUEPORT}//"}
+    : ${CELERY_APP="app.celerytasks"}
+    : ${CELERY_LOGLEVEL="DEBUG"}
+    : ${CELERY_OPTIMIZATION="fair"}
     if [[ -z "$CELERY_AUTORELOAD" ]] ; then
         CELERY_AUTORELOAD=""
     else
         CELERY_AUTORELOAD="--autoreload"
     fi
-    if [[ -z "$CELERY_OPTS" ]] ; then
-        CELERY_OPTS="-A ${CELERY_APP} -E --loglevel=${CELERY_LOGLEVEL} -O${CELERY_OPTIMIZATION} -b ${CELERY_BROKER} ${CELERY_AUTORELOAD}"
-    fi
-    if [[ -z "$DJANGO_SETTINGS_MODULE" ]] ; then
-        DJANGO_SETTINGS_MODULE="django.settings"
-    fi
-    if [[ -z "$DJANGO_PROJECT_DIR" ]] ; then
-        DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
-    fi
-    if [[ -z "$PROJECT_DIRECTORY" ]] ; then
-        PROJECT_DIRECTORY="${CELERYD_CHDIR}"
-    fi
+    : ${CELERY_OPTS="-A ${CELERY_APP} -E --loglevel=${CELERY_LOGLEVEL} -O${CELERY_OPTIMIZATION} -b ${CELERY_BROKER} ${CELERY_AUTORELOAD}"}
+    : ${DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"}
+    : ${PROJECT_DIRECTORY="${CELERYD_CHDIR}"}
 
     echo "CELERY_CONFIG_MODULE is ${CELERY_CONFIG_MODULE}"
     echo "CELERYD_CHDIR is ${CELERYD_CHDIR}"
@@ -68,113 +76,69 @@ if [ "$1" = 'celery' ]; then
     echo "CELERY_OPTIMIZATION is ${CELERY_OPTIMIZATION}"
     echo "CELERY_AUTORELOAD is ${CELERY_AUTORELOAD}"
     echo "CELERY_OPTS is ${CELERY_OPTS}"
-    echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
     echo "DJANGO_PROJECT_DIR is ${DJANGO_PROJECT_DIR}"
     echo "PROJECT_DIRECTORY is ${PROJECT_DIRECTORY}"
-     
-    export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR PROJECT_DIRECTORY CELERYD_CHDIR
 
-    if [[ -z "$DEPLOYMENT" ]] ; then
-        DEPLOYMENT="dev"
-    fi
-    if [[ -z "$PRODUCTION" ]] ; then
-        PRODUCTION=0
-    fi
-    if [[ -z "$DEBUG" ]] ; then
-        DEBUG=1
-    fi
-    if [[ -z "$DBSERVER" ]] ; then
-        DBSERVER="db"
-    fi
-    if [[ -z "$MEMCACHE" ]] ; then
-        MEMCACHE="cache:11211"
-    fi
+    export CELERY_CONFIG_MODULE CELERYD_CHDIR CELERY_BROKER CELERY_APP CELERY_LOGLEVEL CELERY_OPTIMIZATION CELERY_AUTORELOAD CELERY_OPTS DJANGO_PROJECT_DIR PROJECT_DIRECTORY
+}
+
+
+function django_defaults {
+    : ${DEPLOYMENT="dev"}
+    : ${PRODUCTION=0}
+    : ${DEBUG=1}
+    : ${MEMCACHE="${CACHESERVER}:${CACHEPORT}"}
+    : ${WRITABLE_DIRECTORY="/data/scratch"}
+    : ${LOG_DIRECTORY="/data/log"}
+    : ${DJANGO_SETTINGS_MODULE="django.settings"}
 
     echo "DEPLOYMENT is ${DEPLOYMENT}"
     echo "PRODUCTION is ${PRODUCTION}"
     echo "DEBUG is ${DEBUG}"
-    echo "DBSERVER is ${DBSERVER}"
     echo "MEMCACHE is ${MEMCACHE}"
+    echo "WRITABLE_DIRECTORY is ${WRITABLE_DIRECTORY}"
+    echo "LOG_DIRECTORY is ${LOG_DIRECTORY}"
+    echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
     
-    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE
+    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE WRITABLE_DIRECTORY LOG_DIRECTORY DJANGO_SETTINGS_MODULE
+}
+
+echo "HOME is ${HOME}"
+echo "WHOAMI is `whoami`"
+
+defaults
+wait_for_services
+
+# celery entrypoint
+if [ "$1" = 'celery' ]; then
+    echo "[Run] Starting celery"
+
+    django_defaults
+    celery_defaults
 
     celery worker ${CELERY_OPTS}
     exit $?
 fi
 
-# start up a uwsgi instance
+# uwsgi entrypoint
 if [ "$1" = 'uwsgi' ]; then
     echo "[Run] Starting uwsgi"
 
-    dockerwait $QUEUESERVER $QUEUEPORT
-    dockerwait $DBSERVER $DBPORT
-
-    if [[ -z "$UWSGI_OPTS" ]] ; then
-        UWSGI_OPTS="/app/uwsgi/docker.ini"
-    fi
-
+    : ${UWSGI_OPTS="/app/uwsgi/docker.ini"}
     echo "UWSGI_OPTS is ${UWSGI_OPTS}"
 
     uwsgi ${UWSGI_OPTS}
     exit $?
 fi
 
-# start up a runserver instance
+# runserver entrypoint
 if [ "$1" = 'runserver' ]; then
     echo "[Run] Starting runserver"
 
-    dockerwait $QUEUESERVER $QUEUEPORT
-    dockerwait $DBSERVER $DBPORT
+    celery_defaults
+    django_defaults
 
-    if [[ -z "$DEPLOYMENT" ]] ; then
-        DEPLOYMENT="dev"
-    fi
-    if [[ -z "$PRODUCTION" ]] ; then
-        PRODUCTION=0
-    fi
-    if [[ -z "$DEBUG" ]] ; then
-        DEBUG=1
-    fi
-    if [[ -z "$DBSERVER" ]] ; then
-        DBSERVER="db"
-    fi
-    if [[ -z "$MEMCACHE" ]] ; then
-        MEMCACHE="cache:11211"
-    fi
-    if [[ -z "$CELERY_BROKER" ]] ; then
-        CELERY_BROKER="amqp://guest:guest@mq:5672//"
-    fi
-    if [[ -z "$WRITABLE_DIRECTORY" ]] ; then
-	WRITABLE_DIRECTORY="/data/scratch"
-    fi
-    if [[ -z "$LOG_DIRECTORY" ]] ; then
-	LOG_DIRECTORY="/data/log"
-    fi
-
-    echo "DEPLOYMENT is ${DEPLOYMENT}"
-    echo "PRODUCTION is ${PRODUCTION}"
-    echo "DEBUG is ${DEBUG}"
-    echo "DBSERVER is ${DBSERVER}"
-    echo "MEMCACHE is ${MEMCACHE}"
-    echo "CELERY_BROKER is ${CELERY_BROKER}"
-    echo "WRITABLE_DIRECTORY is ${WRITABLE_DIRECTORY}"
-    echo "LOG_DIRECTORY is ${LOG_DIRECTORY}"
-
-    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE CELERY_BROKER WRITABLE_DIRECTORY LOG_DIRECTORY
-
-    if [[ -z "$RUNSERVER_PORT" ]] ; then
-        RUNSERVER_PORT="8000"
-    fi
-    if [[ -z "$DJANGO_SETTINGS_MODULE" ]] ; then
-        DJANGO_SETTINGS_MODULE="django.settings"
-    fi
-
-    if [[ -z "$RUNSERVER_OPTS" ]] ; then
-        RUNSERVER_OPTS="runserver_plus 0.0.0.0:${RUNSERVER_PORT} --settings=${DJANGO_SETTINGS_MODULE}"
-    fi
-
-    echo "RUNSERVER_PORT is ${RUNSERVER_PORT}"
-    echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
+    : ${RUNSERVER_OPTS="runserver_plus 0.0.0.0:${WEBPORT} --settings=${DJANGO_SETTINGS_MODULE}"}
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
     django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE}
@@ -184,20 +148,9 @@ if [ "$1" = 'runserver' ]; then
     exit $?
 fi
 
-# run tests
+# runtests entrypoint
 if [ "$1" = 'runtests' ]; then
     echo "[Run] Starting tests"
-
-    if [[ -z "$RUNSERVER_PORT" ]] ; then
-        RUNSERVER_PORT="8000"
-    fi
-    if [[ -z "$RUNSERVER_HOST" ]] ; then
-        RUNSERVER_HOST="webtest"
-    fi
-
-    dockerwait $QUEUESERVER $QUEUEPORT
-    dockerwait $DBSERVER $DBPORT
-    dockerwait $RUNSERVER_HOST $RUNSERVER_PORT
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
     COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
