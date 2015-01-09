@@ -89,6 +89,8 @@ function django_defaults {
     : ${DEBUG=1}
     : ${MEMCACHE="${CACHESERVER}:${CACHEPORT}"}
     : ${WRITABLE_DIRECTORY="/data/scratch"}
+    : ${STATIC_ROOT="/data/static"}
+    : ${MEDIA_ROOT="/data/static/media"}
     : ${LOG_DIRECTORY="/data/log"}
     : ${DJANGO_SETTINGS_MODULE="django.settings"}
 
@@ -97,10 +99,12 @@ function django_defaults {
     echo "DEBUG is ${DEBUG}"
     echo "MEMCACHE is ${MEMCACHE}"
     echo "WRITABLE_DIRECTORY is ${WRITABLE_DIRECTORY}"
+    echo "STATIC_ROOT is ${STATIC_ROOT}"
+    echo "MEDIA_ROOT is ${MEDIA_ROOT}"
     echo "LOG_DIRECTORY is ${LOG_DIRECTORY}"
     echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
     
-    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE WRITABLE_DIRECTORY LOG_DIRECTORY DJANGO_SETTINGS_MODULE
+    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE WRITABLE_DIRECTORY STATIC_ROOT MEDIA_ROOT LOG_DIRECTORY DJANGO_SETTINGS_MODULE
 }
 
 echo "HOME is ${HOME}"
