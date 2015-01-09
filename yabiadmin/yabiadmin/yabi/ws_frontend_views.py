@@ -276,12 +276,14 @@ def backend_get_file(yabiusername, uri, is_dir=False):
         raise Exception("Backend file download was not successful")
 
 
+
 def filename_from_uri(uri, default='default.txt'):
     try:
         return uri.rstrip('/').rsplit('/', 1)[1]
     except IndexError:
         logger.critical('Unable to get filename from uri: %s' % uri)
         return default
+
 
 
 @authentication_required
@@ -295,7 +297,8 @@ def get(request):
     filename = filename_from_uri(uri)
 
     try:
-        response = StreamingHttpResponse(backend_get_file(yabiusername, uri))
+        file_iterator = read_into_iterator(backend_get_file(yabiusername, uri))
+        response = StreamingHttpResponse(file_iterator)
     except FileNotFoundError:
         response = HttpResponseNotFound()
     else:
@@ -319,7 +322,8 @@ def zget(request):
     filename = filename_from_uri(uri, default='default.tar.gz')
 
     try:
-        response = StreamingHttpResponse(backend_get_file(yabiusername, uri, is_dir=True))
+        file_iterator = read_into_iterator(backend_get_file(yabiusername, uri, is_dir=True))
+        response = StreamingHttpResponse(file_iterator)
     except FileNotFoundError:
         response = HttpResponseNotFound()
     else:
@@ -697,3 +701,15 @@ def find_first(pred, sequence):
     for x in sequence:
         if pred(x):
             return x
+
+
+def read_into_iterator(target_iterator):
+    """Returns the equivalent of target_iterator, but reads the first element
+       at call time.
+       Use to get errors that would occur only at iteration time at iterator
+       creation time."""
+    try:
+        first_elem = target_iterator.next()
+        return itertools.chain(iter((first_elem,)), target_iterator)
+    except StopIteration:
+        return target_iterator
