@@ -108,12 +108,12 @@ LOGOUT_URL = url('/logout/')
 # deployment uses an apache alias
 # STATICFILES_DIRS = [os.path.join(WEBAPP_ROOT,"static")]
 STATIC_URL = url('/static/')
-STATIC_ROOT = os.path.join(WEBAPP_ROOT, 'static')
+STATIC_ROOT = env.get('static_root', os.path.join(WEBAPP_ROOT, 'static'))
 ADMIN_MEDIA_PREFIX = url('/static/admin/')
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = os.path.join(WEBAPP_ROOT, 'static', 'media')
+MEDIA_ROOT = env.get('media_root', os.path.join(WEBAPP_ROOT, 'static', 'media'))
 MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
