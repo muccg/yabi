@@ -263,7 +263,7 @@ if env.get("memcache", ""):
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
             'LOCATION': env.getlist("memcache"),
-            'KEYSPACE': "yabi"
+            'KEYSPACE': env.get("key_prefix", "yabi")
         }
     }
 
@@ -284,7 +284,7 @@ else:
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
-ALLOWED_HOSTS = env.get("allowed_hosts", "localhost").split()
+ALLOWED_HOSTS = env.getlist("allowed_hosts", ["localhost"])
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
