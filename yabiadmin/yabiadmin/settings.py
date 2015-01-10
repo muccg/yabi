@@ -82,14 +82,17 @@ ROOT_URLCONF = 'yabiadmin.urls'
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
 # you SHOULD change the cookie to use HTTPONLY and SECURE when in production
-SESSION_COOKIE_AGE = 60 * 60
+SESSION_COOKIE_AGE = env.get("session_cookie_age", 60 * 60)
 SESSION_COOKIE_PATH = url('/')
-SESSION_COOKIE_NAME = 'yabi_sessionid'
-# SESSION_SAVE_EVERY_REQUEST = True
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = PRODUCTION
-CSRF_COOKIE_NAME = "csrftoken_yabi"
-CSRF_COOKIE_SECURE = PRODUCTION
+SESSION_SAVE_EVERY_REQUEST = env.get("session_save_every_request", True)
+SESSION_COOKIE_HTTPONLY = SESSION_COOKIE_HTTPONLY = env.get("session_cookie_httponly", True)
+SESSION_COOKIE_SECURE = env.get("session_cookie_secure", PRODUCTION)
+SESSION_COOKIE_NAME = env.get("session_cookie_name", "yabi_{0}".format(url('/').replace("/", "")))
+SESSION_COOKIE_DOMAIN = env.get("session_cookie_domain", "") or None
+CSRF_COOKIE_NAME = env.get("csrf_cookie_name", "csrf_{0}".format(SESSION_COOKIE_NAME))
+CSRF_COOKIE_DOMAIN = env.get("csrf_cookie_domain", "") or SESSION_COOKIE_DOMAIN
+CSRF_COOKIE_PATH = env.get("csrf_cookie_path", SESSION_COOKIE_PATH)
+CSRF_COOKIE_SECURE = env.get("csrf_cookie_secure", PRODUCTION)
 
 # Locale
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
@@ -290,6 +293,11 @@ else:
 
 # See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
 ALLOWED_HOSTS = env.get("allowed_hosts", "").split()
+
+# This honours the X-Forwarded-Host header set by our nginx frontend when
+# constructing redirect URLS.
+# see: https://docs.djangoproject.com/en/1.4/ref/settings/#use-x-forwarded-host
+USE_X_FORWARDED_HOST = env.get("use_x_forwarded_host", True)
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
