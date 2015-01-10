@@ -16,7 +16,7 @@ mq:
     - "15672:15672"
 
 cache:
-  image: memcached
+  image: memcached:1.4
   expose:
     - "11211"
 
