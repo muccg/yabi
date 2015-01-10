@@ -5,15 +5,15 @@ dbtest:
     - POSTGRES_USER=yabiapp
     - POSTGRES_PASSWORD=yabiapp
   ports:
-    - "5432:5432"
+    - ":5432"
 
 mqtest:
   image: tutum/rabbitmq
   environment:
     - RABBITMQ_PASS=admin
   ports:
-    - "5672:5672"
-    - "15672:15672"
+    - ":5672"
+    - ":15672"
 
 cachetest:
   image: memcached
@@ -35,7 +35,7 @@ webtest:
   volumes:
     - .:/app
   ports:
-    - "8000:8000"
+    - ":8000"
   links:
     - dbtest
     - mqtest
