@@ -16,7 +16,7 @@ mqtest:
     - ":15672"
 
 cachetest:
-  image: memcached
+  image: memcached:1.4
   expose:
     - "11211"
 
