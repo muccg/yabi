@@ -21,15 +21,11 @@ cache:
     - "11211"
 
 nginx:
-  image: nginx:1.7
-  volumes:
-    - nginx:/etc/nginx
+  image: muccg/nginx-uwsgi:1.7
   links:
     - uwsgi
-  expose:
-    - "8443"
   ports:
-    - "443:8443"
+    - "8443:443"
 
 web:
   build: .
