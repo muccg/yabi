@@ -55,7 +55,7 @@ function defaults {
 function celery_defaults {
     : ${CELERY_CONFIG_MODULE="settings"}
     : ${CELERYD_CHDIR=`pwd`}
-    : ${CELERY_BROKER="amqp://admin:admin@${QUEUESERVER}:${QUEUEPORT}//"}
+    : ${CELERY_BROKER="amqp://guest:guest@${QUEUESERVER}:${QUEUEPORT}//"}
     : ${CELERY_APP="app.celerytasks"}
     : ${CELERY_LOGLEVEL="DEBUG"}
     : ${CELERY_OPTIMIZATION="fair"}

@@ -1,24 +1,21 @@
-# https://github.com/docker-library/postgres/tree/master/9.3
 db:
   image: postgres:9.3
   environment:
     - POSTGRES_USER=yabiapp
     - POSTGRES_PASSWORD=yabiapp
   ports:
-    - "5432:5432"
+    - ":5432"
 
 mq:
-  image: tutum/rabbitmq
+  image: rabbitmq:3-management
   environment:
-    - RABBITMQ_PASS=admin
+    - RABBITMQ_NODENAME=yabi
   ports:
-    - "5672:5672"
-    - "15672:15672"
+    - ":5672"
+    - ":15672"
 
 cache:
   image: memcached:1.4
-  expose:
-    - "11211"
 
 nginx:
   image: muccg/nginx-uwsgi:1.7
