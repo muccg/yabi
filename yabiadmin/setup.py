@@ -47,6 +47,7 @@ install_requires = [
     'boto==2.32.1',
     'python-swiftclient==2.2.0',
     'python-keystoneclient==0.10.1',
+    'netaddr!=0.7.13',
     'python-dateutil==2.2',
     'yaphc==0.1.5',
     'six==1.8',
