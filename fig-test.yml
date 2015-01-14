@@ -18,7 +18,8 @@ cachetest:
   image: memcached:1.4
 
 webtest:
-  build: .
+  image: yabi_web
+  #build: .
   command: runserver
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
@@ -39,7 +40,7 @@ webtest:
     - cachetest
 
 celerytest:
-  image: yabi_webtest
+  image: yabi_web
   command: celery
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
@@ -58,7 +59,7 @@ celerytest:
 
 # runs the tests against the stack above
 testhost:
-  image: yabi_webtest
+  image: yabi_web
   command: runtests
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
