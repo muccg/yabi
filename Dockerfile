@@ -12,15 +12,16 @@ RUN apt-get update && apt-get install -y \
   libpq-dev \
   libssl-dev \
   libxml2-dev \
-  libxslt1-dev
+  libxslt1-dev \
+  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN env --unset=DEBIAN_FRONTEND
 
 # create user so we can drop priviliges for entrypoint
-RUN addgroup --gid 1000 ccg-user
-RUN adduser --disabled-password --home /data --no-create-home --system -q --uid 1000 --ingroup ccg-user ccg-user
-RUN mkdir /data && chown ccg-user:ccg-user /data
+RUN addgroup --gid 1000 ccg-user \
+  && adduser --disabled-password --home /data --no-create-home --system -q --uid 1000 --ingroup ccg-user ccg-user \
+  && mkdir /data \
+  && chown ccg-user:ccg-user /data
 
 # Install dependencies only (not the app itself) to use the build cache more efficiently
 # This will be redone only if setup.py changes
