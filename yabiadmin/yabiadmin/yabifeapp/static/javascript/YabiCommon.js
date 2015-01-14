@@ -83,3 +83,35 @@ Yabi.util.fakeButton = function(text) {
   return Y.Node.create('<button type="button" class="fakeButton" />')
     .set("text", text);
 };
+
+Yabi.util.humaniseBytes = function(bytes) {
+  if (!Y.Lang.isNumber(bytes)) {
+    return bytes;
+  }
+
+  var humanSize;
+
+  if (bytes > (300 * 1024 * 1024)) { //GB
+    humanSize = bytes / (1024 * 1024 * 1024);
+    humanSize = humanSize.toFixed(2);
+    humanSize += ' GB';
+    return humanSize;
+  }
+
+  if (bytes > (300 * 1024)) { //MB
+    humanSize = bytes / (1024 * 1024);
+    humanSize = humanSize.toFixed(2);
+    humanSize += ' MB';
+    return humanSize;
+  }
+
+  //kB
+  humanSize = bytes / (1024);
+  humanSize = humanSize.toFixed(1);
+  if (humanSize == 0.0 && bytes > 0) {
+    humanSize = 0.1;
+  }
+  humanSize += ' kB';
+
+  return humanSize;
+};

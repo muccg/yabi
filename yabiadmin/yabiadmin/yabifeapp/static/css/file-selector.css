@@ -385,12 +385,6 @@
     left: 0.3em;
 }
 
-.fileSelectorUpload .selectButton {
-    position: absolute;
-    top: 0.3em;
-    left: 0.3em;
-}
-
 .swfupload {
     position: absolute;
     z-index: 1;

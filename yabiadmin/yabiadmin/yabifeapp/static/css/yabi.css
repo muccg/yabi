@@ -745,6 +745,7 @@ input {
 .fakeUploadButton {
     position:absolute;
     right:0px;
+    top:4px;
     color:#666;
 }
 
