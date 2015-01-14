@@ -98,10 +98,9 @@ class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
         self.assertEqual(expected_cksum, copy_cksum)
 
 
-class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
+class SFTPPerformanceTest(SSHBackend, FileUtils):
 
     def setUp(self):
-        YabiTestCase.setUp(self)
         SSHBackend.setUp(self)
         FileUtils.setUp(self)
         self.username = 'demo'
@@ -111,7 +110,6 @@ class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
     def tearDown(self):
         FileUtils.tearDown(self)
         SSHBackend.tearDown(self)
-        YabiTestCase.tearDown(self)
 
     def time_copy_of_files(self, file_count):
         """Copies the passed in amount of files from localhost to localhost
@@ -132,7 +130,7 @@ class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
         return copy_duration
 
 
-    def xtest_one_file_copy_time(self):
+    def test_one_file_copy_time(self):
         one_file_cp_duration = self.time_copy_of_files(1)
         two_files_cp_duration = self.time_copy_of_files(2)
 
@@ -141,7 +139,7 @@ class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
 
         self.assertTrue(two_files_cp_duration < 2 * one_file_cp_duration, "Copying 2 files shouldn't take twice as much as copying 1 file")
 
-    def xtest_many_files_copy_time(self):
+    def test_many_files_copy_time(self):
         MANY_FILES = 50
         # We can't expect the copy to be exactly calculable
         # We use an acceptable factor for differences in cp times
