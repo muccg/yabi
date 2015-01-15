@@ -170,7 +170,7 @@ function ci_staging_selenium() {
     ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd restart'
     ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && DISPLAY\=\:0 YABIURL\=http\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && DISPLAY\=\:0 YABIURL\=https\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
     ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
 }
 
