@@ -32,6 +32,9 @@ function wait_for_services {
     if [[ "$WAIT_FOR_WEB" ]] ; then
         dockerwait $WEBSERVER $WEBPORT
     fi
+    if [[ "$WAIT_FOR_SSH" ]] ; then
+        dockerwait $SSHSERVER $SSHPORT
+    fi
 }
 
 
@@ -44,6 +47,8 @@ function defaults {
     : ${WEBPORT="8000"}
     : ${CACHESERVER="cache"}
     : ${CACHEPORT="11211"}
+    : ${SSHSERVER="ssh"}
+    : ${SSHPORT="22"}
 
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}

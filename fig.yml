@@ -1,3 +1,6 @@
+ssh:
+  image: muccg/ssh
+
 db:
   image: postgres:9.3
   environment:
@@ -33,6 +36,7 @@ web:
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
   volumes:
     - .:/app
   ports:
@@ -41,6 +45,7 @@ web:
     - db
     - mq
     - cache
+    - ssh
 
 uwsgi:
   image: yabi_web
@@ -50,6 +55,7 @@ uwsgi:
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
       # note: uwsgi ini file sets environment
   volumes:
     - .:/app
@@ -62,6 +68,7 @@ uwsgi:
     - db
     - mq
     - cache
+    - ssh
 
 celery:
   image: yabi_web
@@ -73,8 +80,10 @@ celery:
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
   volumes:
     - .:/app
   links:
     - db
     - mq
+    - ssh

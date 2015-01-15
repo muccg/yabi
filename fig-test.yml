@@ -1,3 +1,6 @@
+sshtest:
+  image: muccg/ssh
+        
 dbtest:
   image: postgres:9.3
   environment:
@@ -30,6 +33,7 @@ webtest:
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
   volumes:
     - .:/app
   ports:
@@ -38,6 +42,7 @@ webtest:
     - dbtest
     - mqtest
     - cachetest
+    - sshtest
 
 celerytest:
   image: yabi_web
@@ -51,11 +56,13 @@ celerytest:
     - QUEUESERVER=mqtest
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
   volumes_from:
     - webtest
   links:
     - dbtest
     - mqtest
+    - sshtest
 
 # runs the tests against the stack above
 testhost:
@@ -70,9 +77,11 @@ testhost:
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_WEB=1
+    - WAIT_FOR_SSH=1
   volumes_from:
     - webtest
   links:
     - dbtest
     - webtest
     - mqtest
+    - sshtest
