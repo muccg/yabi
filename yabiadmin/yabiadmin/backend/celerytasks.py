@@ -24,7 +24,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from functools import partial, wraps
-from django.db import transaction
 from datetime import datetime
 from celery import chain
 from celery.utils.log import get_task_logger
@@ -419,7 +418,7 @@ def retry_on_error(original_function):
             countdown = backoff(request.retries)
             retry_celery_task(exc, countdown)
 
-        if task_id is not None:
+        if task_id is not None and is_task_retrying(task_id):
             task_logger.info('Task %s recovered from error' % task_id)
             remove_task_retrying_mark(task_id)
 
@@ -546,6 +545,11 @@ def mark_job_as_error(job_id):
     wfl_logger.info("Workflow {0} encountered an error.".format(job.workflow.pk))
 
 
+def is_task_retrying(task_id):
+    task = Task.objects.get(pk=task_id)
+    return task.is_retrying
+
+
 def mark_task_as_retrying(task_id, message="Some error occurred"):
     task = Task.objects.get(pk=task_id)
     task.mark_task_as_retrying(message)
@@ -606,26 +610,25 @@ def abort_job(job, update_workflow=True):
 def change_task_status(task_id, status):
     task_logger = create_task_logger(logger, task_id)
     try:
-        with transaction.atomic():
-            task_logger.debug("Setting status of task {0} to {1}".format(task_id, status))
-            task = Task.objects.get(pk=task_id)
-            task.set_status(status)
-            task.save()
+        task_logger.debug("Setting status of task {0} to {1}".format(task_id, status))
+        task = Task.objects.get(pk=task_id)
+        task.set_status(status)
+        task.save()
 
-            job_old_status = task.job.status
-            job_status = task.job.update_status()
-            job_status_changed = (job_old_status != job_status)
+        job_old_status = task.job.status
+        job_status = task.job.update_status()
+        job_status_changed = (job_old_status != job_status)
 
-            if job_status_changed:
-                old_status = task.job.workflow.status
-                task.job.workflow.update_status()
-                if task.job.is_finished:
-                    on_job_finished.apply_async((task.job.pk,))
-                new_status = task.job.workflow.status
-                if old_status != new_status and new_status == STATUS_COMPLETE:
-                    on_workflow_completed.apply_async((task.job.workflow.pk,))
-                else:
-                    process_workflow_jobs_if_needed(task)
+        if job_status_changed:
+            old_status = task.job.workflow.status
+            task.job.workflow.update_status()
+            if task.job.is_finished:
+                on_job_finished.apply_async((task.job.pk,))
+            new_status = task.job.workflow.status
+            if old_status != new_status and new_status == STATUS_COMPLETE:
+                on_workflow_completed.apply_async((task.job.workflow.pk,))
+            else:
+                process_workflow_jobs_if_needed(task)
 
     except Exception:
         task_logger.exception("Exception when updating task's {0} status to {1}".format(task_id, status))

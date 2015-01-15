@@ -168,8 +168,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           return;
         }
 
-        this.upload = new YAHOO.ccgyabi.widget.Upload(this.browseEl);
-        this.upload.setURI(this.currentPath());
+        this.upload = new YAHOO.ccgyabi.widget.Upload(this.browseEl, this.currentPath());
 
         this.upload.addEventListener('fail', function(e, message) {
           YAHOO.ccgyabi.widget.YabiMessage.fail(message);
@@ -181,7 +180,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
         this.upload.addEventListener('upload', function(e) {
           YAHOO.ccgyabi.widget.YabiMessage.success(
-              'File uploaded successfully');
+              'Files uploaded successfully');
           self.updateBrowser(self.currentPath());
         });
       };
@@ -316,7 +315,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             //file size
             fileSize = this.browseListing[toplevelindex].files[index][1];
             //convert from bytes to kB or MB or GB
-            fileSize = this.humanReadableSizeFromBytes(fileSize);
+            fileSize = Yabi.util.humaniseBytes(fileSize);
 
             sizeEl = document.createElement('div');
             sizeEl.className = 'fileSize';
@@ -851,42 +850,6 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         this.jsTransaction = Y.io(jsUrl, cfg);
       };
 
-
-      /**
-       * humanReadableSizeFromBytes
-       */
-      YabiFileSelector.prototype.humanReadableSizeFromBytes = function(bytes) {
-        if (!Y.Lang.isNumber(bytes)) {
-          return bytes;
-        }
-
-        var humanSize;
-
-        if (bytes > (300 * 1024 * 1024)) { //GB
-          humanSize = bytes / (1024 * 1024 * 1024);
-          humanSize = humanSize.toFixed(2);
-          humanSize += ' GB';
-          return humanSize;
-        }
-
-        if (bytes > (300 * 1024)) { //MB
-          humanSize = bytes / (1024 * 1024);
-          humanSize = humanSize.toFixed(2);
-          humanSize += ' MB';
-          return humanSize;
-        }
-
-        //kB
-        humanSize = bytes / (1024);
-        humanSize = humanSize.toFixed(1);
-        if (humanSize == 0.0 && bytes > 0) {
-          humanSize = 0.1;
-        }
-        humanSize += ' kB';
-        return humanSize;
-      };
-
-
       // ==== CALLBACKS ====
       /**
        * goToRoot
@@ -1203,12 +1166,11 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         var size = document.createElement('span');
         size.className = 'fileSelectorPreviewSize';
         size.appendChild(document.createTextNode(
-            this.fs.humanReadableSizeFromBytes(metadata.size)));
+            Yabi.util.humaniseBytes(metadata.size)));
         span.appendChild(size);
 
         if (metadata.truncated) {
-          var truncatedLength = this.fs.humanReadableSizeFromBytes(
-              metadata.truncated);
+          var truncatedLength = Yabi.util.humaniseBytes(metadata.truncated);
 
           // Oh, English.
           var verb = 'are';

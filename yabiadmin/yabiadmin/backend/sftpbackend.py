@@ -21,7 +21,7 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 from __future__ import unicode_literals
-from yabiadmin.backend.fsbackend import FSBackend
+from yabiadmin.backend.fsbackend import FSBackend, pool_manager
 from yabiadmin.backend.sshexec import SSHExec
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
@@ -38,11 +38,8 @@ import time
 import logging
 from itertools import dropwhile
 from functools import reduce
-from pooling import get_ssh_pool_manager
 
 logger = logging.getLogger(__name__)
-
-pool_manager = get_ssh_pool_manager()
 
 BLOCK_SIZE = 1024
 

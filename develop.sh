@@ -86,7 +86,7 @@ settings() {
 ci_ssh_agent() {
     ssh-agent > /tmp/agent.env.sh
     source /tmp/agent.env.sh
-    ssh-add ~/.ssh/ccg-syd-staging.pem
+    ssh-add ~/.ssh/ccg-syd-staging-2014.pem
 }
 
 
@@ -94,7 +94,7 @@ ci_ssh_agent() {
 ci_remote_build() {
     time ccg ${AWS_BUILD_INSTANCE} boot
     time ccg ${AWS_BUILD_INSTANCE} puppet
-    time ccg ${AWS_BUILD_INSTANCE} shutdown:50
+    time ccg ${AWS_BUILD_INSTANCE} shutdown:240
 
     SSH_OPTS="-o StrictHostKeyChecking\=no"
     RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
@@ -119,9 +119,8 @@ ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} puppet
     time ccg ${AWS_TEST_INSTANCE} shutdown:100
 
-    EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs'\, '*.pyc')"
     SSH_OPTS="-o StrictHostKeyChecking\=no"
-    RSYNC_OPTS="-l"
+    RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
@@ -147,7 +146,7 @@ ci_remote_destroy() {
 ci_staging() {
     ccg ${AWS_STAGING_INSTANCE} boot
     ccg ${AWS_STAGING_INSTANCE} puppet
-    ccg ${AWS_STAGING_INSTANCE} shutdown:50
+    ccg ${AWS_STAGING_INSTANCE} shutdown:120
 }
 
 
@@ -170,7 +169,7 @@ function ci_staging_selenium() {
     ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd restart'
     ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && DISPLAY\=\:0 YABIURL\=http\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && DISPLAY\=\:0 YABIURL\=https\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
     ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
 }
 
@@ -520,8 +519,9 @@ dbtest() {
     stopyabi
     dropdb
     startyabi
-    trap stopyabi EXIT
+    trap stopyabi EXIT SIGINT SIGTERM
     do_nosetests
+    exit $?
 }
 
 

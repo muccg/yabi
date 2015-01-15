@@ -82,14 +82,17 @@ ROOT_URLCONF = 'yabiadmin.urls'
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
 # you SHOULD change the cookie to use HTTPONLY and SECURE when in production
-SESSION_COOKIE_AGE = 60 * 60
+SESSION_COOKIE_AGE = env.get("session_cookie_age", 60 * 60)
 SESSION_COOKIE_PATH = url('/')
-SESSION_COOKIE_NAME = 'yabi_sessionid'
-# SESSION_SAVE_EVERY_REQUEST = True
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = PRODUCTION
-CSRF_COOKIE_NAME = "csrftoken_yabi"
-CSRF_COOKIE_SECURE = PRODUCTION
+SESSION_SAVE_EVERY_REQUEST = env.get("session_save_every_request", True)
+SESSION_COOKIE_HTTPONLY = SESSION_COOKIE_HTTPONLY = env.get("session_cookie_httponly", True)
+SESSION_COOKIE_SECURE = env.get("session_cookie_secure", PRODUCTION)
+SESSION_COOKIE_NAME = env.get("session_cookie_name", "yabi_{0}".format(url('/').replace("/", "")))
+SESSION_COOKIE_DOMAIN = env.get("session_cookie_domain", "") or None
+CSRF_COOKIE_NAME = env.get("csrf_cookie_name", "csrf_{0}".format(SESSION_COOKIE_NAME))
+CSRF_COOKIE_DOMAIN = env.get("csrf_cookie_domain", "") or SESSION_COOKIE_DOMAIN
+CSRF_COOKIE_PATH = env.get("csrf_cookie_path", SESSION_COOKIE_PATH)
+CSRF_COOKIE_SECURE = env.get("csrf_cookie_secure", PRODUCTION)
 
 # Locale
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
@@ -108,16 +111,16 @@ LOGOUT_URL = url('/logout/')
 # deployment uses an apache alias
 # STATICFILES_DIRS = [os.path.join(WEBAPP_ROOT,"static")]
 STATIC_URL = url('/static/')
-STATIC_ROOT = os.path.join(WEBAPP_ROOT, 'static')
+STATIC_ROOT = env.get('static_root', os.path.join(WEBAPP_ROOT, 'static'))
 ADMIN_MEDIA_PREFIX = url('/static/admin/')
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = os.path.join(WEBAPP_ROOT, 'static', 'media')
+MEDIA_ROOT = env.get('media_root', os.path.join(WEBAPP_ROOT, 'static', 'media'))
 MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(WEBAPP_ROOT, 'scratch')
+WRITABLE_DIRECTORY = env.get('writable_directory', os.path.join(WEBAPP_ROOT, 'scratch'))
 if not os.path.exists(WRITABLE_DIRECTORY):
     os.mkdir(WRITABLE_DIRECTORY)
 
@@ -256,6 +259,11 @@ LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
 
 AUTH_LDAP_CASE_SENSITIVE_USERNAMES = False
 
+# This honours the X-Forwarded-Host header set by our nginx frontend when
+# constructing redirect URLS.
+# see: https://docs.djangoproject.com/en/1.4/ref/settings/#use-x-forwarded-host
+USE_X_FORWARDED_HOST = env.get("use_x_forwarded_host", True)
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 if env.get("memcache", ""):
@@ -285,6 +293,11 @@ else:
 
 # See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
 ALLOWED_HOSTS = env.get("allowed_hosts", "").split()
+
+# This honours the X-Forwarded-Host header set by our nginx frontend when
+# constructing redirect URLS.
+# see: https://docs.djangoproject.com/en/1.4/ref/settings/#use-x-forwarded-host
+USE_X_FORWARDED_HOST = env.get("use_x_forwarded_host", True)
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
@@ -433,11 +446,11 @@ PREVIEW_SIZE_LIMIT = 1048576
 THIRTY_DAYS = 30 * 24 * 60 * 60
 JAVASCRIPT_LIBRARIES = {
     "yui_3_5_1": {
-        "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-3.5.1/build/"),
+        "path": os.path.join(STATIC_ROOT, "javascript/lib/yui-3.5.1/build/"),
         "cache_for": THIRTY_DAYS,
     },
     "yui2in3_2_9_0": {
-        "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
+        "path": os.path.join(STATIC_ROOT, "javascript/lib/yui-2in3/dist/2.9.0/build/"),
         "cache_for": THIRTY_DAYS,
     },
 }
@@ -445,7 +458,9 @@ JAVASCRIPT_LIBRARIES = {
 # The logging settings here apply only to the Django WSGI process.
 # Celery is left to hijack the root logger. We add our custom handlers after
 # that in yabiadmin.backend.celerytasks.
-CCG_LOG_DIRECTORY = os.path.join(WEBAPP_ROOT, "log")
+CCG_LOG_DIRECTORY = env.get('log_directory', os.path.join(WEBAPP_ROOT, "log"))
+if not os.path.exists(CCG_LOG_DIRECTORY):
+    os.mkdir(CCG_LOG_DIRECTORY)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,

@@ -4,6 +4,10 @@ node default {
   include ccgcommon::source
   include ccgapache
   include python
+
+  # TODO
+  # Do you want ::repo or ::repo::upgrade ?
+
   include ccgdatabase::postgresql::devel
   include ccgdatabase::mysql::devel
 

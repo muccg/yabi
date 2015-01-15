@@ -293,7 +293,7 @@ class Job(models.Model, Editable, Status):
 
     @property
     def has_dynamic_backend(self):
-        if self.tool.fs_backend is None:
+        if self.tool is None or self.tool.fs_backend is None:
             return False
         return (self.tool.fs_backend.dynamic_backend or
                 self.tool.backend.dynamic_backend)

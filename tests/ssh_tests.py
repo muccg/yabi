@@ -98,10 +98,9 @@ class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
         self.assertEqual(expected_cksum, copy_cksum)
 
 
-class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
+class SFTPPerformanceTest(SSHBackend, FileUtils):
 
     def setUp(self):
-        YabiTestCase.setUp(self)
         SSHBackend.setUp(self)
         FileUtils.setUp(self)
         self.username = 'demo'
@@ -111,7 +110,6 @@ class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
     def tearDown(self):
         FileUtils.tearDown(self)
         SSHBackend.tearDown(self)
-        YabiTestCase.tearDown(self)
 
     def time_copy_of_files(self, file_count):
         """Copies the passed in amount of files from localhost to localhost
