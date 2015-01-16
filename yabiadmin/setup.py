@@ -43,7 +43,7 @@ install_requires = [
     'cssutils==1.0',
     'httplib2==0.9',
     'djamboloader==0.1.4',
-    'paramiko==1.14.1',
+    'paramiko==1.15.2',
     'boto==2.32.1',
     'python-swiftclient==2.2.0',
     'python-keystoneclient==0.10.1',
