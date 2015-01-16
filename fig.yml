@@ -1,5 +1,6 @@
 ssh:
   image: muccg/ssh
+  hostname: ssh
 
 db:
   image: postgres:9.3
@@ -74,6 +75,7 @@ celery:
   image: yabi_web
   command: celery
   environment:
+  hostname: celery
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
     - CELERY_APP=yabiadmin.backend.celerytasks
     - CELERY_AUTORELOAD=1
