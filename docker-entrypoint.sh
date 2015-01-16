@@ -35,6 +35,9 @@ function wait_for_services {
     if [[ "$WAIT_FOR_SSH" ]] ; then
         dockerwait $SSHSERVER $SSHPORT
     fi
+    if [[ "$WAIT_FOR_S3" ]] ; then
+        dockerwait $S3SERVER $S3PORT
+    fi
 }
 
 
@@ -49,6 +52,8 @@ function defaults {
     : ${CACHEPORT="11211"}
     : ${SSHSERVER="ssh"}
     : ${SSHPORT="22"}
+    : ${S3SERVER="s3"}
+    : ${S3PORT="4569"}
 
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}
@@ -165,14 +170,18 @@ if [ "$1" = 'runtests' ]; then
     echo "[Run] Starting tests"
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
-    COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
     NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
-    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
-    IGNORES="${IGNORES} -a !external_service"
-    TEST_CASES="/app/tests /app/yabiadmin/yabiadmin"
+    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -a !external_service"
+
+    # Setting TEST_CASES in fig file allows you to choose tests
+    : ${TEST_CASES="/app/tests /app/yabiadmin/yabiadmin"}
+
+    # tests want to import module tests
+    export PYTHONPATH=/app
 
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
     ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+
     exit $?
 fi
 
