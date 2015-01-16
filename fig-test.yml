@@ -26,7 +26,6 @@ cachetest:
 
 webtest:
   image: yabi_web
-  #build: .
   command: runserver
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
@@ -83,7 +82,7 @@ testhost:
   command: runtests
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
-    - TEST_CASES=tests.simple_tool_tests
+#    - TEST_CASES=tests.simple_tool_tests
     - DBSERVER=dbtest
     - DBUSER=yabiapp
     - QUEUESERVER=mqtest
