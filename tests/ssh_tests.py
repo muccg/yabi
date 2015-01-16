@@ -7,6 +7,7 @@ from yabiadmin.yabi import models
 from yabiadmin.backend.fsbackend import FSBackend
 from socket import gethostname
 import logging
+from tests.support import conf
 
 logger = logging.getLogger(__name__)
 
@@ -103,9 +104,8 @@ class SFTPPerformanceTest(SSHBackend, FileUtils):
     def setUp(self):
         SSHBackend.setUp(self)
         FileUtils.setUp(self)
-        self.username = 'demo'
+        self.username = conf.yabiusername
         self.homedir = os.environ.get('HOME')
-        self.user = os.environ.get('USER')
 
     def tearDown(self):
         FileUtils.tearDown(self)
@@ -124,7 +124,7 @@ class SFTPPerformanceTest(SSHBackend, FileUtils):
         cp_start = time.time()
         FSBackend.remote_copy(self.username,
                 'localfs://%s@localhost%s' % (self.username, a_dir),
-                'sftp://%s@localhost%s/' % (self.user, target_dir))
+                'sftp://root@sshtest%s/' % (target_dir))
         copy_duration = time.time() - cp_start
 
         return copy_duration
