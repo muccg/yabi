@@ -440,10 +440,10 @@ class S3BackendTests(FSBackendTests, RequestTest):
 
     def setUp(self):
         RequestTest.setUp(self)
-        fakes3_setup(self, "fakes3")
+        #fakes3_setup(self, "fakes3")
 
     def skip_if_fakes3(self, msg=None):
-        if self.hostname == "fakes3":
+        if self.hostname == "s3test":
             self.skipTest(msg or "test doesn't work with fakes3")
 
     def test_ls(self):
@@ -480,7 +480,7 @@ class S3BackendTests(FSBackendTests, RequestTest):
         super(S3BackendTests, self).test_rm_prefix()
 
     def getcmdok(self, cmd, uri):
-        if cmd == "rm" and self.hostname == "fakes3":
+        if cmd == "rm" and self.hostname == "s3test":
             logger.warning("rm disabled on fakes3")
         else:
             return super(S3BackendTests, self).getcmdok(cmd, uri)
@@ -540,9 +540,10 @@ class FileBackendTests(FSBackendTests, RequestTest):
 
     @classmethod
     def backend_info(cls, conf):
+	# AH check this
         hostname = "localhost"
         fscreds = {
-            "username": os.environ.get("LOGNAME", "ccg-user"),
+            "username": conf.yabiusername,
             "password": "",
             "key": "",
         }
@@ -565,13 +566,11 @@ class SFTPBackendTests(FSBackendTests, RequestTest):
 
     @classmethod
     def backend_info(cls, conf):
-        hostname = "localhost"
-        logname = os.environ.get("LOGNAME", "ccg-user")
+        hostname = "sshtest"
 
         fscreds = {
-            "username": logname,
-            "password": "",
-            "key": private_test_ssh_key,
+            "username": "root",
+            "password": "root",
         }
         return hostname, cls.backend_path, fscreds
 
