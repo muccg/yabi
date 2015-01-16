@@ -1,5 +1,9 @@
 sshtest:
-  image: muccg/ssh
+  image: muccg/ssh:latest
+  hostname: ssh
+
+s3test:
+  image: muccg/fake-s3:latest
         
 dbtest:
   image: postgres:9.3
@@ -30,10 +34,13 @@ webtest:
     - DBUSER=yabiapp
     - QUEUESERVER=mqtest
     - CACHESERVER=cachetest
+    - SSHSERVER=sshtest
+    - S3SERVER=s3test
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
   volumes:
     - .:/app
   ports:
@@ -43,9 +50,11 @@ webtest:
     - mqtest
     - cachetest
     - sshtest
+    - s3test
 
 celerytest:
   image: yabi_web
+  hostname: celery
   command: celery
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
@@ -54,15 +63,19 @@ celerytest:
     - DBSERVER=dbtest
     - DBUSER=yabiapp
     - QUEUESERVER=mqtest
+    - SSHSERVER=sshtest
+    - S3SERVER=s3test
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
   volumes_from:
     - webtest
   links:
     - dbtest
     - mqtest
     - sshtest
+    - s3test
 
 # runs the tests against the stack above
 testhost:
@@ -70,14 +83,18 @@ testhost:
   command: runtests
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - TEST_CASES=tests.simple_tool_tests
     - DBSERVER=dbtest
     - DBUSER=yabiapp
     - QUEUESERVER=mqtest
     - WEBSERVER=webtest
+    - SSHSERVER=sshtest
+    - S3SERVER=s3test
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_WEB=1
     - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
   volumes_from:
     - webtest
   links:
@@ -85,3 +102,4 @@ testhost:
     - webtest
     - mqtest
     - sshtest
+    - s3test
