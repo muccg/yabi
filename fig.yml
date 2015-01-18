@@ -1,3 +1,9 @@
+# data only container pattern
+data:
+  image: muccg/base:debian8
+  volumes:
+    - .:/app
+
 ssh:
   image: muccg/ssh
   hostname: ssh
@@ -38,8 +44,8 @@ web:
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
-  volumes:
-    - .:/app
+  volumes_from:
+    - data
   ports:
     - "8000:8000"
   links:
@@ -58,8 +64,8 @@ uwsgi:
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
       # note: uwsgi ini file sets environment
-  volumes:
-    - .:/app
+  volumes_from:
+    - data
   ports:
     - "9000:9000"
     - "9001:9001"
@@ -74,8 +80,8 @@ uwsgi:
 celery:
   image: yabi_web
   command: celery
-  environment:
   hostname: celery
+  environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
     - CELERY_APP=yabiadmin.backend.celerytasks
     - CELERY_AUTORELOAD=1
@@ -83,8 +89,8 @@ celery:
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_SSH=1
-  volumes:
-    - .:/app
+  volumes_from:
+    - data
   links:
     - db
     - mq
