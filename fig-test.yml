@@ -1,6 +1,12 @@
+# data only container pattern
+datatest:
+  image: muccg/base:debian8
+  volumes:
+    - .:/app
+
 sshtest:
   image: muccg/ssh:latest
-  hostname: ssh
+  hostname: sshtest
 
 s3test:
   image: muccg/fake-s3:latest
@@ -40,8 +46,8 @@ webtest:
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
     - WAIT_FOR_S3=1
-  volumes:
-    - .:/app
+  volumes_from:
+    - datatest
   ports:
     - ":8000"
   links:
@@ -53,7 +59,7 @@ webtest:
 
 celerytest:
   image: yabi_web
-  hostname: celery
+  hostname: celerytest
   command: celery
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
@@ -69,7 +75,7 @@ celerytest:
     - WAIT_FOR_SSH=1
     - WAIT_FOR_S3=1
   volumes_from:
-    - webtest
+    - datatest
   links:
     - dbtest
     - mqtest
@@ -95,7 +101,7 @@ testhost:
     - WAIT_FOR_SSH=1
     - WAIT_FOR_S3=1
   volumes_from:
-    - webtest
+    - datatest
   links:
     - dbtest
     - webtest
