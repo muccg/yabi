@@ -20,9 +20,7 @@ dbtest:
     - ":5432"
 
 mqtest:
-  image: rabbitmq:3-management
-  environment:
-    - RABBITMQ_NODENAME=yabi        
+  image: dockerfile/rabbitmq:latest
   ports:
     - ":5672"
     - ":15672"
