@@ -43,6 +43,8 @@ logger = logging.getLogger(__name__)
 
 BLOCK_SIZE = 1024
 
+FILE_NOT_FOUND_ERR = 2
+
 
 class SFTPBackend(FSBackend):
     backend_desc = "SFTP remote file system"
@@ -66,9 +68,13 @@ class SFTPBackend(FSBackend):
                 sftp.getfo(remotepath, localfo, callback=None)
             status = True
 
+        except IOError as e:
+            logger.exception("Exception in _sftp_copy")
+            if e.errno == FILE_NOT_FOUND_ERR:
+                raise FileNotFoundError(remotepath)
+
         except Exception as exc:
-            logger.error(traceback.format_exc())
-            logger.error(exc)
+            logger.exception("Exception in _sftp_copy")
         finally:
             if ssh is not None:
                 if sftp is not None:

@@ -11,7 +11,7 @@ import swiftclient.client
 import swiftclient.exceptions
 from django.conf import settings
 from .fsbackend import FSBackend
-from .exceptions import RetryException
+from .exceptions import RetryException, FileNotFoundError
 from .utils import partition
 from ..yabiengine.urihelper import uriparse
 
@@ -304,8 +304,10 @@ class SwiftBackend(FSBackend):
                                                 resp_chunk_size=self.CHUNKSIZE)
             for chunk in contents:
                 outfile.write(chunk)
-        except swiftclient.exceptions.ClientException:
+        except swiftclient.exceptions.ClientException as e:
             logger.exception("Error downloading %s to %s", uri, outfile)
+            if e.http_status == 404:
+                raise FileNotFoundError(uri)
         except IOError:
             logger.exception("Error writing %s to file", uri)
         else:

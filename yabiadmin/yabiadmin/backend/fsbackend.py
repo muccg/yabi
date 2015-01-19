@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import json
 import os
 from yabiadmin.backend.exceptions import RetryException, FileNotFoundError, NotSupportedError
-from yabiadmin.backend.utils import create_fifo
+from yabiadmin.backend.utils import create_fifo, SaveExceptionThread
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
 from yabiadmin.backend.pooling import get_ssh_pool_manager
@@ -34,7 +34,6 @@ from yabiadmin.constants import ENVVAR_FILENAME
 import dateutil.parser
 import logging
 import traceback
-import threading
 import Queue
 from six.moves import map
 
@@ -191,10 +190,11 @@ class FSBackend(BaseBackend):
                     success = method(uri, fifo)
             except Exception:
                 logger.exception("fifo thread operation %s failed." % method.__name__)
+                raise
             finally:
                 queue.put(success)
 
-        thread = threading.Thread(target=run)
+        thread = SaveExceptionThread(target=run)
         thread.start()
         return thread, queue
 
@@ -227,6 +227,7 @@ class FSBackend(BaseBackend):
         # we need ref to the backend
         backend = FSBackend.urifactory(yabiusername, uri)
         scheme, parts = uriparse(uri)
+
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_download_' + yabiusername + '_' + parts.hostname)
@@ -240,12 +241,12 @@ class FSBackend(BaseBackend):
                 os.unlink(fifo)
             except OSError:
                 logger.exception("Couldn't delete remote file download fifo")
-            return infile, queue
 
-        except FileNotFoundError:
-            raise
+            return infile, thread, queue
+
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
+
 
     @staticmethod
     def remote_file_upload(yabiusername, filename, uri):
@@ -279,7 +280,7 @@ class FSBackend(BaseBackend):
 
     def save_envvars(self, task, envvars_uri):
         try:
-            fifo, queue = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
+            fifo, thread, queue = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
             envvars = json.load(fifo)
         except:
             logger.exception("Could not read contents of envvars file '%s' for task %s", envvars_uri, task.pk)

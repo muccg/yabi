@@ -391,7 +391,7 @@ class FSBackendTests(object):
     def test_download_file_no_exist(self):
         uri, path = self.get_uri("this_file_no_exist_%s.txt" % os.getpid())
         r = self.session.get(url=self.fscmd("get", uri), stream=True)
-        self.assertEqual(r.status_code, 500)
+        self.assertEqual(r.status_code, 404)
 
     @staticmethod
     def _make_noperm_file(dirname):
