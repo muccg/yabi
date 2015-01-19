@@ -23,7 +23,7 @@
 from __future__ import unicode_literals
 import json
 import os
-from yabiadmin.backend.exceptions import RetryException, FileNotFoundError, NotSupportedError
+from yabiadmin.backend.exceptions import RetryException, NotSupportedError
 from yabiadmin.backend.utils import create_fifo, SaveExceptionThread
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
@@ -246,7 +246,6 @@ class FSBackend(BaseBackend):
 
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
-
 
     @staticmethod
     def remote_file_upload(yabiusername, filename, uri):

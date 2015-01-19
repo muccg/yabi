@@ -73,7 +73,7 @@ class SFTPBackend(FSBackend):
             if e.errno == FILE_NOT_FOUND_ERR:
                 raise FileNotFoundError(remotepath)
 
-        except Exception as exc:
+        except Exception:
             logger.exception("Exception in _sftp_copy")
         finally:
             if ssh is not None:

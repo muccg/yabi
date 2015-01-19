@@ -314,6 +314,7 @@ class SaveExceptionThread(threading.Thread):
        The exception is saved into the exception property."""
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         self.exception = None
+
         def wrapped_target(*args, **kwargs):
             try:
                 return target(*args, **kwargs)
