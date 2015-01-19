@@ -30,6 +30,9 @@ from kombu import Queue
 
 env = EnvConfig()
 
+SCRIPT_NAME = env.get("script_name", os.environ.get("SCRIPT_NAME", ""))
+FORCE_SCRIPT_NAME = env.get("force_script_name", "") or SCRIPT_NAME or None
+
 WEBAPP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PRODUCTION = env.get("production", False)
