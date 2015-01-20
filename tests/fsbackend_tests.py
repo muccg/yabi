@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 getname = lambda entry: entry[0]
 
+from tests.support import conf
+TMPDIR = conf.tmpdir
+
 @attr("django")
 class FSBackendTests(object):
     """File storage tests with real backends.
@@ -145,7 +148,7 @@ class FSBackendTests(object):
 
     def make_now_file(self):
         text = "%s\n" % datetime.datetime.now()
-        tmp = tempfile.NamedTemporaryFile()
+        tmp = tempfile.NamedTemporaryFile(dir=TMPDIR)
         tmp.write(text)
         tmp.flush()
         return tmp, text
@@ -247,7 +250,7 @@ class FSBackendTests(object):
 
         logger.debug("downloading...")
 
-        tmp = tempfile.NamedTemporaryFile()
+        tmp = tempfile.NamedTemporaryFile(dir=TMPDIR)
         self.download_file(uri, tmp.name)
 
         self.assertEqual(open(tmp.name).read(), text)
@@ -271,7 +274,7 @@ class FSBackendTests(object):
         name = "zeroes_%s.bin" % os.getpid()
         uri, path = self.get_uri(name)
 
-        tmpname = tempfile.mktemp()
+        tmpname = tempfile.mktemp(dir=TMPDIR)
         os.mkfifo(tmpname)
         self.addCleanup(os.unlink, tmpname)
 
@@ -551,7 +554,7 @@ class FileBackendTests(FSBackendTests, RequestTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
+        cls.backend_path = tempfile.mkdtemp(dir=TMPDIR, prefix="yabitest-") + "/"
         cls._make_noperm_file(cls.backend_path)
         super(FileBackendTests, cls).setUpClass()
 
@@ -576,7 +579,7 @@ class SFTPBackendTests(FSBackendTests, RequestTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
+        cls.backend_path = tempfile.mkdtemp(dir=TMPDIR, prefix="yabitest-") + "/"
         cls._make_noperm_file(cls.backend_path)
         authorise_test_ssh_key()
         super(SFTPBackendTests, cls).setUpClass()
