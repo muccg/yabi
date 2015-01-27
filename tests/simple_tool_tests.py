@@ -22,7 +22,7 @@ class HostnameTest(YabiTestCase):
 
     def test_hostname(self):
         result = self.yabi.run(['hostname'])
-	# AH TODO FIXME do we know hostname?
+        # AH TODO FIXME do we know hostname?
         #self.assertTrue(gethostname() in result.stdout)
         self.assertTrue(result.stdout)
         result = StatusResult(self.yabi.run(['status', result.id]))

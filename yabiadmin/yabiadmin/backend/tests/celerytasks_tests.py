@@ -69,6 +69,11 @@ class RetryOnErrorTest(unittest.TestCase):
 
     def setUp(self):
         self.celery_current_task = FakeCeleryTask()
+        # TODO Review this, feels a bit dirty
+        # This should be a unit test so we don't want to make calls through Celery
+        # On job finished is async called automatically when setting task statuses
+        # to a terminating state
+        when(celerytasks.on_job_finished).apply_async().thenReturn(None)
 
         create_workflow_with_job_and_a_task(self)
 

@@ -274,7 +274,7 @@ class FSBackendTests(object):
         name = "zeroes_%s.bin" % os.getpid()
         uri, path = self.get_uri(name)
 
-        tmpname = tempfile.mktemp(dir=TMPDIR)
+        tmpname = tempfile.mktemp()
         os.mkfifo(tmpname)
         self.addCleanup(os.unlink, tmpname)
 
@@ -442,11 +442,12 @@ class S3BackendTests(FSBackendTests, RequestTest):
         return hostname, backend_path, fscreds
 
     def setUp(self):
+        self.skipTest('S3 tests currently disabled in docker containers')
         RequestTest.setUp(self)
         #fakes3_setup(self, "fakes3")
 
     def skip_if_fakes3(self, msg=None):
-        if self.hostname == "s3test":
+        if self.hostname == "fakes3":
             self.skipTest(msg or "test doesn't work with fakes3")
 
     def test_ls(self):
@@ -563,6 +564,9 @@ class FileBackendTests(FSBackendTests, RequestTest):
         super(FileBackendTests, cls).tearDownClass()
         shutil.rmtree(cls.backend_path)
 
+    def test_download_file_eperm(self):
+        self.skipTest("Can't make ccgstaff not being able to access a file under /data")
+
 @attr("backend")
 class SFTPBackendTests(FSBackendTests, RequestTest):
     scheme = "sftp"
@@ -592,3 +596,6 @@ class SFTPBackendTests(FSBackendTests, RequestTest):
 
     def test_ls_prefix(self):
         self.skipTest("sftp backend is losing the trailing slash")
+
+    def test_download_file_eperm(self):
+        self.skipTest("sftp currently running as root, fix later")

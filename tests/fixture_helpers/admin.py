@@ -134,12 +134,12 @@ def create_sftp_backend():
     models.BackendCredential.objects.create(
         backend=sftp_backend,
         credential=cred,
-        homedir=os.path.expanduser("~")[1:] + '/',
+        homedir='data/',
         visible = True,
     )
 
 
-def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/tmp/yabi-localfs-test/"):
+def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/data/yabi-localfs-test/"):
     backend = models.Backend.objects.create(
         name='Test %s Backend'%scheme.upper(),
         description="Test %s Backend"%scheme.upper(),
@@ -169,13 +169,13 @@ def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", p
     )
     import os
     try:
-        os.mkdir("/tmp/yabi-localfs-test/")
+        os.mkdir("/data/yabi-localfs-test/")
     except OSError as ose:
         if ose.errno != 17:
             raise
         #directory already exists... leave it
 
-def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/tmp/yabi-localfs-test/"):
+def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/data/yabi-localfs-test/"):
     backend = models.Backend.objects.filter(
         name='Test %s Backend'%scheme.upper(),
         description="Test %s Backend"%scheme.upper(),
@@ -207,7 +207,7 @@ def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", 
     import shutil
 
     try:
-        shutil.rmtree("/tmp/yabi-localfs-test/")
+        shutil.rmtree("/data/yabi-localfs-test/")
     except OSError as ose:
         pass
 
