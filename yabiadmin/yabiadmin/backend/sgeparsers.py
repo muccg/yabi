@@ -118,7 +118,7 @@ class SGEParser(object):
         logger.debug("parse result = %s" % result)
         return result
 
-    def parse_qacct(self, remote_id, exit_code, stdout, stderr):
+    def parse_acct(self, remote_id, exit_code, stdout, stderr):
         if re.match(SGEParser.ARRAY_JOB_ID_PATTERN, remote_id):
             return self.parse_array_job_qacct(remote_id, exit_code, stdout, stderr)
         return self.parse_job_qacct(remote_id, exit_code, stdout, stderr)

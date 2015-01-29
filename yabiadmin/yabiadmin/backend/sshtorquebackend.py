@@ -1,12 +1,12 @@
-from yabiadmin.backend.qbaseexecbackend import QBaseExecBackend
+from yabiadmin.backend.baseexecbackend import BaseExecBackend
 from yabiadmin.backend.torqueparsers import TorqueParser
 from yabiadmin.backend.exceptions import JobNotFoundException
 
 
-class SSHTorqueExecBackend(QBaseExecBackend):
+class SSHTorqueExecBackend(BaseExecBackend):
     SCHEDULER_NAME = "torque"
-    QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
-                                "<QSTAT_COMMAND> -f -1 {0}"])
+    STAT_TEMPLATE = "\n".join(["#!/bin/sh",
+                               "<STAT_COMMAND> -f -1 {0}"])
 
     def __init__(self, *args, **kwargs):
         super(SSHTorqueExecBackend, self).__init__(*args, **kwargs)

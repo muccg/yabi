@@ -18,6 +18,7 @@ from .sshbackend import SSHBackend
 from .sshsgeexecbackend import SSHSGEExecBackend
 from .sshtorquebackend import SSHTorqueExecBackend
 from .sshpbsprobackend import SSHPBSProExecBackend
+from .sshslurmbackend import SSHSlurmBackend
 
 # Register backend schemes
 SelectFileExecBackend.register("selectfile", "null")
@@ -26,6 +27,7 @@ SSHBackend.register("ssh")
 SSHSGEExecBackend.register("ssh+sge")
 SSHTorqueExecBackend.register("ssh+torque")
 SSHPBSProExecBackend.register("ssh+pbspro")
+SSHSlurmBackend.register("ssh+slurm")
 SelectFileBackend.register("selectfile", "null")
 FileBackend.register("file", "localfs")
 SFTPBackend.register("sftp", "scp")

@@ -314,6 +314,7 @@ else:
 
 torque_path = env.get("torque_path", torque_path)
 sge_path = env.get("sge_path", sge_path)
+slurm_path = env.get("slurm_path", "")
 SCHEDULER_COMMAND_PATHS = {
     "torque": {"qsub": os.path.join(torque_path, "qsub"),
                "qstat": os.path.join(torque_path, "qstat"),
