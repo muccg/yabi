@@ -61,6 +61,7 @@ uwsgi:
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
+    - WAIT_FOR_WEB=1
       # note: uwsgi ini file sets environment
   volumes_from:
     - data
@@ -74,6 +75,7 @@ uwsgi:
     - mq
     - cache
     - ssh
+    - web
 
 celery:
   image: yabi_web
