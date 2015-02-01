@@ -41,6 +41,7 @@ PRODUCTION = env.get("production", False)
 # see http://code.google.com/p/ccg-django-extras/source/browse/
 # you SHOULD change the SSL_ENABLED to True when in production
 SSL_ENABLED = PRODUCTION
+SSL_FORCE = PRODUCTION
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.get("debug", not PRODUCTION)
