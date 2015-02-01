@@ -1,0 +1,115 @@
+# data only container pattern
+datatest:
+  image: muccg/base:debian8
+  volumes:
+    - data:/data
+    - .:/app
+
+sshtest:
+  image: muccg/ssh:latest
+  hostname: sshtest
+  volumes_from:
+    - datatest
+
+s3test:
+  image: muccg/fake-s3:latest
+        
+dbtest:
+  image: postgres:9.3
+  environment:
+    - POSTGRES_USER=yabiapp
+    - POSTGRES_PASSWORD=yabiapp
+  ports:
+    - ":5432"
+
+mqtest:
+  image: dockerfile/rabbitmq:latest
+  ports:
+    - ":5672"
+    - ":15672"
+
+cachetest:
+  image: memcached:1.4
+
+webtest:
+  image: yabi_web
+  command: runserver
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DBSERVER=dbtest
+    - DBUSER=yabiapp
+    - QUEUESERVER=mqtest
+    - CACHESERVER=cachetest
+    - SSHSERVER=sshtest
+    - S3SERVER=s3test
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - datatest
+  ports:
+    - ":8000"
+  links:
+    - dbtest
+    - mqtest
+    - cachetest
+    - sshtest
+    - s3test
+
+celerytest:
+  image: yabi_web
+  hostname: celerytest
+  command: celery
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - CELERY_APP=yabiadmin.backend.celerytasks
+    - CELERY_AUTORELOAD=1
+    - DBSERVER=dbtest
+    - DBUSER=yabiapp
+    - QUEUESERVER=mqtest
+    - CACHESERVER=cachetest
+    - SSHSERVER=sshtest
+    - S3SERVER=s3test
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - datatest
+  links:
+    - dbtest
+    - mqtest
+    - cachetest
+    - sshtest
+    - s3test
+
+# runs the tests against the stack above
+testhost:
+  image: yabi_web
+  command: runtests
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+#    - TEST_CASES=/app/tests/fsbackend_tests.py:FileBackendTests.test_large_upload
+#    - TEST_CASES=/app/tests/fsbackend_tests.py:LocalfsBackendTests.test_ls_file
+#    - TEST_CASES=/app/tests/ssh_tests.py
+    - DBSERVER=dbtest
+    - DBUSER=yabiapp
+    - QUEUESERVER=mqtest
+    - WEBSERVER=webtest
+    - SSHSERVER=sshtest
+    - S3SERVER=s3test
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_WEB=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - datatest
+  links:
+    - dbtest
+    - webtest
+    - mqtest
+    - sshtest
+    - s3test

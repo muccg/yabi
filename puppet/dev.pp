@@ -36,7 +36,9 @@ node default {
         'libxslt-devel',
         'libxml2-devel',
         'libxml2',
-        'libxslt']
+        'libxslt',
+        'pcre',
+        'pcre-devel']
     }
     'Debian': {
       $packages = [
@@ -44,7 +46,9 @@ node default {
         'libldap2-dev',
         'libssl-dev',
         'libxml2-dev',
-        'libxslt1-dev']
+        'libxslt1-dev',
+        'libpcre3',
+        'libpcre3-dev']
     }
   }
 
