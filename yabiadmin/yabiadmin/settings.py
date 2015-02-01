@@ -302,6 +302,11 @@ ALLOWED_HOSTS = env.getlist("allowed_hosts", ["localhost"])
 # see: https://docs.djangoproject.com/en/1.4/ref/settings/#use-x-forwarded-host
 USE_X_FORWARDED_HOST = env.get("use_x_forwarded_host", True)
 
+# This honours the X-Forwarded-Host header set by our nginx frontend when
+# constructing redirect URLS.
+# see: https://docs.djangoproject.com/en/1.4/ref/settings/#use-x-forwarded-host
+USE_X_FORWARDED_HOST = env.get("use_x_forwarded_host", True)
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # Any settings that should be changed for just for testing runs
