@@ -21,7 +21,7 @@ else:
 
 
 install_requires = [
-    'Django==1.6.8',
+    'Django==1.6.10',
     # pip > 1.4 doesn't pick up pytz, because of non-standard version number
     # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
     'pytz>=2013b',
