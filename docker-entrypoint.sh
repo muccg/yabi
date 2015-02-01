@@ -144,6 +144,8 @@ if [ "$1" = 'uwsgi' ]; then
     echo "UWSGI_OPTS is ${UWSGI_OPTS}"
 
     django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-collectstatic.log
+    django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-syncdb.log
+    django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
     uwsgi ${UWSGI_OPTS} 2>&1 | tee /data/uwsgi.log
     exit $?
 fi
