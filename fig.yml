@@ -57,6 +57,7 @@ uwsgi:
   command: uwsgi
   environment:
     - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
