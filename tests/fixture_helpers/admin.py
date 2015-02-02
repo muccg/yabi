@@ -66,14 +66,14 @@ def create_sshtorque_backend():
     sshtorque_backend = models.Backend.objects.create(
         name='SSHTorque Backend',
         scheme='ssh+torque',
-        hostname='torque',
+        hostname='localhost.localdomain',
         path='/',
         submission='${command}\n'
     )
     cred = models.Credential.objects.create(
         description='Test SSHTorque Credential',
-        username='root',
-        password='root',
+        username=os.environ.get('USER'),
+        password='',
         cert='cert',
         key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
@@ -84,14 +84,14 @@ def create_sshpbspro_backend():
     sshpbspro_backend = models.Backend.objects.create(
         name='SSHPBSPro Backend',
         scheme='ssh+pbspro',
-        hostname='pbspro',
+        hostname='localhost.localdomain',
         path='/',
         submission='${command}\n'
     )
     cred = models.Credential.objects.create(
         description='Test SSHPBSPro Credential',
-        username='root',
-        password='root',
+        username=os.environ.get('USER'),
+        password='',
         cert='cert',
         key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
@@ -102,7 +102,7 @@ def create_ssh_backend():
     ssh_backend = models.Backend.objects.create(
         name='SSH Backend',
         scheme='ssh',
-        hostname='sshtest',
+        hostname='localhost',
         path='/',
         submission= """#!/bin/bash
 cd ${working}
@@ -111,8 +111,10 @@ ${command} 1>STDOUT.txt 2>STDERR.txt
     )
     cred = models.Credential.objects.create(
         description='Test SSH Credential',
-        username='root',
-        password='root',
+        username=os.environ.get('USER'),
+        password='',
+        cert='cert',
+        key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
     )
     models.BackendCredential.objects.create(backend=ssh_backend, credential=cred, homedir='')
@@ -121,25 +123,27 @@ def create_sftp_backend():
     sftp_backend = models.Backend.objects.create(
         name='SFTP Backend',
         scheme='sftp',
-        hostname='sshtest',
+        hostname='localhost',
         path='/',
         submission=''
     )
     cred = models.Credential.objects.create(
         description='Test SFTP Credential',
-        username='root',
-        password='root',
+        username=os.environ.get('USER'),
+        password='',
+        cert='cert',
+        key=private_test_ssh_key,
         user=models.User.objects.get(name='demo')
     )
     models.BackendCredential.objects.create(
         backend=sftp_backend,
         credential=cred,
-        homedir='data/',
+        homedir=os.path.expanduser("~")[1:] + '/',
         visible = True,
     )
 
 
-def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/data/yabi-localfs-test/"):
+def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/tmp/yabi-localfs-test/"):
     backend = models.Backend.objects.create(
         name='Test %s Backend'%scheme.upper(),
         description="Test %s Backend"%scheme.upper(),
@@ -169,13 +173,13 @@ def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", p
     )
     import os
     try:
-        os.mkdir("/data/yabi-localfs-test/")
+        os.mkdir("/tmp/yabi-localfs-test/")
     except OSError as ose:
         if ose.errno != 17:
             raise
         #directory already exists... leave it
 
-def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/data/yabi-localfs-test/"):
+def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/tmp/yabi-localfs-test/"):
     backend = models.Backend.objects.filter(
         name='Test %s Backend'%scheme.upper(),
         description="Test %s Backend"%scheme.upper(),
@@ -207,7 +211,7 @@ def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", 
     import shutil
 
     try:
-        shutil.rmtree("/data/yabi-localfs-test/")
+        shutil.rmtree("/tmp/yabi-localfs-test/")
     except OSError as ose:
         pass
 
@@ -296,7 +300,6 @@ def modify_backend(scheme="localex",hostname="localhost",**kwargs):
 
 def authorise_test_ssh_key():
     key_file = os.path.join(os.path.dirname(__file__), "../test_data/yabitests.pub")
-    os.system("mkdir -p ~/.ssh")
     os.system("cat %s >> ~/.ssh/authorized_keys" % key_file)
 
 def cleanup_test_ssh_key():

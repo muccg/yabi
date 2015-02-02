@@ -279,14 +279,12 @@ def backend_get_file(yabiusername, uri, is_dir=False):
             raise Exception("Backend file download was not successful")
 
 
-
 def filename_from_uri(uri, default='default.txt'):
     try:
         return uri.rstrip('/').rsplit('/', 1)[1]
     except IndexError:
         logger.critical('Unable to get filename from uri: %s' % uri)
         return default
-
 
 
 @authentication_required

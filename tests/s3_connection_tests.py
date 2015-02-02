@@ -23,7 +23,6 @@ class S3FileUploadTest(RequestTest):
         return RequestTest.fscmd(cmd, server + uri)
 
     def setUp(self):
-        self.skipTest('S3 tests currently disabled in docker containers')
         RequestTest.setUp(self)
         self.backend, self.credential, self.becred = admin.create_fakes3_backend()
 

@@ -18,7 +18,7 @@ setup(name='yabish',
      entry_points = { 'console_scripts': [ 'yabish = yabishell.yabish:main' ] },
      install_requires = [
          'yaphc==0.1.5',
-         'six==1.8',
+         'six>=1.5,<1.6',
      ],
      dependency_links = [
         "https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz",

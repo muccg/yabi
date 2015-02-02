@@ -22,17 +22,13 @@ class HostnameTest(YabiTestCase):
 
     def test_hostname(self):
         result = self.yabi.run(['hostname'])
-        # AH TODO FIXME do we know hostname?
-        #self.assertTrue(gethostname() in result.stdout)
-        self.assertTrue(result.stdout)
+        self.assertTrue(gethostname() in result.stdout)
         result = StatusResult(self.yabi.run(['status', result.id]))
         self.assertEqual(result.workflow.status, 'complete')
 
     def test_submit_json_directly(self):
         result = self.yabi.run(['submitworkflow', json_path('hostname')])
-	# AH TODO FIXME do we know hostname?
-        #self.assertTrue(gethostname() in result.stdout)
-        self.assertTrue(result.stdout)
+        self.assertTrue(gethostname() in result.stdout)
 
     def test_submit_json_directly_larger_workflow(self):
         result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
@@ -67,13 +63,15 @@ class LocalExecutionRedirectTest(YabiTestCase):
 
         result = self.yabi.run(['hostname', '--redirectTo', REDIRECT_TO_FILENAME])
 
+        hostname = gethostname()
+
         result = StatusResult(self.yabi.run(['status', result.id]))
         self.assertEqual(result.workflow.status, 'complete', 'Workflow should run to completion')
         self.assertTrue(os.path.isfile(REDIRECT_TO_FILENAME), 'file we redirected to should exist')
         contents = ''
         with open(REDIRECT_TO_FILENAME) as f:
             contents = f.read()
-        self.assertTrue(('ssh' in contents) or ('celery' in contents), "The hostname should be in the file we redirected to")
+        self.assertTrue(hostname in contents, "The hostname should be in the file we redirected to")
 
 
 class ExplodingBackendTest(YabiTestCase):

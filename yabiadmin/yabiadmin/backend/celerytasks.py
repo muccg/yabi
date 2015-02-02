@@ -66,12 +66,11 @@ def setup_logging(*args, **kwargs):
     yabiadminLogger = logging.getLogger('yabiadmin')
     yabiadminLogger.propagate = 1
 
-    # TODO FIXME We don't want syslog with docker
-    #syslog_formatter = logging.Formatter('YABI [%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
-    #syslog_handler = logging.handlers.SysLogHandler(address='/dev/log', facility='local4')
-    #syslog_handler.setLevel('DEBUG')
-    #syslog_handler.setFormatter(syslog_formatter)
-    #logger.addHandler(syslog_handler)
+    syslog_formatter = logging.Formatter('YABI [%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
+    syslog_handler = logging.handlers.SysLogHandler(address='/dev/log', facility='local4')
+    syslog_handler.setLevel('DEBUG')
+    syslog_handler.setFormatter(syslog_formatter)
+    logger.addHandler(syslog_handler)
 
 after_setup_task_logger.connect(setup_logging)
 

@@ -19,9 +19,6 @@ logger = logging.getLogger(__name__)
 
 getname = lambda entry: entry[0]
 
-from tests.support import conf
-TMPDIR = conf.tmpdir
-
 @attr("django")
 class FSBackendTests(object):
     """File storage tests with real backends.
@@ -148,7 +145,7 @@ class FSBackendTests(object):
 
     def make_now_file(self):
         text = "%s\n" % datetime.datetime.now()
-        tmp = tempfile.NamedTemporaryFile(dir=TMPDIR)
+        tmp = tempfile.NamedTemporaryFile()
         tmp.write(text)
         tmp.flush()
         return tmp, text
@@ -250,7 +247,7 @@ class FSBackendTests(object):
 
         logger.debug("downloading...")
 
-        tmp = tempfile.NamedTemporaryFile(dir=TMPDIR)
+        tmp = tempfile.NamedTemporaryFile()
         self.download_file(uri, tmp.name)
 
         self.assertEqual(open(tmp.name).read(), text)
@@ -442,9 +439,8 @@ class S3BackendTests(FSBackendTests, RequestTest):
         return hostname, backend_path, fscreds
 
     def setUp(self):
-        self.skipTest('S3 tests currently disabled in docker containers')
         RequestTest.setUp(self)
-        #fakes3_setup(self, "fakes3")
+        fakes3_setup(self, "fakes3")
 
     def skip_if_fakes3(self, msg=None):
         if self.hostname == "fakes3":
@@ -484,7 +480,7 @@ class S3BackendTests(FSBackendTests, RequestTest):
         super(S3BackendTests, self).test_rm_prefix()
 
     def getcmdok(self, cmd, uri):
-        if cmd == "rm" and self.hostname == "s3test":
+        if cmd == "rm" and self.hostname == "fakes3":
             logger.warning("rm disabled on fakes3")
         else:
             return super(S3BackendTests, self).getcmdok(cmd, uri)
@@ -544,10 +540,9 @@ class FileBackendTests(FSBackendTests, RequestTest):
 
     @classmethod
     def backend_info(cls, conf):
-	# AH check this
         hostname = "localhost"
         fscreds = {
-            "username": conf.yabiusername,
+            "username": os.environ.get("LOGNAME", "ccg-user"),
             "password": "",
             "key": "",
         }
@@ -555,7 +550,7 @@ class FileBackendTests(FSBackendTests, RequestTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.backend_path = tempfile.mkdtemp(dir=TMPDIR, prefix="yabitest-") + "/"
+        cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
         cls._make_noperm_file(cls.backend_path)
         super(FileBackendTests, cls).setUpClass()
 
@@ -564,26 +559,25 @@ class FileBackendTests(FSBackendTests, RequestTest):
         super(FileBackendTests, cls).tearDownClass()
         shutil.rmtree(cls.backend_path)
 
-    def test_download_file_eperm(self):
-        self.skipTest("Can't make ccgstaff not being able to access a file under /data")
-
 @attr("backend")
 class SFTPBackendTests(FSBackendTests, RequestTest):
     scheme = "sftp"
 
     @classmethod
     def backend_info(cls, conf):
-        hostname = "sshtest"
+        hostname = "localhost"
+        logname = os.environ.get("LOGNAME", "ccg-user")
 
         fscreds = {
-            "username": "root",
-            "password": "root",
+            "username": logname,
+            "password": "",
+            "key": private_test_ssh_key,
         }
         return hostname, cls.backend_path, fscreds
 
     @classmethod
     def setUpClass(cls):
-        cls.backend_path = tempfile.mkdtemp(dir=TMPDIR, prefix="yabitest-") + "/"
+        cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
         cls._make_noperm_file(cls.backend_path)
         authorise_test_ssh_key()
         super(SFTPBackendTests, cls).setUpClass()
@@ -596,6 +590,3 @@ class SFTPBackendTests(FSBackendTests, RequestTest):
 
     def test_ls_prefix(self):
         self.skipTest("sftp backend is losing the trailing slash")
-
-    def test_download_file_eperm(self):
-        self.skipTest("sftp currently running as root, fix later")

@@ -13,8 +13,7 @@ PROJECT="$2"
 
 PORT='8000'
 
-# yabiadmin is legacy, but occurs in many many places in code/config
-PROJECT_NAME='yabiadmin'
+PROJECT_NAME='yabi'
 AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
@@ -315,9 +314,7 @@ stopprocess() {
 
 stopyabiadmin() {
     echo "Stopping Yabi admin"
-    . ${VIRTUALENV}/bin/activate || true
-    uwsgi --stop yabiadmin-develop.pid || true
-    stopprocess yabiadmin-develop.pid
+    stopprocess yabiadmin-develop.pid "kill_process_group"
 }
 
 
@@ -382,7 +379,15 @@ startyabiadmin() {
     mkdir -p ~/yabi_data_dir
     . ${VIRTUALENV}/bin/activate
     syncmigrate
-    uwsgi uwsgi/emperor.ini
+
+    case ${YABI_CONFIG} in
+    test_*)
+        ${VIRTUALENV}/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
+        ;;
+    *)
+        ${VIRTUALENV}/bin/django-admin.py runserver_plus 0.0.0.0:${PORT} --settings=${DJANGO_SETTINGS_MODULE} > yabiadmin-develop.log 2>&1 &
+        echo $! > yabiadmin-develop.pid
+    esac
 }
 
 

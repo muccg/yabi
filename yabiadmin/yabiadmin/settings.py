@@ -30,9 +30,6 @@ from kombu import Queue
 
 env = EnvConfig()
 
-SCRIPT_NAME = env.get("script_name", os.environ.get("HTTP_SCRIPT_NAME", ""))
-FORCE_SCRIPT_NAME = env.get("force_script_name", "") or SCRIPT_NAME or None
-
 WEBAPP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PRODUCTION = env.get("production", False)
@@ -41,10 +38,9 @@ PRODUCTION = env.get("production", False)
 # see http://code.google.com/p/ccg-django-extras/source/browse/
 # you SHOULD change the SSL_ENABLED to True when in production
 SSL_ENABLED = PRODUCTION
-SSL_FORCE = PRODUCTION
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.get("debug", not PRODUCTION)
+DEBUG = not PRODUCTION
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -171,7 +167,7 @@ DATABASES = {
         'NAME': env.get("dbname", "dev_yabi"),
         'USER': env.get("dbuser", "yabiapp"),
         'PASSWORD': env.get("dbpass", "yabiapp"),
-        'HOST': env.get("dbserver", "localhost"),
+        'HOST': env.get("dbserver", ""),
         'PORT': env.get("dbport", ""),
     }
 }
@@ -275,7 +271,7 @@ if env.get("memcache", ""):
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
             'LOCATION': env.getlist("memcache"),
-            'KEYSPACE': env.get("key_prefix", "yabi")
+            'KEYSPACE': "%(project_name)s-prod" % env
         }
     }
 
@@ -296,12 +292,7 @@ else:
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 # See: https://docs.djangoproject.com/en/1.6/releases/1.5/#allowed-hosts-required-in-production
-ALLOWED_HOSTS = env.getlist("allowed_hosts", ["localhost"])
-
-# This honours the X-Forwarded-Host header set by our nginx frontend when
-# constructing redirect URLS.
-# see: https://docs.djangoproject.com/en/1.4/ref/settings/#use-x-forwarded-host
-USE_X_FORWARDED_HOST = env.get("use_x_forwarded_host", True)
+ALLOWED_HOSTS = env.get("allowed_hosts", "").split()
 
 # This honours the X-Forwarded-Host header set by our nginx frontend when
 # constructing redirect URLS.
@@ -349,7 +340,7 @@ DEFAULT_CRED_CACHE_TIME = 60 * 60 * 24                   # 1 day default
 # ## CELERY ###
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
 # BROKER_URL = 'django://'
-BROKER_URL =  env.get("celery_broker", 'amqp://guest:guest@localhost:5672//')
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 # http://celery.readthedocs.org/en/latest/whatsnew-3.1.html#last-version-to-enable-pickle-by-default
 # Pickle is unsecure, but to ensure that we won't fail on existing messages
@@ -530,14 +521,13 @@ LOGGING = {
             'when': 'midnight',
             'formatter': 'db'
         },
-# Docker container chokes on this
-#        'syslog': {
-#            'level': 'DEBUG',
-#            'class': 'logging.handlers.SysLogHandler',
-#            'address': '/dev/log',
-#            'facility': 'local4',
-#            'formatter': 'syslog'
-#        },
+        'syslog': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.SysLogHandler',
+            'address': '/dev/log',
+            'facility': 'local4',
+            'formatter': 'syslog'
+        },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -553,31 +543,26 @@ LOGGING = {
     },
     'loggers': {
         '': {
-#            'handlers': ['console', 'file', 'syslog'],
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'syslog'],
             'level': 'INFO',
         },
         'django': {
-#            'handlers': ['console', 'django_file', 'syslog'],
-            'handlers': ['console', 'django_file'],
+            'handlers': ['console', 'django_file', 'syslog'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.request': {
-#            'handlers': ['console', 'django_file', 'mail_admins', 'syslog'],
-            'handlers': ['console', 'django_file'],
+            'handlers': ['console', 'django_file', 'mail_admins', 'syslog'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.db.backends': {
-#            'handlers': ['console', 'db_logfile', 'mail_admins', 'syslog'],
-            'handlers': ['console', 'db_logfile'],
+            'handlers': ['console', 'db_logfile', 'mail_admins', 'syslog'],
             'level': 'WARNING',
             'propagate': False,
         },
         'yabiadmin': {
-#            'handlers': ['console', 'file', 'yabi_db_handler', 'syslog'],
-            'handlers': ['console', 'file', 'yabi_db_handler'],
+            'handlers': ['console', 'file', 'yabi_db_handler', 'syslog'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
