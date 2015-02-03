@@ -260,9 +260,9 @@ def mkdir(request):
 
 def backend_get_file(yabiusername, uri, is_dir=False):
     if is_dir:
-        f, status_queue = backend.get_zipped_dir(yabiusername, uri)
+        f, thread, status_queue = backend.get_zipped_dir(yabiusername, uri)
     else:
-        f, status_queue = backend.get_file(yabiusername, uri)
+        f, thread, status_queue = backend.get_file(yabiusername, uri)
 
     CHUNKSIZE = 64 * 1024
 
@@ -273,7 +273,10 @@ def backend_get_file(yabiusername, uri, is_dir=False):
     success = status_queue.get()
 
     if not success:
-        raise Exception("Backend file download was not successful")
+        if thread.exception is not None:
+            raise thread.exception
+        else:
+            raise Exception("Backend file download was not successful")
 
 
 def filename_from_uri(uri, default='default.txt'):

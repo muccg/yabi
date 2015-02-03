@@ -25,6 +25,7 @@ import datetime
 import subprocess
 import socket
 import string
+import threading
 import traceback
 from mako.template import Template
 import paramiko
@@ -305,3 +306,20 @@ def partition(pred, iterable):
     """Partition an iterable in two iterable based on the predicate"""
     t1, t2 = tee(iterable)
     return ifilter(pred, t1), ifilterfalse(pred, t2)
+
+
+class SaveExceptionThread(threading.Thread):
+    """A thread that saves an exception raised during its execution.
+
+       The exception is saved into the exception property."""
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+        self.exception = None
+
+        def wrapped_target(*args, **kwargs):
+            try:
+                return target(*args, **kwargs)
+            except Exception as e:
+                self.exception = e
+                raise e
+
+        threading.Thread.__init__(self, group, wrapped_target, name, args, kwargs)

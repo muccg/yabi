@@ -21,7 +21,7 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 from yabiadmin.backend.fsbackend import FSBackend
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
 from yabiadmin.backend.utils import partition
 from yabiadmin.yabiengine.urihelper import uriparse
 import logging
@@ -194,12 +194,15 @@ class S3Backend(FSBackend):
             bucket = self.connect_to_bucket(bucket_name)
             key = bucket.get_key(path.lstrip(DELIMITER))
 
-            if key:
-                key.get_contents_to_file(dst)
-                return True
-            else:
-                logger.error("Key not found for uri")
-                return False
+            if not key:
+                raise FileNotFoundError(uri)
+
+            key.get_contents_to_file(dst)
+
+            return True
+        except FileNotFoundError:
+            logger.exception("Exception thrown while S3 downloading %s to %s", uri, dst)
+            raise
         except:
             logger.exception("Exception thrown while S3 downloading %s to %s", uri, dst)
             return False
