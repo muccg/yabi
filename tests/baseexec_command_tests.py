@@ -22,6 +22,7 @@ class BaseCommandsTestCase(TestCase):
 
 
     def test_sge_command_paths(self):
+        self.skipTest("This tests have to be run on a celery host, they aren't e2e tests")
         qsub = self.sge_backend.get_scheduler_command_path("qsub")
         self.assertEquals(qsub,"/opt/sge6/bin/linux-x64/qsub","sge exec qsub command path wrong: Expected qsub: Actual: %s" % qsub)
         qstat = self.sge_backend.get_scheduler_command_path("qstat")
@@ -31,12 +32,14 @@ class BaseCommandsTestCase(TestCase):
 
 
     def test_pbs_command_paths(self):
+        self.skipTest("This tests have to be run on a celery host, they aren't e2e tests")
         qsub = self.pbs_backend.get_scheduler_command_path("qsub")
         self.assertEquals(qsub,"qsub","pbs exec qsub command path wrong: Expected qsub: Actual: %s" % qsub)
         qstat = self.pbs_backend.get_scheduler_command_path("qstat")
         self.assertEquals(qstat, "qstat" ,"pbs exec qstat command path wrong: Expected qstat: Actual: %s" % qstat)
 
     def test_torque_command_paths(self):
+        self.skipTest("This tests have to be run on a celery host, they aren't e2e tests")
         qsub = self.torque_backend.get_scheduler_command_path("qsub")
         self.assertEquals(qsub,"/opt/torque/2.3.13/bin/qsub","torque  qsub command path wrong: Expected:/opt/torque/2.3.13/bin/qsub Actual: [%s]" % qsub)
         qstat = self.torque_backend.get_scheduler_command_path("qstat")

@@ -178,7 +178,7 @@ class S3Backend(FSBackend):
         from django.conf import settings
         if settings.DEBUG and bucket_name == "fakes3":
             logger.info("Changing boto connection params for fakes3")
-            params.update(host="localhost.localdomain", port=8090, is_secure=False,
+            params.update(host="s3test", port=4569, is_secure=False,
                           calling_format="boto.s3.connection.OrdinaryCallingFormat")
 
         return params
