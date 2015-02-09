@@ -187,6 +187,8 @@ class FileUtils(object):
             return data
         extra_args = {}
         if parentdir is not None:
+            if not os.path.exists(parentdir):
+                os.mkdir(parentdir)
             extra_args = {'dir': parentdir}
         with tempfile.NamedTemporaryFile(prefix=fname_prefix, suffix='.fa', delete=False, **extra_args) as f:
             chunks = size / CHUNK_SIZE
