@@ -53,7 +53,7 @@ ci_build() {
     . ${VIRTUALENV}/bin/activate
     pip install fig
 
-    fig --project-name -f fig-rpmbuild.yml up
+    fig --project-name yabi -f fig-rpmbuild.yml up
 }
 
 
@@ -515,9 +515,8 @@ celeryevents)
     settings
     celeryevents
     ;;
-ci_remote_build)
-    ci_ssh_agent
-    ci_remote_build
+ci_build)
+    ci_build
     ;;
 ci_runtests)
     ci_runtests
