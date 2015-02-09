@@ -22,8 +22,7 @@ AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 STAGING_PIP="/usr/local/webapps/yabiadmin/bin/pip2.7"
 TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
-PIP_OPTS="--download-cache ~/.pip/cache"
-PIP5_OPTS="${PIP_OPTS} --process-dependency-links"
+PIP5_OPTS="--process-dependency-links"
 
 # Default config
 YABI_CONFIG="dev_postgresql"
@@ -165,7 +164,7 @@ ci_staging_tests() {
 
 # staging selenium test
 ci_staging_selenium() {
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"${STAGING_PIP} install ${PIP_OPTS} ${TESTING_MODULES}"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"${STAGING_PIP} install ${TESTING_MODULES}"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
     ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
     ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd restart'
@@ -351,9 +350,8 @@ stopyabi() {
 
 make_virtualenv() {
     # check requirements
-    which virtualenv-2.7 > /dev/null
-    virtualenv-2.7 ${VIRTUALENV}
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} --upgrade 'pip>=1.5,<1.6'
+    which virtualenv > /dev/null
+    virtualenv ${VIRTUALENV}
 }
 
 installyabi() {
