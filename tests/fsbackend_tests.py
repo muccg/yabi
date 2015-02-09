@@ -20,7 +20,10 @@ logger = logging.getLogger(__name__)
 getname = lambda entry: entry[0]
 
 from tests.support import conf
+
 TMPDIR = conf.tmpdir
+if not os.path.exists(TMPDIR):
+    os.mkdir(TMPDIR)
 
 @attr("django")
 class FSBackendTests(object):
