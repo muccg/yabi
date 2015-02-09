@@ -7,7 +7,6 @@ TOPDIR=$(cd `dirname $0`; pwd)
 
 # break on error
 set -e
-set -x
 
 ACTION="$1"
 PROJECT="$2"
@@ -32,54 +31,8 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_lint) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_runtests|ci_remote_build|ci_rpm_publish|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_lint)"
     echo ""
-}
-
-
-project_needed() {
-    if ! test ${PROJECT}; then
-        usage
-        exit 1
-    fi
-}
-
-settings() {
-    export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
-
-    case ${YABI_CONFIG} in
-    test_mysql)
-        export DBTYPE=mysql
-        export DBNAME=test_yabi
-        export DBUSER=root
-        export DBPASS=""
-        export USE_TESTING_SETTINGS=1
-        ;;
-    test_postgresql)
-        export DBTYPE=pgsql
-        export DBNAME=test_yabi
-        export DBUSER=yabiapp
-        export DBPASS=yabiapp
-        export USE_TESTING_SETTINGS=1
-        ;;
-    dev_mysql)
-        export DBTYPE=mysql
-        export DBNAME=dev_yabi
-        export DBUSER=root
-        export DBPASS=""
-        ;;
-    dev_postgresql)
-        export DBTYPE=pgsql
-        export DBNAME=dev_yabi
-        export DBUSER=yabiapp
-        export DBPASS=yabiapp
-        ;;
-    *)
-        echo "No YABI_CONFIG set, exiting"
-        exit 1
-    esac
-
-    echo "Config: ${YABI_CONFIG}"
 }
 
 
@@ -107,39 +60,27 @@ ci_remote_build() {
 }
 
 
-# run tests on a remote host from ci environment
-ci_remote_test() {
-    TEST_PLAN=$1
-    if [ "${TEST_PLAN}" = "" ]; then
-        TEST_PLAN="test_postgresql"
-    fi
+# run tests in our ci environment
+ci_runtests() {
+    mkdir -p data/tmp
+    chmod o+rwx data
+    chmod o+rwx data/tmp
 
-    echo "Test plan ${TEST_PLAN}"
+    make_virtualenv
+    source ${VIRTUALENV}/bin/activate
+    pip install fig
 
-    time ccg ${AWS_TEST_INSTANCE} boot
-    time ccg ${AWS_TEST_INSTANCE} puppet
-    time ccg ${AWS_TEST_INSTANCE} shutdown:100
+    docker-kill-all
+    docker-clean
 
-    SSH_OPTS="-o StrictHostKeyChecking\=no"
-    RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
-    time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN} || true"
-    time ccg ${AWS_TEST_INSTANCE} getfile:"${TARGET_DIR}/tests.xml,tests.xml"
-    time ccg ${AWS_TEST_INSTANCE} shutdown:10
+    fig --project-name yabi build web
+    fig --project-name yabi -f fig-test.yml up
 }
 
 
 # publish rpms to testing repo
 ci_rpm_publish() {
     time ccg publish_testing_rpm:build/yabi*.rpm,release=6
-}
-
-
-# destroy our ci build server
-ci_remote_destroy() {
-    ccg ${AWS_BUILD_INSTANCE} destroy
 }
 
 
@@ -539,16 +480,6 @@ pythonversion)
 pipfreeze)
     pipfreeze
     ;;
-test_mysql)
-    YABI_CONFIG="test_mysql"
-    settings
-    dbtest
-    ;;
-test_postgresql)
-    YABI_CONFIG="test_postgresql"
-    settings
-    dbtest
-    ;;
 lint)
     lint
     ;;
@@ -591,25 +522,8 @@ ci_remote_build)
     ci_ssh_agent
     ci_remote_build
     ;;
-ci_remote_test)
-    ci_ssh_agent
-    ci_remote_test
-    ;;
-ci_remote_test_postgresql)
-    ci_ssh_agent
-    ci_remote_test test_postgresql
-    ;;
-ci_remote_test_mysql)
-    ci_ssh_agent
-    ci_remote_test test_mysql
-    ;;
-ci_remote_test_yabiadmin_mysql)
-    ci_ssh_agent
-    ci_remote_test test_yabiadmin_mysql
-    ;;
-ci_remote_destroy)
-    ci_ssh_agent
-    ci_remote_destroy
+ci_runtests)
+    ci_runtests
     ;;
 ci_rpm_publish)
     ci_ssh_agent
