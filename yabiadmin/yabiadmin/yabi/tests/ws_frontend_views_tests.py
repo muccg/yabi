@@ -52,7 +52,7 @@ class WsMenuTest(WSTestCase):
         self.assertEqual(first_response.content, second_response.content,
                          'Should get the same response from cache')
 
-    def disabled_test_menu_contains_new_tool(self):
+    def test_menu_contains_new_tool(self):
         self.tool = self.add_new_tool()
         cache.clear()
         response = self.client.get('/ws/menu')
