@@ -39,7 +39,7 @@ usage() {
 # ssh setup, make sure our ccg commands can run in an automated environment
 ci_ssh_agent() {
     ssh-agent > /tmp/agent.env.sh
-    source /tmp/agent.env.sh
+    . /tmp/agent.env.sh
     ssh-add ~/.ssh/ccg-syd-staging-2014.pem
 }
 
@@ -50,7 +50,7 @@ ci_build() {
     chmod o+rwx data
 
     make_virtualenv
-    source ${VIRTUALENV}/bin/activate
+    . ${VIRTUALENV}/bin/activate
     pip install fig
 
     fig --project-name -f fig-rpmbuild.yml up
@@ -64,7 +64,7 @@ ci_runtests() {
     chmod o+rwx data/tmp
 
     make_virtualenv
-    source ${VIRTUALENV}/bin/activate
+    . ${VIRTUALENV}/bin/activate
     pip install fig
 
     docker-kill-all
@@ -144,7 +144,7 @@ ci_lint() {
 
 
 do_nosetests() {
-    source ${VIRTUALENV}/bin/activate
+    . ${VIRTUALENV}/bin/activate
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
     COVERAGE_OPTS="--with-coverage --cover-html --cover-erase --cover-package=yabiadmin"
