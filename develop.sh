@@ -163,7 +163,7 @@ ci_staging_tests() {
 
 
 # staging selenium test
-function ci_staging_selenium() {
+ci_staging_selenium() {
     ccg ${AWS_STAGING_INSTANCE} dsudo:"${STAGING_PIP} install ${PIP_OPTS} ${TESTING_MODULES}"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
     ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
