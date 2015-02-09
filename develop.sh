@@ -31,7 +31,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_runtests|ci_remote_build|ci_rpm_publish|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_lint)"
+    echo "Usage ./develop.sh (status|test|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_runtests|ci_build|ci_rpm_publish|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys|ci_lint)"
     echo ""
 }
 
@@ -44,19 +44,16 @@ ci_ssh_agent() {
 }
 
 
-# build RPMs on a remote host from ci environment
-ci_remote_build() {
-    time ccg ${AWS_BUILD_INSTANCE} boot
-    time ccg ${AWS_BUILD_INSTANCE} puppet
-    time ccg ${AWS_BUILD_INSTANCE} shutdown:240
+# build RPMs on ci environment
+ci_build() {
+    mkdir -p data
+    chmod o+rwx data
 
-    SSH_OPTS="-o StrictHostKeyChecking\=no"
-    RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
-    time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",delete=True
-    time ccg ${AWS_BUILD_INSTANCE} build_rpm:centos/yabi.spec,src=${TARGET_DIR}
+    make_virtualenv
+    source ${VIRTUALENV}/bin/activate
+    pip install fig
 
-    mkdir -p build
-    ccg ${AWS_BUILD_INSTANCE} getfile:rpmbuild/RPMS/x86_64/yabi*.rpm,build/
+    fig --project-name -f fig-rpmbuild.yml up
 }
 
 
@@ -80,7 +77,7 @@ ci_runtests() {
 
 # publish rpms to testing repo
 ci_rpm_publish() {
-    time ccg publish_testing_rpm:build/yabi*.rpm,release=6
+    time ccg publish_testing_rpm:data/rpmbuild/RPMS/x86_64/yabi*.rpm,release=6
 }
 
 
