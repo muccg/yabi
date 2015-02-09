@@ -102,6 +102,7 @@ testhost:
     - S3SERVER=s3test
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
     - WAIT_FOR_WEB=1
     - WAIT_FOR_SSH=1
     - WAIT_FOR_S3=1
@@ -113,3 +114,4 @@ testhost:
     - mqtest
     - sshtest
     - s3test
+    - cachetest
