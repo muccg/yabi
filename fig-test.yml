@@ -100,6 +100,7 @@ testhost:
     - WEBSERVER=webtest
     - SSHSERVER=sshtest
     - S3SERVER=s3test
+    - CACHESERVER=cachetest
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
