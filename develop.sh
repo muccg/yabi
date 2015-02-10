@@ -36,8 +36,8 @@ ci_ssh_agent() {
 
 # build RPMs
 rpmbuild() {
-    mkdir -p data
-    chmod o+rwx data
+    mkdir -p data/rpmbuild
+    chmod o+rwx data/rpmbuild
 
     make_virtualenv
     . ${VIRTUALENV}/bin/activate
