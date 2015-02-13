@@ -74,13 +74,14 @@ rpm_publish() {
 ci_staging() {
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/docker/unstable'
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/data'
-    ccg ${AWS_STAGING_INSTANCE} drun:'chown o+w yabi/data'
+    ccg ${AWS_STAGING_INSTANCE} drun:'chmod o+w yabi/data'
     ccg ${AWS_STAGING_INSTANCE} putfile:fig-staging.yml,yabi/fig-staging.yml
     ccg ${AWS_STAGING_INSTANCE} putfile:docker/unstable/Dockerfile,yabi/docker/unstable/Dockerfile
 
+    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml stop'
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml kill'
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml rm --force -v'
-    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml build webstaging'
+    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml build --no-cache webstaging'
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml up -d'
     ccg ${AWS_STAGING_INSTANCE} drun:'docker-untagged'
 }
