@@ -77,3 +77,9 @@ instances:
       - which librarian-puppet || sudo gem install librarian-puppet -v 1.4.0
     puppet_manifest: prod-aws.pp
     aws_instance_type: c3.large
+
+  ccg_syd_nginx_staging:
+    instance_class: fixed
+    ssh_user: ec2-user
+    fixed_ip_address: staging.ccgapps.com.au
+    key_filename: ~/.ssh/ccg-syd-staging-2014.pem
