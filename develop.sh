@@ -12,8 +12,7 @@ ACTION="$1"
 
 # yabiadmin is legacy, but occurs in many many places in code/config
 PROJECT_NAME='yabiadmin'
-AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
-STAGING_PIP="/usr/local/webapps/yabiadmin/bin/pip2.7"
+AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
 PIP5_OPTS="--process-dependency-links"
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
@@ -21,7 +20,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|rpmbuild|rpm_publish|ci_runtests|ci_staging|ci_staging_tests|ci_staging_selenium)"
+    echo "Usage ./develop.sh (pythonlint|jslint|rpmbuild|rpm_publish|ci_runtests|ci_staging)"
     echo ""
 }
 
@@ -73,33 +72,17 @@ rpm_publish() {
 
 # puppet up staging which will install the latest rpm
 ci_staging() {
-    ccg ${AWS_STAGING_INSTANCE} boot
-    ccg ${AWS_STAGING_INSTANCE} puppet
-    ccg ${AWS_STAGING_INSTANCE} shutdown:120
-}
+    ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/docker/unstable'
+    ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/data'
+    ccg ${AWS_STAGING_INSTANCE} drun:'chown o+w yabi/data'
+    ccg ${AWS_STAGING_INSTANCE} putfile:fig-staging.yml,yabi/fig-staging.yml
+    ccg ${AWS_STAGING_INSTANCE} putfile:docker/unstable/Dockerfile,yabi/docker/unstable/Dockerfile
 
-
-# run tests on staging
-ci_staging_tests() {
-    # Try running syncdb -- if setup is wrong this won't work
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"yabiadmin syncdb --noinput"
-
-    # Get the login page -- will find major config problems with the rpm
-    STAGING_URL="https://localhost/yabi/"
-    ccg ${AWS_STAGING_INSTANCE} drun:"curl --insecure -f -o /dev/null -D /dev/stdout ${STAGING_URL}"
-}
-
-
-# staging selenium test
-ci_staging_selenium() {
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"${STAGING_PIP} install ${TESTING_MODULES}"
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd restart'
-    ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && DISPLAY\=\:0 YABIURL\=https\://localhost/yabi/ yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback || true"
-    ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
+    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml kill'
+    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml rm --force -v'
+    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml build webstaging'
+    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml up -d'
+    ccg ${AWS_STAGING_INSTANCE} drun:'docker-untagged'
 }
 
 
