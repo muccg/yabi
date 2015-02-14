@@ -21,8 +21,9 @@ RUN env --unset=DEBIAN_FRONTEND
 ENV APP_RELEASE next_release
 
 WORKDIR /app
+RUN date > /data/build.txt && echo $APP_RELEASE >> /data/build.txt
 RUN git clone --depth=1 --branch=$APP_RELEASE https://bitbucket.org/ccgmurdoch/yabi.git .
-RUN chmod +x docker-build.sh && ./docker-build.sh
+RUN chmod +x docker/docker-build.sh && ./docker/docker-build.sh
 
 EXPOSE 9100 9101
 VOLUME ["/data"]
