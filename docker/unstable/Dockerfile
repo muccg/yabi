@@ -18,21 +18,19 @@ RUN apt-get update && apt-get install -y \
 
 RUN env --unset=DEBIAN_FRONTEND
 
-WORKDIR /app
-RUN git clone --depth=1 --branch=next_release https://bitbucket.org/ccgmurdoch/yabi.git .
+ENV APP_RELEASE next_release
 
-WORKDIR /app/yabiadmin
-RUN pip install --process-dependency-links .
+WORKDIR /app
+RUN git clone --depth=1 --branch=$APP_RELEASE https://bitbucket.org/ccgmurdoch/yabi.git .
+RUN chmod +x docker-build.sh && ./docker-build.sh
 
 EXPOSE 9100 9101
 VOLUME ["/data"]
-
-RUN chmod +x /app/docker-entrypoint.sh
 
 # Drop privileges, set home for ccg-user
 USER ccg-user
 ENV HOME /data
 WORKDIR /data
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["uwsgi"]
