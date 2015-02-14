@@ -7,7 +7,7 @@ function defaults {
 
     PIP_OPTS="--process-dependency-links"
     if [ exec 6<>/dev/tcp/${DEVPI_HOST}/${DEVPI_PORT} ] ; then
-        PIP_OPTS="-i http://${DEVPI_HOST}:${DEVPI_PORT}/root/pypi/ --process-dependency-links"
+        PIP_OPTS="-i http://${DEVPI_HOST}:${DEVPI_PORT}/root/pypi/ --trusted-host ${DEVPI_HOST} --process-dependency-links"
     fi
 
     echo "BUILD_HOST is ${BUILD_HOST}"
