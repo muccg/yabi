@@ -27,7 +27,7 @@ RUN echo -en "HEAD /\n\n\n" | nc -q 1 -v `cat /data/build_host.txt` 3141 | grep 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Project specific deps
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
   libldap2-dev \
   libpcre3 \
