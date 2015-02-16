@@ -2,29 +2,6 @@
 FROM muccg/python-base:ubuntu14.04-2.7
 MAINTAINER ccg <ccgdevops@googlegroups.com>
 
-# Determine build host
-ENV BUILD_HOST_FILE /data/build_host.txt
-RUN netstat -nr | grep '^0\.0\.0\.0' | awk '{print $2}' > ${BUILD_HOST_FILE}
-
-# squid proxy if available
-ENV APT_PROXY_CONF /etc/apt/apt.conf.d/30proxy
-RUN echo "HEAD /" | nc -q -1 -n -v  `cat ${BUILD_HOST_FILE}` 3128 | grep squid-deb-proxy \
-  && (echo "Acquire::http::Proxy \"http://$(cat ${BUILD_HOST_FILE}):3128\";" > ${APT_PROXY_CONF}) \
-  && (echo "Acquire::http::Proxy::ppa.launchpad.net DIRECT;" >> ${APT_PROXY_CONF}) \
-  || echo "No squid-deb-proxy detected on docker host"
-
-# devpi if available
-ENV PIP_CONF_DIR /root/.config/pip
-RUN echo -en "HEAD /\n\n\n" | nc -q 1 -v `cat ${BUILD_HOST_FILE}` 3141 | grep Devpi \
-  && mkdir -p ${PIP_CONF_DIR} \
-  && (echo "[global]" > ${PIP_CONF_DIR}/pip.conf) \
-  && (echo "timeout = 60" >> ${PIP_CONF_DIR}/pip.conf) \
-  && (echo "index-url = http://$(cat ${BUILD_HOST_FILE}):3141/root/pypi/" >> ${PIP_CONF_DIR}/pip.conf) \
-  && (echo "trusted-host = $(cat ${BUILD_HOST_FILE})" >> ${PIP_CONF_DIR}/pip.conf) \
-  && (echo "no-cache-dir = true" >> ${PIP_CONF_DIR}/pip.conf) \
-  && (echo "cache-dir = none" >> ${PIP_CONF_DIR}/pip.conf) \
-  || echo "No devpi detected on docker host"
-
 ENV DEBIAN_FRONTEND noninteractive
 
 # Project specific deps
@@ -44,23 +21,14 @@ RUN env --unset=DEBIAN_FRONTEND
 ENV APP_RELEASE next_release
 
 WORKDIR /app
-RUN date > /data/build.txt && echo $APP_RELEASE >> /data/build.txt
-RUN git clone --depth=1 --branch=$APP_RELEASE https://bitbucket.org/ccgmurdoch/yabi.git .
-
-# install yabi
-WORKDIR /app/yabiadmin
-RUN pip install --process-dependency-links .
-
-# install yabi shell
-WORKDIR /app/yabish
-RUN pip install --process-dependency-links .
-
-# save docker-entry-point.sh prior to cleanup
-RUN cp /app/docker-entrypoint.sh / \
-  && chmod +x /docker-entrypoint.sh
-
-# save uwsgi config prior to cleanup
-RUN mv /app/uwsgi / \
+RUN git clone --depth=1 --branch=$APP_RELEASE https://bitbucket.org/ccgmurdoch/yabi.git . \
+  && cd /app/yabiadmin \
+  && pip install --process-dependency-links . \
+  && cd /app/yabish \
+  && pip install --process-dependency-links . \
+  && cp /app/docker-entrypoint.sh / \
+  && chmod +x /docker-entrypoint.sh \
+  && mv /app/uwsgi / \
   && rm -rf /app \
   && mkdir /app \
   && mv /uwsgi /app/
