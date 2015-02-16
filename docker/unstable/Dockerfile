@@ -55,7 +55,7 @@ WORKDIR /app/yabish
 RUN pip install --process-dependency-links .
 
 # save docker-entry-point.sh prior to cleanup
-RUN cp /app/docker-entrypoint.sh /
+RUN cp /app/docker-entrypoint.sh / \
   && chmod +x /docker-entrypoint.sh
 
 # save uwsgi config prior to cleanup
