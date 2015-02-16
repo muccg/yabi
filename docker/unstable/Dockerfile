@@ -3,25 +3,26 @@ FROM muccg/python-base:ubuntu14.04-2.7
 MAINTAINER ccg <ccgdevops@googlegroups.com>
 
 # Determine build host
-RUN netstat -nr | grep '^0\.0\.0\.0' | awk '{print $2}' > /data/build_host.txt
+ENV BUILD_HOST_FILE /data/build_host.txt
+RUN netstat -nr | grep '^0\.0\.0\.0' | awk '{print $2}' > ${BUILD_HOST_FILE}
 
 # squid proxy if available
 ENV APT_PROXY_CONF /etc/apt/apt.conf.d/30proxy
-RUN echo "HEAD /" | nc -q -1 -n -v  `cat /data/build_host.txt` 3128 | grep squid-deb-proxy \
-  && (echo "Acquire::http::Proxy \"http://$(cat /data/build_host.txt):3128\";" > ${APT_PROXY_CONF}) \
+RUN echo "HEAD /" | nc -q -1 -n -v  `cat ${BUILD_HOST_FILE}` 3128 | grep squid-deb-proxy \
+  && (echo "Acquire::http::Proxy \"http://$(cat ${BUILD_HOST_FILE}):3128\";" > ${APT_PROXY_CONF}) \
   && (echo "Acquire::http::Proxy::ppa.launchpad.net DIRECT;" >> ${APT_PROXY_CONF}) \
   || echo "No squid-deb-proxy detected on docker host"
 
 # devpi if available
-ENV PIP_CONF /root/.config/pip
-RUN echo -en "HEAD /\n\n\n" | nc -q 1 -v `cat /data/build_host.txt` 3141 | grep Devpi \
-  && mkdir -p ${PIP_CONF} \
-  && (echo "[global]" > ${PIP_CONF}/pip.conf) \
-  && (echo "timeout = 60" >> ${PIP_CONF}/pip.conf) \
-  && (echo "index-url = http://$(cat /data/build_host.txt):3141/root/pypi/" >> ${PIP_CONF}/pip.conf) \
-  && (echo "trusted-host = $(cat /data/build_host.txt)" >> ${PIP_CONF}/pip.conf) \
-  && (echo "no-cache-dir = true" >> ${PIP_CONF}/pip.conf) \
-  && (echo "cache-dir = none" >> ${PIP_CONF}/pip.conf) \
+ENV PIP_CONF_DIR /root/.config/pip
+RUN echo -en "HEAD /\n\n\n" | nc -q 1 -v `cat ${BUILD_HOST_FILE}` 3141 | grep Devpi \
+  && mkdir -p ${PIP_CONF_DIR} \
+  && (echo "[global]" > ${PIP_CONF_DIR}/pip.conf) \
+  && (echo "timeout = 60" >> ${PIP_CONF_DIR}/pip.conf) \
+  && (echo "index-url = http://$(cat ${BUILD_HOST_FILE}):3141/root/pypi/" >> ${PIP_CONF_DIR}/pip.conf) \
+  && (echo "trusted-host = $(cat ${BUILD_HOST_FILE})" >> ${PIP_CONF_DIR}/pip.conf) \
+  && (echo "no-cache-dir = true" >> ${PIP_CONF_DIR}/pip.conf) \
+  && (echo "cache-dir = none" >> ${PIP_CONF_DIR}/pip.conf) \
   || echo "No devpi detected on docker host"
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -65,7 +66,7 @@ RUN mv /app/uwsgi / \
   && mv /uwsgi /app/
 
 # clean up any proxy settings during build
-RUN rm -rf ${PIP_CONF} && rm -rf ${APT_PROXY_CONF}
+RUN rm -rf ${PIP_CONF_DIR} && rm -rf ${APT_PROXY_CONF}
 
 EXPOSE 9100 9101
 VOLUME ["/data"]
