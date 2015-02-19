@@ -58,7 +58,7 @@ install_requires = [
     'uwsgitop',
     'pyinotify==0.9.4',
     'Werkzeug',
-    'psycopg2==2.5.4',
+    'psycopg2==2.5.5',
     # for tests
     'requests==2.4.1',
     'django-nose',
