@@ -70,7 +70,7 @@ rpm_publish() {
 }
 
 
-# puppet up staging which will install the latest rpm
+# build a docker image and start stack on staging using fig
 ci_staging() {
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/docker/unstable'
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/data'
