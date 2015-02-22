@@ -576,7 +576,7 @@ class SFTPBackendTests(FSBackendTests, RequestTest):
 
     @classmethod
     def backend_info(cls, conf):
-        hostname = "sshtest"
+        hostname = "ssh"
 
         fscreds = {
             "username": "root",

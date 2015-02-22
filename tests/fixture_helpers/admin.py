@@ -102,7 +102,7 @@ def create_ssh_backend():
     ssh_backend = models.Backend.objects.create(
         name='SSH Backend',
         scheme='ssh',
-        hostname='sshtest',
+        hostname='ssh',
         path='/',
         submission= """#!/bin/bash
 cd ${working}
@@ -121,7 +121,7 @@ def create_sftp_backend():
     sftp_backend = models.Backend.objects.create(
         name='SFTP Backend',
         scheme='sftp',
-        hostname='sshtest',
+        hostname='ssh',
         path='/',
         submission=''
     )

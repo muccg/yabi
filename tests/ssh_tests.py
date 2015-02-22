@@ -123,7 +123,7 @@ class SFTPPerformanceTest(SSHBackend, FileUtils):
         cp_start = time.time()
         FSBackend.remote_copy(self.username,
                 'localfs://%s@localhost%s' % (self.username, a_dir),
-                'sftp://root@sshtest%s/' % (target_dir))
+                'sftp://root@ssh%s/' % (target_dir))
         copy_duration = time.time() - cp_start
 
         return copy_duration
