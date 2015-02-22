@@ -3,6 +3,7 @@ data:
   image: muccg/base:debian8
   volumes:
     - .:/app
+    - data/dev:/data
 
 ssh:
   image: muccg/ssh
