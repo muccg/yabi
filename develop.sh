@@ -20,7 +20,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|rpmbuild|rpm_publish|ci_runtests|ci_staging)"
+    echo "Usage ./develop.sh (pythonlint|jslint|rpmbuild|rpm_publish|runtests|ci_staging)"
     echo ""
 }
 
@@ -46,8 +46,7 @@ rpmbuild() {
 }
 
 
-# run tests in our ci environment
-ci_runtests() {
+runtests() {
     mkdir -p data/tmp
     chmod o+rwx data
     chmod o+rwx data/tmp
@@ -56,10 +55,6 @@ ci_runtests() {
     . ${VIRTUALENV}/bin/activate
     pip install fig
 
-    docker-kill-all
-    docker-clean
-
-    fig --project-name yabi build web
     fig --project-name yabi -f fig-test.yml up
 }
 
@@ -110,7 +105,9 @@ jslint() {
 make_virtualenv() {
     # check requirements
     which virtualenv > /dev/null
-    virtualenv ${VIRTUALENV}
+    if [ -f ${VIRTUALENV} ]; then
+        virtualenv ${VIRTUALENV}
+    fi
 }
 
 
@@ -128,8 +125,8 @@ rpm_publish)
     ci_ssh_agent
     rpm_publish
     ;;
-ci_runtests)
-    ci_runtests
+runtests)
+    runtests
     ;;
 ci_staging)
     ci_ssh_agent
