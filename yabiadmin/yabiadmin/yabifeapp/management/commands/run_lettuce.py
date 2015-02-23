@@ -14,6 +14,7 @@ class Command(BaseCommand):
         make_option('--app-name',
                     action='store',
                     dest='app_name',
+                    default='yabiadmin',
                     help='Application name'),
 
         make_option('-v', '--verbosity',

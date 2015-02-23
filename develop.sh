@@ -12,15 +12,13 @@ ACTION="$1"
 
 # yabiadmin is legacy, but occurs in many many places in code/config
 PROJECT_NAME='yabiadmin'
-AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
-TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
-PIP5_OPTS="--process-dependency-links"
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
+AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|rpmbuild|rpm_publish|runtests|ci_staging)"
+    echo "Usage ./develop.sh (pythonlint|jslint|rpmbuild|rpm_publish|runtests|selenium|ci_staging)"
     echo ""
 }
 
@@ -78,7 +76,19 @@ ci_staging() {
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml rm --force -v'
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml build --no-cache webstaging'
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml up -d'
-    ccg ${AWS_STAGING_INSTANCE} drun:'docker-untagged'
+    ccg ${AWS_STAGING_INSTANCE} drun:'docker-untagged || true'
+}
+
+
+selenium() {
+    mkdir -p data/selenium
+    chmod o+rwx data/selenium
+
+    make_virtualenv
+    . ${VIRTUALENV}/bin/activate
+    pip install fig
+
+    fig --project-name yabi -f fig-selenium.yml up
 }
 
 
@@ -136,9 +146,8 @@ ci_staging_tests)
     ci_ssh_agent
     ci_staging_tests
     ;;
-ci_staging_selenium)
-    ci_ssh_agent
-    ci_staging_selenium
+selenium)
+    selenium
     ;;
 *)
     usage
