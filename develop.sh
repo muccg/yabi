@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Script to control Yabi in dev and test
 #
@@ -105,7 +105,7 @@ jslint() {
 make_virtualenv() {
     # check requirements
     which virtualenv > /dev/null
-    if [ -f ${VIRTUALENV} ]; then
+    if [ ! -e ${VIRTUALENV} ]; then
         virtualenv ${VIRTUALENV}
     fi
 }
