@@ -18,7 +18,7 @@ AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|rpmbuild|rpm_publish|runtests|selenium|ci_staging)"
+    echo "Usage ./develop.sh (pythonlint|jslint|start|rpmbuild|rpm_publish|runtests|selenium|ci_staging)"
     echo ""
 }
 
@@ -28,6 +28,18 @@ ci_ssh_agent() {
     ssh-agent > /tmp/agent.env.sh
     . /tmp/agent.env.sh
     ssh-add ~/.ssh/ccg-syd-staging-2014.pem
+}
+
+
+start() {
+    mkdir -p data/dev
+    chmod o+rwx data/dev
+
+    make_virtualenv
+    . ${VIRTUALENV}/bin/activate
+    pip install fig
+
+    fig --project-name yabi up
 }
 
 
@@ -127,6 +139,9 @@ pythonlint)
     ;;
 jslint)
     jslint
+    ;;
+start)
+    start
     ;;
 rpmbuild)
     rpmbuild
