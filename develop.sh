@@ -57,9 +57,8 @@ rpmbuild() {
 
 
 runtests() {
-    mkdir -p data/tmp
-    chmod o+rwx data
-    chmod o+rwx data/tmp
+    mkdir -p data/tests
+    chmod o+rwx data/tests
 
     make_virtualenv
     . ${VIRTUALENV}/bin/activate
