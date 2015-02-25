@@ -54,7 +54,6 @@ class WsMenuTest(WSTestCase):
 
     def test_menu_contains_new_tool(self):
         self.tool = self.add_new_tool()
-        cache.clear()
         response = self.client.get('/ws/menu')
         menu = json.loads(response.content)['menu']
         toolset = menu['toolsets'][0]
