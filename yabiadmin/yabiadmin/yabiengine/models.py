@@ -165,6 +165,11 @@ class Workflow(models.Model, Editable, Status):
         return Status.COLOURS.get(self.status, 'grey')
 
     @property
+    def is_finished(self):
+        return (self.status in TERMINATED_STATUSES and
+                all([j.status in TERMINATED_STATUSES for j in self.job_set.all()]))
+
+    @property
     def colour(self):
         return self.get_status_colour()
 

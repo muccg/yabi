@@ -46,7 +46,7 @@ from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-from yabiadmin.yabiengine.models import WorkflowTag, SavedWorkflow
+from yabiadmin.yabiengine.models import Workflow, WorkflowTag, SavedWorkflow
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.utils import cache_keyname, json_error_response, json_response
@@ -462,6 +462,24 @@ def save_workflow(request):
     )
 
     return json_response({"saved_workflow_id": workflow.pk})
+
+
+@authentication_required
+def delete_workflow(request):
+    if "id" not in request.POST:
+        return HttpResponseBadRequest("Need id param")
+
+    workflow = get_object_or_404(Workflow, id=request.POST["id"])
+
+    if workflow.user.user != request.user and not request.user.is_superuser:
+        return json_error_response("That's not yours", status=403)
+
+    if not workflow.is_finished:
+        return json_error_response("Can't delete workflow before it finished running")
+
+    workflow.delete_cascade()
+
+    return json_response("deleted")
 
 
 @authentication_required

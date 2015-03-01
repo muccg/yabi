@@ -79,8 +79,12 @@ Yabi.util.Status.getStatusDescription = function(status) {
 };
 
 /* Creates a real fake button Y.Node */
-Yabi.util.fakeButton = function(text) {
-  return Y.Node.create('<button type="button" class="fakeButton" />')
+Yabi.util.fakeButton = function(text, cls) {
+  clses = 'fakeButton';
+  if (typeof(cls) !== 'undefined') {
+    clses += ' ' + cls;
+  }
+  return Y.Node.create('<button type="button" class="' + clses + '" />')
     .set("text", text);
 };
 

@@ -1,6 +1,11 @@
 YUI().use(
     'node', 'event', 'dd-drag', 'dd-proxy', 'dd-drop', 'io', 'json', 'anim', 'cookie',
     function(Y) {
+      isFinishedStatus = _.partial(_.include, ['complete', 'aborted', 'error']);
+
+      didWorkflowFinish = function(wfl_status, jobs) {
+        return isFinishedStatus(wfl_status) && _.all(_.pluck(jobs, 'status'), isFinishedStatus);
+      };
 
       /**
        * YabiWorkflow
@@ -117,6 +122,7 @@ YUI().use(
 
         //actions toolbar
         var toolbar = Y.Node.create('<div class="workflowToolbar" />').appendTo(this.mainEl);
+        this.toolbar = toolbar;
 
         if (!this.editable) {
           Yabi.util.fakeButton('re-use')
@@ -222,7 +228,9 @@ YUI().use(
         }
       };
 
-      YabiWorkflow.prototype.setStatus = function(statusText, is_retrying) {
+      YabiWorkflow.prototype.setStatus = function(obj) {
+        var statusText = obj.status;
+        var is_retrying = obj.is_retrying;
         this.status = statusText.toLowerCase();
 
         //update proxies
@@ -239,9 +247,7 @@ YUI().use(
         }
 
         var loadImg;
-        if (this.status !== 'complete' &&
-            this.status != 'aborted' &&
-            this.status !== 'error') {
+        if (!didWorkflowFinish(obj.status, obj.json.jobs)) {
           if (!Y.Lang.isValue(this.loadingEl)) {
             this.loadingEl = document.createElement('div');
             this.loadingEl.className = 'workflowLoading';
@@ -262,6 +268,11 @@ YUI().use(
               this.mainEl.removeChild(this.loadingEl);
               this.loadingEl = null;
           }
+        }
+        if (this.toolbar.all('button.deleteWorkflow').isEmpty()) {
+          Yabi.util.fakeButton('delete', 'deleteWorkflow')
+            .appendTo(this.toolbar)
+            .on('click', this.deleteCallback, null, this);
         }
       };
 
@@ -837,6 +848,33 @@ YUI().use(
         }
       };
 
+      YabiWorkflow.prototype.deleteWorkflow = function() {
+        Y.io(appURL + "ws/workflows/delete/", {
+          method: 'POST',
+          on: {
+            success: function(transId, obj, args) {
+              resp = Y.JSON.parse(obj.responseText);
+              if (resp.status === 'error') {
+                var msg = "Failed to delete";
+                if (typeof(resp.message !== 'undefined')) {
+                  msg += ": " + resp.message;
+                }
+                YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
+                return;
+              }
+              YAHOO.ccgyabi.widget.YabiMessage.success("Deleted workflow");
+              // TODO don't reload page, just reload workflow listing
+              // it requires more work than expected
+              window.location = appURL + "jobs";
+            },
+            failure: function(transId, obj) {
+              YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to delete");
+            }
+          },
+          data: { id: this.workflowId }
+        });
+      };
+
       YabiWorkflow.prototype.onJobChanged = function(job) {
         this.saveDraft();
       };
@@ -1074,8 +1112,7 @@ YUI().use(
        * one-time fetch current workflow status
        */
       YabiWorkflow.prototype.fetchProgress = function(callback) {
-        //console.log("fetch progress");
-        if (this.status.toLowerCase() !== 'completed') {
+        if (!didWorkflowFinish(this.status, this.jobs)) {
           this.hydrate(this.workflowId);
         }
 
@@ -1225,7 +1262,7 @@ YUI().use(
         //preprocess wrapper meta data
         target.setTags(obj.tags);
 
-        target.setStatus(obj.status, obj.is_retrying);
+        target.setStatus(obj);
 
         target.solidify(obj.json);
       };
@@ -1364,6 +1401,35 @@ YUI().use(
 
       YabiWorkflow.prototype.reuseCallback = function(e, obj) {
         obj.reuse();
+      };
+
+      YabiWorkflow.prototype.deleteCallback = function(e, self) {
+        var node = this;
+        e.halt(true);
+
+        var container = node.get("parentNode");
+
+        var btn = Y.Node.create('<span class="fakeButton"/>').set("text", "Delete Workflow");
+        var cancel = Y.Node.create('<span class="fakeButton"/>').set("text", "Cancel");
+        var dlg = Y.Node.create('<div class="workflowSaveAsDlg" />')
+          .append(Y.Node.create('<label>Are you sure? </label'))
+          .append(btn).append(cancel);
+
+        var reset = function() {
+          container.show();
+          dlg.remove();
+        };
+
+        btn.on('click', function() {
+          // self.saveAs(name.get("value"));
+          self.deleteWorkflow();
+          reset();
+        });
+        cancel.on('click', function() {
+          reset();
+        });
+
+        container.hide().get("parentNode").insert(dlg, container);
       };
 
       YabiWorkflow.prototype.saveAsCallback = function(e, self) {
