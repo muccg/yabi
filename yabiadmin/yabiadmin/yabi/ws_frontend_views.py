@@ -44,7 +44,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404
-from yabiadmin.backend.celerytasks import process_workflow
+from yabiadmin.backend.celerytasks import process_workflow, request_workflow_abort
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import Workflow, WorkflowTag, SavedWorkflow
 from yabiadmin.responses import *
@@ -480,6 +480,25 @@ def delete_workflow(request):
     workflow.delete_cascade()
 
     return json_response("deleted")
+
+
+@authentication_required
+def abort_workflow(request):
+    if "id" not in request.POST:
+        return HttpResponseBadRequest("Need id param")
+
+    workflow = get_object_or_404(Workflow, id=request.POST["id"])
+
+    if workflow.user.user != request.user and not request.user.is_superuser:
+        return json_error_response("That's not yours", status=403)
+
+    if workflow.is_finished:
+        return json_error_response("Can't abort workflow after it finished running")
+
+    yabiuser = User.objects.get(name=request.user.username)
+    request_workflow_abort(workflow.pk, yabiuser)
+
+    return json_response("abort requested")
 
 
 @authentication_required

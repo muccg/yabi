@@ -248,6 +248,11 @@ YUI().use(
 
         var loadImg;
         if (!didWorkflowFinish(obj.status, obj.json.jobs)) {
+          if (this.toolbar.all('button.abortWorkflow').isEmpty()) {
+            Yabi.util.fakeButton('abort', 'abortWorkflow')
+              .appendTo(this.toolbar)
+              .on('click', this.abortCallback, null, this);
+          }
           if (!Y.Lang.isValue(this.loadingEl)) {
             this.loadingEl = document.createElement('div');
             this.loadingEl.className = 'workflowLoading';
@@ -267,6 +272,10 @@ YUI().use(
           if (Y.Lang.isValue(this.loadingEl)) {
               this.mainEl.removeChild(this.loadingEl);
               this.loadingEl = null;
+          }
+          var abortBtn = this.toolbar.one('button.abortWorkflow');
+          if (abortBtn !== null) {
+            abortBtn.remove(true);
           }
           if (this.toolbar.all('button.deleteWorkflow').isEmpty()) {
             Yabi.util.fakeButton('delete', 'deleteWorkflow')
@@ -875,6 +884,30 @@ YUI().use(
         });
       };
 
+      YabiWorkflow.prototype.abortWorkflow = function() {
+        Y.io(appURL + "ws/workflows/abort/", {
+          method: 'POST',
+          on: {
+            success: function(transId, obj, args) {
+              resp = Y.JSON.parse(obj.responseText);
+              if (resp.status === 'error') {
+                var msg = "Failed to abort";
+                if (typeof(resp.message !== 'undefined')) {
+                  msg += ": " + resp.message;
+                }
+                YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
+                return;
+              }
+              YAHOO.ccgyabi.widget.YabiMessage.success("Abort of workflow requested");
+            },
+            failure: function(transId, obj) {
+              YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to abort");
+            }
+          },
+          data: { id: this.workflowId }
+        });
+      };
+
       YabiWorkflow.prototype.onJobChanged = function(job) {
         this.saveDraft();
       };
@@ -1421,8 +1454,35 @@ YUI().use(
         };
 
         btn.on('click', function() {
-          // self.saveAs(name.get("value"));
           self.deleteWorkflow();
+          reset();
+        });
+        cancel.on('click', function() {
+          reset();
+        });
+
+        container.hide().get("parentNode").insert(dlg, container);
+      };
+
+      YabiWorkflow.prototype.abortCallback = function(e, self) {
+        var node = this;
+        e.halt(true);
+
+        var container = node.get("parentNode");
+
+        var btn = Y.Node.create('<span class="fakeButton"/>').set("text", "Abort Workflow");
+        var cancel = Y.Node.create('<span class="fakeButton"/>').set("text", "Cancel");
+        var dlg = Y.Node.create('<div class="workflowSaveAsDlg" />')
+          .append(Y.Node.create('<label>Are you sure? </label'))
+          .append(btn).append(cancel);
+
+        var reset = function() {
+          container.show();
+          dlg.remove();
+        };
+
+        btn.on('click', function() {
+          self.abortWorkflow();
           reset();
         });
         cancel.on('click', function() {
