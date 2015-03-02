@@ -268,11 +268,11 @@ YUI().use(
               this.mainEl.removeChild(this.loadingEl);
               this.loadingEl = null;
           }
-        }
-        if (this.toolbar.all('button.deleteWorkflow').isEmpty()) {
-          Yabi.util.fakeButton('delete', 'deleteWorkflow')
-            .appendTo(this.toolbar)
-            .on('click', this.deleteCallback, null, this);
+          if (this.toolbar.all('button.deleteWorkflow').isEmpty()) {
+            Yabi.util.fakeButton('delete', 'deleteWorkflow')
+              .appendTo(this.toolbar)
+              .on('click', this.deleteCallback, null, this);
+          }
         }
       };
 
