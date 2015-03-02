@@ -858,54 +858,47 @@ YUI().use(
       };
 
       YabiWorkflow.prototype.deleteWorkflow = function() {
-        Y.io(appURL + "ws/workflows/delete/", {
+        this.modifyWorkflowRequest(
+          {'operation': 'delete',
+           'successMsg': 'Workflow deleted',
+           'successCallback': function() { window.location = appURL + "jobs"; }});
+      };
+
+      YabiWorkflow.prototype.modifyWorkflowRequest = function(args) {
+        var url = appURL + 'ws/workflows/' + args.operation + '/';
+        var successMsg = args.successMsg || 'Workflow ' + args.operation + 'ed';
+        var failureMsg = args.failureMsg || 'Failed to ' + args.operation;
+        var successCallback = args.successCallback || function() {};
+
+        Y.io(url, {
           method: 'POST',
           on: {
             success: function(transId, obj, args) {
               resp = Y.JSON.parse(obj.responseText);
               if (resp.status === 'error') {
-                var msg = "Failed to delete";
+                var msg = failureMsg;
                 if (typeof(resp.message !== 'undefined')) {
                   msg += ": " + resp.message;
                 }
                 YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
                 return;
               }
-              YAHOO.ccgyabi.widget.YabiMessage.success("Deleted workflow");
-              // TODO don't reload page, just reload workflow listing
-              // it requires more work than expected
-              window.location = appURL + "jobs";
+              YAHOO.ccgyabi.widget.YabiMessage.success(successMsg);
+              successCallback();
             },
             failure: function(transId, obj) {
-              YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to delete");
+              YAHOO.ccgyabi.widget.YabiMessage.fail(failureMsg);
             }
           },
           data: { id: this.workflowId }
         });
       };
 
+
       YabiWorkflow.prototype.abortWorkflow = function() {
-        Y.io(appURL + "ws/workflows/abort/", {
-          method: 'POST',
-          on: {
-            success: function(transId, obj, args) {
-              resp = Y.JSON.parse(obj.responseText);
-              if (resp.status === 'error') {
-                var msg = "Failed to abort";
-                if (typeof(resp.message !== 'undefined')) {
-                  msg += ": " + resp.message;
-                }
-                YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
-                return;
-              }
-              YAHOO.ccgyabi.widget.YabiMessage.success("Abort of workflow requested");
-            },
-            failure: function(transId, obj) {
-              YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to abort");
-            }
-          },
-          data: { id: this.workflowId }
-        });
+        this.modifyWorkflowRequest({
+          'operation': 'abort',
+          'successMsg': 'Abort of workflow requested'});
       };
 
       YabiWorkflow.prototype.onJobChanged = function(job) {
