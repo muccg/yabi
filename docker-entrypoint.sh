@@ -130,6 +130,11 @@ if [ "$1" = 'celery' ]; then
 
     celery_defaults
 
+    if [ "$2" = 'restart' ]; then
+        python /app/pool_restart.py
+        exit $?
+    fi
+
     celery worker ${CELERY_OPTS} 2>&1 | tee /data/celery.log
     exit $?
 fi
