@@ -6,7 +6,7 @@ import tarfile
 from six.moves import filter
 import logging
 
-from yabiadmin.yabi import models
+from yabi.yabi import models
 
 ONE_GB = 1 * 1024 * 1024 * 1024
 

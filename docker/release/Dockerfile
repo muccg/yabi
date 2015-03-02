@@ -21,7 +21,7 @@ RUN env --unset=DEBIAN_FRONTEND
 WORKDIR /app
 RUN git clone --depth=1 --branch=9.4.1 https://bitbucket.org/ccgmurdoch/yabi.git .
 
-WORKDIR /app/yabiadmin
+WORKDIR /app/yabi
 RUN pip install --process-dependency-links .
 
 EXPOSE 9100 9101

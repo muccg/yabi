@@ -12,7 +12,7 @@ sshstaging:
 
 s3staging:
   image: muccg/fake-s3:latest
-        
+
 dbstaging:
   image: postgres:9.3
   environment:
@@ -34,7 +34,7 @@ webstaging:
   build: docker/unstable/
   command: uwsgi
   environment:
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBSERVER=dbstaging
     - DBUSER=yabiapp
     - QUEUESERVER=mqstaging
@@ -63,8 +63,8 @@ celerystaging:
   hostname: celerystaging
   command: celery
   environment:
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
-    - CELERY_APP=yabiadmin.backend.celerytasks
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - CELERY_APP=yabi.backend.celerytasks
     - DBSERVER=dbstaging
     - DBUSER=yabiapp
     - QUEUESERVER=mqstaging

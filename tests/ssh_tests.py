@@ -3,8 +3,8 @@ import unittest
 from .support import YabiTestCase, StatusResult, FileUtils, all_items, json_path
 from .fixture_helpers import admin
 import time
-from yabiadmin.yabi import models
-from yabiadmin.backend.fsbackend import FSBackend
+from yabi.yabi import models
+from yabi.backend.fsbackend import FSBackend
 from socket import gethostname
 import logging
 from tests.support import conf

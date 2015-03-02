@@ -2,9 +2,9 @@ import os
 import sys
 import re
 from nose.tools import nottest
-from yabiadmin.backend.torqueparsers import *
-from yabiadmin.backend.pbsproparsers import *
-from yabiadmin.backend.sgeparsers import *
+from yabi.backend.torqueparsers import *
+from yabi.backend.pbsproparsers import *
+from yabi.backend.sgeparsers import *
 import logging
 
 TEST_CASES_DIR = os.path.join(os.path.dirname(__file__), 'test_cases')
@@ -196,7 +196,7 @@ class ParserTester(object):
 
     def __str__(self):
         return "%s.%s:%s" % (
-                self.parser.__class__.__module__.replace('yabiadmin.backend.', ''), 
+                self.parser.__class__.__module__.replace('yabi.backend.', ''), 
                 self.parser.__class__.__name__, 
                 self.method.__name__)
 

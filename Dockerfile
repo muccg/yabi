@@ -27,8 +27,8 @@ RUN pip install \
 # Install dependencies only (not the app itself) to use the build cache more efficiently
 # This will be redone only if setup.py changes
 # INSTALL_ONLY_DEPENDENCIES stops the app installing inside setup.py (pip --deps-only ??)
-COPY yabiadmin/setup.py /app/yabiadmin/setup.py
-WORKDIR /app/yabiadmin
+COPY yabi/setup.py /app/yabi/setup.py
+WORKDIR /app/yabi
 RUN INSTALL_ONLY_DEPENDENCIES=True pip install --process-dependency-links .
 
 # Copy code and install the app

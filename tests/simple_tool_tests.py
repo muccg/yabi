@@ -4,7 +4,7 @@ from .support import YabiTestCase, StatusResult, all_items, json_path
 from .fixture_helpers import admin
 import os
 import time
-from yabiadmin.yabi import models
+from yabi.yabi import models
 from socket import gethostname
 
 from model_mommy import mommy

@@ -47,14 +47,14 @@ webselenium:
   build: .
   command: runserver
   environment:
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
   volumes_from:
-    - dataselenium      
+    - dataselenium
   ports:
     - ":8000"
   links:
@@ -68,11 +68,11 @@ lettucehost:
   image: yabi_webselenium
   command: lettuce
   environment:
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
     - WAIT_FOR_WEB=1
   volumes_from:
-    - dataselenium      
+    - dataselenium
   links:
     - webselenium:web
     - seleniumhub:hub

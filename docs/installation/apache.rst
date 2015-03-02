@@ -59,7 +59,7 @@ Yabi RPMS
 ^^^^^^^^^
 
 .. index::
-    single: yabiadmin
+    single: yabi
 
 Yabi Admin ( The web application )
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -69,10 +69,10 @@ Yabi Admin ( The web application )
 
  ``$ sudo yum install yabi-admin-7.0.0-1.x86_64.rpm``
 
-This will add an Apache conf file to /etc/httpd/conf.d called yabiadmin.ccg.
+This will add an Apache conf file to /etc/httpd/conf.d called yabi.ccg.
 For Apache to pick this up automatically, create a symbolic link:
 
- ``$ ln -s yabiadmin.ccg yabiadmin.conf``
+ ``$ ln -s yabi.ccg yabi.conf``
 
 
 Yabish
@@ -90,7 +90,7 @@ Start Celery
 
    ``$/etc/init.d/celeryd start``
 
-An example of our celeryd init script and sysconfig file can be found in our `source code repository <https://bitbucket.org/ccgmurdoch/yabi/src/e9e1057394a424a5d69e9b9f1b0ace432c448cdb/yabiadmin/init_scripts/centos?at=default>`_.
+An example of our celeryd init script and sysconfig file can be found in our `source code repository <https://bitbucket.org/ccgmurdoch/yabi/src/e9e1057394a424a5d69e9b9f1b0ace432c448cdb/yabi/init_scripts/centos?at=default>`_.
 
 Restart apache
 --------------
@@ -127,4 +127,4 @@ In file: ``/etc/httpd/conf.d/wsgi.conf``
    </IfModule>
 ::
 
-Link ``/etc/httpd/conf.d/yabiadmin.ccg to /etc/httpd/conf.d/yabiadmin.conf`` for it to be loaded by Apache.
+Link ``/etc/httpd/conf.d/yabi.ccg to /etc/httpd/conf.d/yabi.conf`` for it to be loaded by Apache.
