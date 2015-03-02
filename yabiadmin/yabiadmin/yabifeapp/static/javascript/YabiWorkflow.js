@@ -1429,13 +1429,12 @@ YUI().use(
         obj.reuse();
       };
 
-      YabiWorkflow.prototype.deleteCallback = function(e, self) {
-        var node = this;
-        e.halt(true);
+      YabiWorkflow.prototype.nestedWorkflowConfirmationDialog = function(config) {
+        var container = config.node.get("parentNode");
+        var label = config.action.label;
+        var callback = config.action.callback;
 
-        var container = node.get("parentNode");
-
-        var btn = Y.Node.create('<span class="fakeButton"/>').set("text", "Delete Workflow");
+        var btn = Y.Node.create('<span class="fakeButton"/>').set("text", label);
         var cancel = Y.Node.create('<span class="fakeButton"/>').set("text", "Cancel");
         var dlg = Y.Node.create('<div class="workflowSaveAsDlg" />')
           .append(Y.Node.create('<label>Are you sure? </label'))
@@ -1447,7 +1446,7 @@ YUI().use(
         };
 
         btn.on('click', function() {
-          self.deleteWorkflow();
+          callback();
           reset();
         });
         cancel.on('click', function() {
@@ -1457,32 +1456,29 @@ YUI().use(
         container.hide().get("parentNode").insert(dlg, container);
       };
 
+      YabiWorkflow.prototype.deleteCallback = function(e, self) {
+        var node = this;
+        e.halt(true);
+
+        self.nestedWorkflowConfirmationDialog({
+          'node': node,
+          'action': {
+            'label': "Delete Workflow",
+            'callback': function() { self.deleteWorkflow(); }
+          }});
+      };
+
       YabiWorkflow.prototype.abortCallback = function(e, self) {
         var node = this;
         e.halt(true);
 
-        var container = node.get("parentNode");
+        self.nestedWorkflowConfirmationDialog({
+          'node': node,
+          'action': {
+            'label': "Abort Workflow",
+            'callback': function() { self.abortWorkflow(); }
+          }});
 
-        var btn = Y.Node.create('<span class="fakeButton"/>').set("text", "Abort Workflow");
-        var cancel = Y.Node.create('<span class="fakeButton"/>').set("text", "Cancel");
-        var dlg = Y.Node.create('<div class="workflowSaveAsDlg" />')
-          .append(Y.Node.create('<label>Are you sure? </label'))
-          .append(btn).append(cancel);
-
-        var reset = function() {
-          container.show();
-          dlg.remove();
-        };
-
-        btn.on('click', function() {
-          self.abortWorkflow();
-          reset();
-        });
-        cancel.on('click', function() {
-          reset();
-        });
-
-        container.hide().get("parentNode").insert(dlg, container);
       };
 
       YabiWorkflow.prototype.saveAsCallback = function(e, self) {
