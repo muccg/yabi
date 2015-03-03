@@ -21,11 +21,12 @@
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 from urlparse import urlparse
-import logging
 from functools import reduce
+import re
+import logging
+
 logger = logging.getLogger(__name__)
 
-import re
 re_url_schema = re.compile(r'\w+')
 
 

@@ -26,6 +26,7 @@ import json
 import traceback
 from django.db import models
 from django.db.models import Count
+from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import authenticate
 from django.conf import settings
@@ -498,7 +499,9 @@ class CredentialAccess:
         if protected_creds_str is None:
             raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %s is not available in a decrypted form" % (self.credential.user.name, self.credential.id))
         protected_creds = json.loads(protected_creds_str)
-        decrypt = lambda v: decrypt_annotated_block(v, settings.SECRET_KEY)
+
+        def decrypt(v):
+            return decrypt_annotated_block(v, settings.SECRET_KEY)
         return dict((t, decrypt(protected_creds[t])) for t in protected_creds)
 
     def clear_cache(self):
@@ -551,7 +554,8 @@ class Credential(Base):
                'Internal YABI error - unencrypted and annotated data mixed in Credential object %s' % str(self))
         # we never allow plaintext credentials to make it into the database
         if have_unencrypted_field:
-            protect = lambda v: encrypt_to_annotated_block(v, settings.SECRET_KEY)
+            def protect(v):
+                return encrypt_to_annotated_block(v, settings.SECRET_KEY)
             self.password, self.cert, self.key = protect(self.password), protect(self.cert), protect(self.key)
             self.security_state = Credential.PROTECTED
 
@@ -564,7 +568,8 @@ class Credential(Base):
     def encrypt_if_protected(self, username, password):
         "if we have are in protected credential state, move to encrypted state while we have username and password"
         if self.security_state == Credential.PROTECTED:
-            protect_to_encrypt = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, settings.SECRET_KEY), password)
+            def protect_to_encrypt(v):
+                return encrypt_to_annotated_block(decrypt_annotated_block(v, settings.SECRET_KEY), password)
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
             self.security_state = Credential.ENCRYPTED
             self.save()
@@ -576,7 +581,9 @@ class Credential(Base):
             raise DecryptException("credential is plaintext, should be unreachable")
         self.encrypt_if_protected(username, password)
         # we are now guaranteed to be encrypted; but we need to make sure there's protected creds in the cache
-        encrypted_to_protected = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, password), settings.SECRET_KEY)
+
+        def encrypted_to_protected(v):
+            return encrypt_to_annotated_block(decrypt_annotated_block(v, password), settings.SECRET_KEY)
         access = self.get_credential_access()
         access.cache_protected_creds(
             encrypted_to_protected(self.password),
@@ -589,7 +596,9 @@ class Credential(Base):
     def recrypt(self, oldkey, newkey):
         if self.security_state != Credential.ENCRYPTED:
             return
-        recrypted = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, oldkey), newkey)
+
+        def recrypted(v):
+            return encrypt_to_annotated_block(decrypt_annotated_block(v, oldkey), newkey)
         self.password, self.cert, self.key = recrypted(self.password), recrypted(self.cert), recrypted(self.key)
         self.save()
 
@@ -903,7 +912,6 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 
 # connect up signals
-from django.db.models.signals import post_save, pre_save
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
 pre_save.connect(lowercase_username, sender=DjangoUser, dispatch_uid="lowercase_username")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")

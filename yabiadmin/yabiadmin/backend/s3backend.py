@@ -86,7 +86,8 @@ class S3Backend(FSBackend):
         self.set_cred(uri)
         bucket_name, path = self.parse_s3_uri(uri)
 
-        is_empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
+        def is_empty_key_for_dir(k):
+            return k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
         is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
 
         try:

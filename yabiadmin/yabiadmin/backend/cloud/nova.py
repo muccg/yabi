@@ -87,7 +87,8 @@ class NovaHandler(LibcloudBaseHandler):
         all_security_groups = self.driver.ex_list_security_groups()
         our_groups = filter(lambda sg: sg.name in sg_names, all_security_groups)
         if len(sg_names) != len(our_groups):
-            quote = lambda x: "'%s'" % x
+            def quote(x):
+                return "'%s'" % x
             missing = ", ".join(map(quote,
                                 set(sg_names) - set(map(lambda sg: sg.name, our_groups))))
             raise IncorrectConfigurationError("Invalid security group(s): %s" % missing)

@@ -195,8 +195,7 @@ def create_paramiko_pkey(key, passphrase=None):
     if passphrase == "":
         passphrase = None
     pkey = (
-        try_to_load_key_file(paramiko.RSAKey, key, passphrase)
-        or
+        try_to_load_key_file(paramiko.RSAKey, key, passphrase) or
         try_to_load_key_file(paramiko.DSSKey, key, passphrase))
 
     if pkey is None:

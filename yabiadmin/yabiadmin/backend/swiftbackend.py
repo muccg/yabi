@@ -194,7 +194,8 @@ class SwiftBackend(FSBackend):
             swift = swift.ensure_trailing_slash()
             bucket = self.list_bucket(swift, shallow=True)
 
-        is_key_for_dir = lambda e: e["name"] == swift.prefix and e["name"].endswith(swift.DELIMITER)
+        def is_key_for_dir(e):
+            return e["name"] == swift.prefix and e["name"].endswith(swift.DELIMITER)
 
         # Keys correspond to files, prefixes to directories
         prefixes, allkeys = partition(lambda ob: "subdir" in ob, bucket)

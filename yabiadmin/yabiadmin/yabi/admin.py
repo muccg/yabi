@@ -125,7 +125,8 @@ class ToolDescAdmin(AdminBase):
     tool_link.allow_tags = True
 
     def tool_groups_str(self, ob):
-        fmt = lambda tg: "%s (%s)" % (tg.tool_group, tg.tool_set)
+        def fmt(tg):
+            return "%s (%s)" % (tg.tool_group, tg.tool_set)
         return ",".join(map(fmt, ob.toolgrouping_set.all()))
     tool_groups_str.short_description = 'Belongs to Tool Groups'
 
