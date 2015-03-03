@@ -429,7 +429,9 @@ def munge_name(workflow_set, workflow_name):
     workflows = workflow_set.filter(name__startswith=base)
     used_names = frozenset(workflows.values_list("name", flat=True))
 
-    unused_name = lambda name: name not in used_names
+    def unused_name(name):
+        return name not in used_names
+
     infinite_range = itertools.count
 
     generate_unique_names = ("%s (%d)" % (base, i) for i in infinite_range(1))
@@ -566,7 +568,9 @@ def workflow_datesearch(request):
     logger.debug(yabiusername)
 
     fmt = DATE_FORMAT
-    tomorrow = lambda: datetime.today() + timedelta(days=1)
+
+    def tomorrow():
+        return datetime.today() + timedelta(days=1)
 
     start = datetime.strptime(request.GET['start'], fmt)
     end = request.GET.get('end')
@@ -645,7 +649,8 @@ def credential(request):
     yabiuser = User.objects.get(name=request.user.username)
     creds = Credential.objects.filter(user=yabiuser)
 
-    exists = lambda value: value is not None and len(value) > 0
+    def exists(value):
+        return value is not None and len(value) > 0
 
     def backends(credential):
         backend_credentials = BackendCredential.objects.filter(credential=credential)

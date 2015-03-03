@@ -35,10 +35,11 @@ from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger
 from yabiadmin.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse
-import logging
 from six.moves import filter
-logger = logging.getLogger(__name__)
 from yabiadmin.constants import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 DEPENDENCIES_EXCLUDED_PATTERNS = [
     r'STDOUT.txt$', r'STDERR.txt$',
@@ -142,7 +143,8 @@ class EngineWorkflow(Workflow):
                                  status=STATUS_PENDING)
 
     def jobs_that_need_processing(self):
-        f = lambda j: j.total_tasks() == 0 and not j.has_incomplete_dependencies()
+        def f(j):
+            return j.total_tasks() == 0 and not j.has_incomplete_dependencies()
         return self._filter_jobs(f, status=STATUS_PENDING)
 
     def has_jobs_to_process(self):

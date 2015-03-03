@@ -1,3 +1,5 @@
+import os
+from functools import partial
 from django.utils import unittest as unittest
 import boto.s3.key
 import boto.s3.prefix
@@ -62,7 +64,7 @@ class S3BotoMockedOutTest(unittest.TestCase):
     def test_ls_a_dir_with_some_files_inside(self):
         PATH = '/some/path/'
         S3_PATH = drop_starting_slash(PATH)
-        name = lambda filename: S3_PATH + filename
+        name = partial(os.path.join, S3_PATH)
         when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
             make_key(name('file1'), size=1, last_modified='1989-12-21T17:23:00.000Z'),
             make_key(name('file2'), size=2, last_modified='1989-12-22T17:23:00.000Z'),
@@ -91,7 +93,7 @@ class S3BotoMockedOutTest(unittest.TestCase):
         PATH = DIR_PATH + 'file1'
         S3_DIR_PATH = drop_starting_slash(DIR_PATH)
         S3_PATH = drop_starting_slash(PATH)
-        name = lambda filename: S3_DIR_PATH + filename
+        name = partial(os.path.join, S3_DIR_PATH)
         when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
             make_key(name('file1'), size=1, last_modified='1989-12-21T17:23:00.000Z'),
             make_key(name('file11')),
@@ -160,8 +162,8 @@ class S3BotoMockedOutTest(unittest.TestCase):
         PATH = '/some/path/'
         S3_PATH = drop_starting_slash(PATH)
         S3_NESTED_PATH = S3_PATH + 'subdir'
-        name = lambda name: S3_PATH + name
-        nested_name = lambda name: S3_NESTED_PATH + '/' + name
+        name = partial(os.path.join, S3_PATH)
+        nested_name = partial(os.path.join, S3_NESTED_PATH)
         file1 = make_key(name('file1'))
         file2 = make_key(name('file2'))
         file3 = make_key(nested_name('file3'))

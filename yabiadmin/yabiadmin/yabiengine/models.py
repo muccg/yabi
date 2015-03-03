@@ -31,12 +31,12 @@ from ccg_django_utils import webhelpers
 from ccg_django_utils.webhelpers import url
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from datetime import datetime
-
-import logging
 from six.moves import filter
+from yabiadmin.constants import *
+import logging
+
 logger = logging.getLogger(__name__)
 
-from yabiadmin.constants import *
 
 STAGING_COPY_CHOICES = (
     ('copy', 'remote copy'),

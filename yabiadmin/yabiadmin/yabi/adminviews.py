@@ -32,8 +32,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
-from yabiadmin.yabi.models import *
 from yabiadmin import ldaputils
+from yabiadmin.yabi.models import *
+from yabiadmin.crypto_utils import DecryptException
 from ccg_django_utils import webhelpers
 from django import forms
 from django.views.debug import get_safe_settings
@@ -221,7 +222,9 @@ def ldap_users(request):
                        all_ldap_users.items() if entry[0] in yabi_userids]
 
     db_user_names = [user.name for user in User.objects.all()]
-    user_in_db = lambda u: u.uid in db_user_names
+
+    def user_in_db(u):
+        return u.uid in db_user_names
 
     existing_ldap_users = [user for user in ldap_yabi_users if user_in_db(user)]
     unexisting_ldap_users = [user for user in ldap_yabi_users if not user_in_db(user)]
@@ -265,7 +268,8 @@ def backend_cred_test(request, backend_cred_id):
         'error_help': None
     }
 
-    dict_join = lambda a, b: a.update(b) or a
+    def dict_join(a, b):
+        return a.update(b) or a
 
     try:
         data = backend.get_listing(bec.credential.user.name, bec.homedir_uri)
@@ -470,9 +474,6 @@ def set_owner(djangouser, *obs):
         if ob:
             ob.created_by = ob.last_modified_by = djangouser
             ob.save()
-
-
-from yabiadmin.crypto_utils import DecryptException
 
 
 def render_cred_password_form(request):

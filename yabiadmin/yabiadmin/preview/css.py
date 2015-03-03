@@ -145,7 +145,9 @@ DEFAULT_ALLOWED_PROPERTIES = (
 
 # A default fetcher for cssutils that will ensure that no external stylesheets
 # included via @import are loaded.
-default_fetcher = lambda url: (None, "")
+def default_fetcher(url):
+    return (None, "")
+
 
 # A default parser that uses the default fetcher.
 default_parser = CSSParser(fetcher=default_fetcher)

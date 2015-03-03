@@ -35,15 +35,19 @@ AESTEMP = 'AESTEMP'
 # AES-CTR encryption, with a HMAC. don't store with this is 'protected' or 'encrypted'
 AESCTRTAG = 'AESCTR'
 
+
 #
 # this annotates a string with the
 #
-annotate = lambda tag, ciphertext: "$%s$%s$" % (tag, ciphertext)
+def annotate(tag, ciphertext):
+    return "$%s$%s$" % (tag, ciphertext)
+
 
 #
 # join a split string together and de CR LF it
 #
-joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
+def joiner(data):
+    return "".join("".join(data.split("\n")).split("\r"))
 
 
 #
