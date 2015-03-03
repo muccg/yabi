@@ -13,7 +13,7 @@ sshtest:
 
 s3test:
   image: muccg/fake-s3:latest
-        
+
 dbtest:
   image: postgres:9.3
   environment:
@@ -35,7 +35,7 @@ webtest:
   build: .
   command: runserver
   environment:
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
@@ -58,8 +58,8 @@ celerytest:
   hostname: celerytest
   command: celery
   environment:
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
-    - CELERY_APP=yabiadmin.backend.celerytasks
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - CELERY_APP=yabi.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
@@ -80,11 +80,11 @@ testhost:
   image: yabi_webtest
   command: runtests
   environment:
-    - DJANGO_SETTINGS_MODULE=yabiadmin.settings
+    - DJANGO_SETTINGS_MODULE=yabi.settings
 #    - TEST_CASES=/app/tests/fsbackend_tests.py:FileBackendTests.test_large_upload
 #    - TEST_CASES=/app/tests/fsbackend_tests.py:LocalfsBackendTests.test_ls_file
 #    - TEST_CASES=/app/tests/ssh_tests.py
-#    - TEST_CASES=/app/yabiadmin/yabiadmin/yabi/tests/ws_frontend_views_tests.py:WsMenuTest.test_menu_contains_new_tool
+#    - TEST_CASES=/app/yabi/yabi/yabi/tests/ws_frontend_views_tests.py:WsMenuTest.test_menu_contains_new_tool
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1

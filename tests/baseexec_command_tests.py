@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from yabiadmin.backend.baseexecbackend import BaseExecBackend
-from yabiadmin.backend.sshpbsprobackend import SSHPBSProExecBackend
-from yabiadmin.backend.sshsgeexecbackend import SSHSGEExecBackend
-from yabiadmin.backend.sshtorquebackend import SSHTorqueExecBackend
+from yabi.backend.baseexecbackend import BaseExecBackend
+from yabi.backend.sshpbsprobackend import SSHPBSProExecBackend
+from yabi.backend.sshsgeexecbackend import SSHSGEExecBackend
+from yabi.backend.sshtorquebackend import SSHTorqueExecBackend
 
 
 class BaseCommandsTestCase(TestCase):

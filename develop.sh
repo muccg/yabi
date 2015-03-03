@@ -10,8 +10,7 @@ set -e
 
 ACTION="$1"
 
-# yabiadmin is legacy, but occurs in many many places in code/config
-PROJECT_NAME='yabiadmin'
+PROJECT_NAME='yabi'
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 
@@ -107,7 +106,7 @@ selenium() {
 pythonlint() {
     make_virtualenv
     ${VIRTUALENV}/bin/pip install 'flake8>=2.0,<2.1'
-    ${VIRTUALENV}/bin/flake8 yabiadmin/yabiadmin yabish/yabishell --count
+    ${VIRTUALENV}/bin/flake8 yabi/yabi yabish/yabishell --count
 }
 
 
@@ -115,7 +114,7 @@ pythonlint() {
 jslint() {
     make_virtualenv
     ${VIRTUALENV}/bin/pip install 'closure-linter==2.3.13'
-    JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
+    JSFILES="yabi/yabi/yabifeapp/static/javascript/*.js yabi/yabi/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
         ${VIRTUALENV}/bin/gjslint --disable 0131 --max_line_length 100 --nojsdoc $JS

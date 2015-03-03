@@ -30,9 +30,9 @@ Create databases required:
 
  Initialise Yabi database:
 ::
- $ export PYTHONPATH=/usr/local/webapps/yabiadmin:/usr/local/webapps/yabiadmin/lib/:$PYTHONPATH
- $ export DJANGO_SETTINGS_MODULE=defaultsettings.yabiadmin
- $ /usr/local/webapps/yabiadmin/bin/django-admin.py syncdb
+ $ export PYTHONPATH=/usr/local/webapps/yabi:/usr/local/webapps/yabi/lib/:$PYTHONPATH
+ $ export DJANGO_SETTINGS_MODULE=defaultsettings.yabi
+ $ /usr/local/webapps/yabi/bin/django-admin.py syncdb
 
 Do not create users at this point.
- ``$ /usr/local/webapps/yabiadmin/bin/django-admin.py migrate``
+ ``$ /usr/local/webapps/yabi/bin/django-admin.py migrate``

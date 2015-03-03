@@ -22,7 +22,7 @@ ENV APP_RELEASE next_release
 
 WORKDIR /app
 RUN git clone --depth=1 --branch=$APP_RELEASE https://bitbucket.org/ccgmurdoch/yabi.git . \
-  && cd /app/yabiadmin \
+  && cd /app/yabi \
   && pip install --process-dependency-links . \
   && cd /app/yabish \
   && pip install --process-dependency-links . \

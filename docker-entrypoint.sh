@@ -178,7 +178,7 @@ if [ "$1" = 'runtests' ]; then
     IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -a !external_service"
 
     # Setting TEST_CASES in fig file allows you to choose tests
-    : ${TEST_CASES="/app/tests /app/yabiadmin/yabiadmin"}
+    : ${TEST_CASES="/app/tests /app/yabi/yabi"}
 
     # tests want to import module tests
     export PYTHONPATH=/app

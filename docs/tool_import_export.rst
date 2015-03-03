@@ -19,7 +19,7 @@ Importing tools in JSON
 -----------------------
 
 If you have the JSON for a tool you can use the ``Add Tool`` page to add in the tool. Go 
-to: `https://127.0.0.1/yabiadmin/admin/addtool/ <https://127.0.0.1/yabiadmin/admin/addtool/>`_
+to: `https://127.0.0.1/yabi/admin/addtool/ <https://127.0.0.1/yabi/admin/addtool/>`_
 or similar and paste in your JSON.
 
 Once you have done this the tool will be added and you'll be shown the tool edit 

@@ -15,7 +15,7 @@ webapp_root = os.path.dirname(os.path.abspath(__file__))
 
 # prepare the settings module for the WSGI app
 from ccg_django_utils.conf import setup_prod_env
-setup_prod_env("yabiadmin")
+setup_prod_env("yabi")
 
 import django.core.handlers.wsgi
 

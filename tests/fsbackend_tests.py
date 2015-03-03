@@ -7,9 +7,9 @@ from django.utils import unittest
 import subprocess
 from nose.plugins.attrib import attr
 
-from yabiadmin.backend.fsbackend import FSBackend
+from yabi.backend.fsbackend import FSBackend
 from django.contrib.auth.models import User as DjangoUser
-from yabiadmin.yabi.models import Backend, Credential, BackendCredential, User
+from yabi.yabi.models import Backend, Credential, BackendCredential, User
 
 from .request_test_base import RequestTest
 from .fakes3 import fakes3_setup

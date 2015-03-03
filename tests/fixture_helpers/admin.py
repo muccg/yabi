@@ -1,7 +1,7 @@
 import sys
 import os
 from tests.support import conf
-from yabiadmin.yabi import models
+from yabi.yabi import models
 import six
 
 '''
