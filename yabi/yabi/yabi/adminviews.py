@@ -34,7 +34,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from yabi.yabi.models import *
 from yabi import ldaputils
-from yabi.yabi.crypto_utils import DecryptException
+from yabi.crypto_utils import DecryptException
 from ccg_django_utils import webhelpers
 from django import forms
 from django.views.debug import get_safe_settings

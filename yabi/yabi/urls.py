@@ -25,7 +25,8 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
 from django.views.generic.base import RedirectView
-from yabi.yabi import admin
+
+import admin
 
 djangoadmin.autodiscover()
 

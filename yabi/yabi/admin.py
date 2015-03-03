@@ -26,8 +26,8 @@ import django.contrib.auth.admin
 import django.contrib.auth.models
 import django.contrib.sites.admin
 import django.contrib.sites.models
-import yabi.yabi.admin
-import yabi.yabiengine.admin
+import yabi.admin
+import yabiengine.admin
 
 
 # Overrides for the default django.contrib.auth ModelAdmin subclasses that
@@ -59,7 +59,7 @@ site.register(django.contrib.auth.models.User, UserAdmin)
 # site.register(django.contrib.sites.models.Site, django.contrib.sites.admin.SiteAdmin)
 
 # Yabi Admin.
-yabi.yabi.admin.register(site)
+yabi.admin.register(site)
 
 # Yabi Engine.
-yabi.yabiengine.admin.register(site)
+yabiengine.admin.register(site)
