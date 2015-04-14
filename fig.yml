@@ -18,7 +18,7 @@ db:
     - ":5432"
 
 mq:
-  image: dockerfile/rabbitmq:latest
+  image: rabbitmq:management
   ports:
     - ":5672"
     - ":15672"
