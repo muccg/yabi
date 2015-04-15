@@ -65,7 +65,7 @@ runtests() {
 
     # clean up containers from past runs
     ( fig --project-name yabi -f fig-test.yml rm --force || exit 0 )
-    fig --project-name yabi -f fig-test.yml build --no-cache nose
+    fig --project-name yabi -f fig-test.yml build --no-cache
     fig --project-name yabi -f fig-test.yml up
 }
 
