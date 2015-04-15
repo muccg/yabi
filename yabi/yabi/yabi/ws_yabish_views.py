@@ -350,7 +350,7 @@ def get_tool_from_request(username, post):
     toolname = post.get('name')
     backendname = post.get('backend', None) or None
     tooldesc = models.ToolDesc.objects.filter(name=toolname,
-                                              toolgrouping__tool_set__users__name=username)[:1]
+                                              tool__toolgrouping__tool_set__users__name=username)[:1]
 
     if len(tooldesc) > 0:
         tooldesc = tooldesc[0]

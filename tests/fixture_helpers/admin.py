@@ -31,13 +31,13 @@ def create_tool_backend(toolname, path, ex_backend_name='Local Execution', fs_ba
                                              backend=lex, fs_backend=lfs)[0]
 
 def add_tool_to_all_tools(toolname):
-    tool = models.ToolDesc.objects.get(name=toolname)
+    tool = models.Tool.objects.get(desc__name=toolname)
     tg = models.ToolGroup.objects.get(name='select data')
     alltools = models.ToolSet.objects.get(name='alltools')
     tg.toolgrouping_set.create(tool=tool, tool_set=alltools)
 
 def remove_tool_from_all_tools(toolname):
-    models.ToolGrouping.objects.filter(tool__name=toolname, tool_set__name='alltools', tool_group__name='select data').delete()
+    models.ToolGrouping.objects.filter(tool__desc__name=toolname, tool_set__name='alltools', tool_group__name='select data').delete()
 
 def create_exploding_backend():
     exploding_backend = models.Backend.objects.create(name='Exploding Backend', scheme='explode', hostname='localhost.localdomain', path='/', submission='${command}\n')
@@ -99,6 +99,8 @@ def create_sshpbspro_backend():
     models.BackendCredential.objects.create(backend=sshpbspro_backend, credential=cred, homedir='')
 
 def create_ssh_backend():
+    if models.Backend.objects.filter(name='SSH Backend').count() > 0:
+        return
     ssh_backend = models.Backend.objects.create(
         name='SSH Backend',
         scheme='ssh',
@@ -118,6 +120,8 @@ ${command} 1>STDOUT.txt 2>STDERR.txt
     models.BackendCredential.objects.create(backend=ssh_backend, credential=cred, homedir='')
 
 def create_sftp_backend():
+    if models.Backend.objects.filter(name='SFTP Backend').count() > 0:
+        return
     sftp_backend = models.Backend.objects.create(
         name='SFTP Backend',
         scheme='sftp',
