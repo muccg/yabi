@@ -84,7 +84,7 @@ class WsMenuTest(WSTestCase):
         test_tset = ToolSet.objects.create(name='test')
         test_tset.users.add(admin)
         select_data = ToolGroup.objects.get(name='select data')
-        select_data.toolgrouping_set.create(tool_set=test_tset, tool=desc)
+        select_data.toolgrouping_set.create(tool_set=test_tset, tool=tool)
 
         def cleanup():
             tool.delete()
