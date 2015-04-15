@@ -139,7 +139,6 @@ class ToolAdmin(AdminBase):
     tool_groups_str.short_description = 'Belongs to Tool Groups'
 
 
-
 class ToolGroupAdmin(AdminBase):
     list_display = ['name', 'tools_str']
     inlines = [ToolGroupingInline]

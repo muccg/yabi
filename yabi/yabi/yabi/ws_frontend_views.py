@@ -172,7 +172,7 @@ def get_user_tools(user):
         count = desc_tool_count.get(toolgroup.tool.desc.id, 0)
         desc_tool_count[toolgroup.tool.desc.id] = count + 1
 
-    descsWithManyTools = [k for k,v in desc_tool_count.iteritems() if v > 1]
+    descsWithManyTools = [k for k, v in desc_tool_count.iteritems() if v > 1]
     for tools in all_tools.values():
         for tool in tools.values():
             if tool['descId'] in descsWithManyTools:
