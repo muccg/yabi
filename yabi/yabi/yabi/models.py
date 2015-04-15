@@ -100,7 +100,6 @@ class ToolDesc(Base):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     accepts_input = models.BooleanField(default=False)
 
@@ -194,6 +193,7 @@ class Tool(Base):
     submission = models.TextField(blank=True)
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
+    groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
 
     desc.help_text = "The tool definition"
     path.help_text = "The path to the binary for this file. Will normally just be binary name."
@@ -350,7 +350,7 @@ class ToolGroup(Base):
 
 
 class ToolGrouping(Base):
-    tool = models.ForeignKey(ToolDesc)
+    tool = models.ForeignKey(Tool)
     tool_set = models.ForeignKey('ToolSet')
     tool_group = models.ForeignKey(ToolGroup)
 

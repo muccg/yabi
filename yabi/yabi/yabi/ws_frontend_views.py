@@ -143,32 +143,41 @@ def get_user_tools(user):
     backends.append(Backend.objects.get(name="nullbackend").id)
     user_tools = Tool.objects.filter(enabled=True, backend__in=backends, fs_backend__in=backends)
 
-    qs = ToolGrouping.objects.filter(tool_set__users=user)
-    qs = qs.filter(tool__in=user_tools.values_list("desc", flat=True))
-    qs = qs.order_by("tool_group__name", "tool__name")
-    qs = qs.select_related("tool_group", "tool")
+    qs = ToolGrouping.objects.filter(tool_set__users=user, tool__in=user_tools)
+    qs = qs.order_by("tool_group__name", "tool__desc__name")
+    qs = qs.select_related("tool_group", "tool", "tool__desc")
     qs = qs.prefetch_related(
-        'tool__tooloutputextension_set__file_extension',
-        'tool__toolparameter_set__accepted_filetypes__extensions',
-        'tool__tool_set',
+        'tool__desc__tooloutputextension_set__file_extension',
+        'tool__desc__toolparameter_set__accepted_filetypes__extensions',
+        'tool__desc__tool_set',
     )
 
     all_tools = OrderedDict()
+    desc_tool_count = {}
     for toolgroup in qs:
         tg = all_tools.setdefault(toolgroup.tool_group.name, OrderedDict())
-        backend_tools = toolgroup.tool.tool_set.values_list("id", "backend__name", "display_name")
-        for backend_tool_id, backend_name, display_name in backend_tools:
-            tg.setdefault(backend_tool_id, {
-                "name": toolgroup.tool.name,
-                "displayName": display_name,
-                "defDisplayName": toolgroup.tool.name,
-                "description": toolgroup.tool.description,
-                "outputExtensions": toolgroup.tool.output_filetype_extensions(),
-                "inputExtensions": toolgroup.tool.input_filetype_extensions(),
-                "toolId": backend_tool_id,
-                "backend": backend_name,
-                "manyBackends": len(backend_tools) > 1,
-            })
+        tool = toolgroup.tool
+        tg[tool.id] = {
+            "name": tool.desc.name,
+            "displayName": tool.display_name,
+            "defDisplayName": tool.desc.name,
+            "description": tool.desc.description,
+            "outputExtensions": tool.desc.output_filetype_extensions(),
+            "inputExtensions": tool.desc.input_filetype_extensions(),
+            "toolId": tool.id,
+            "backend": tool.backend.name,
+            "descId": tool.desc.id,
+            "manyBackends": False
+        }
+        count = desc_tool_count.get(toolgroup.tool.desc.id, 0)
+        desc_tool_count[toolgroup.tool.desc.id] = count + 1
+
+    descsWithManyTools = [k for k,v in desc_tool_count.iteritems() if v > 1]
+    for tools in all_tools.values():
+        for tool in tools.values():
+            if tool['descId'] in descsWithManyTools:
+                tool['manyBackends'] = True
+            del tool['descId']
 
     return all_tools
 
