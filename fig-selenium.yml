@@ -38,7 +38,7 @@ cacheselenium:
   image: memcached:1.4
 
 mqselenium:
-  image: dockerfile/rabbitmq:latest
+  image: rabbitmq:management
   ports:
     - ":5672"
     - ":15672"
