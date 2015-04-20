@@ -16,6 +16,7 @@ from .selectfileexecbackend import SelectFileExecBackend
 from .localexecbackend import LocalExecBackend
 from .sshbackend import SSHBackend
 from .sshsgeexecbackend import SSHSGEExecBackend
+from .sshugeexecbackend import SSHUGEExecBackend
 from .sshtorquebackend import SSHTorqueExecBackend
 from .sshpbsprobackend import SSHPBSProExecBackend
 from .sshslurmbackend import SSHSlurmBackend
@@ -25,6 +26,7 @@ SelectFileExecBackend.register("selectfile", "null")
 LocalExecBackend.register("localex")
 SSHBackend.register("ssh")
 SSHSGEExecBackend.register("ssh+sge")
+SSHUGEExecBackend.register("ssh+uge")
 SSHTorqueExecBackend.register("ssh+torque")
 SSHPBSProExecBackend.register("ssh+pbspro")
 SSHSlurmBackend.register("ssh+slurm")
