@@ -67,6 +67,18 @@ we can also check in the admin under Yabi Users whether we can access the backen
 
 Using just a password for ssh (not a private key) should be the same steps.
 
+SSH works, but I'm having trouble submitting jobs with YABI?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In case you are getting errors when Yabi is trying to submit your jobs, you should look at Syslog table in the Admin interface of Yabi to find out more about the problems you are encountering.
+
+As a general rule the user on the Execution Backend should be able to run the scheduling programs (like qsub, qstat, qdel etc.) via ssh.
+To ensure you are set up correctly you should run the command below successfully:
+
+Note: use sinfo instead of qstat for SLURM Backends.
+
+$ ssh user_on_backend@backend qstat
+
 How do I get symlinking working?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
