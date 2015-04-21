@@ -17,7 +17,7 @@ AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|start|rpmbuild|rpm_publish|runtests|selenium|ci_staging)"
+    echo "Usage ./develop.sh (pythonlint|jslint|start|start_full|rpmbuild|rpm_publish|runtests|selenium|ci_staging)"
     echo ""
 }
 
@@ -38,7 +38,15 @@ start() {
     . ${VIRTUALENV}/bin/activate
     pip install fig
 
-    fig --project-name yabi up
+    figfile="fig.yml"
+    if [ "$1" = "full" ]; then
+      figfile="fig-full.yml"
+    fi
+    fig --project-name yabi -f $figfile up
+}
+
+start_full() {
+    start full
 }
 
 
@@ -143,6 +151,9 @@ jslint)
     ;;
 start)
     start
+    ;;
+start_full)
+    start_full
     ;;
 rpmbuild)
     rpmbuild
