@@ -368,7 +368,7 @@ cp -p "{0}" "{1}"
 
     COPY_RECURSIVE_COMMAND_TEMPLATE = """
 #!/bin/sh
-cp -rp "{0}/"* "{1}"
+cp -rp "{0}/" "{1}"
 """
 
     SYMLINK_COMMAND_TEMPLATE = """
