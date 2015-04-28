@@ -86,12 +86,6 @@ def files(request):
 @login_required
 @profile_required
 def design(request, id=None):
-    if id is not None:
-        user = User.objects.get(user=request.user)
-        workflow = get_object_or_404(Workflow, pk=id)
-        if user != workflow.user:
-            return HttpResponseForbidden("The workflow %s isn't yours and the owner didn't share it with you." % id)
-
     return render_page("fe/design.html", request, reuseId=id)
 
 

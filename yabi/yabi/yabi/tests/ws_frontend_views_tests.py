@@ -9,7 +9,7 @@ from yabi.test_utils import USER, ADMIN_USER, DjangoTestClientTestCase
 from django.core.cache import cache
 
 
-class WsMenuTxest(DjangoTestClientTestCase):
+class WsMenuTest(DjangoTestClientTestCase):
     def setUp(self):
         DjangoTestClientTestCase.setUp(self)
         self.tool = None
@@ -162,3 +162,35 @@ class TestLsWithExtraBackendCredentials(DjangoTestClientTestCase):
             [[self.PRELOADED_BC.homedir_uri, 0, False],
              [expected_homedir_uri, 0, False]],
             listing[USER]['directories'])
+
+
+class GetWorkflowTests(DjangoTestClientTestCase):
+    def setUp(self):
+        DjangoTestClientTestCase.setUp(self)
+        self.user = User.objects.get(name=USER)
+        self.workflow = mommy.make('Workflow', name='A test workflow', user=self.user)
+        self.login_fe(ADMIN_USER)
+
+    def tearDown(self):
+        self.workflow.delete()
+
+    def get_workflow(self, pk):
+        return self.client.get('/ws/workflows/get/%s' % pk)
+
+    def test_get_of_inexisting_workflow_should_be_404(self):
+        response = self.get_workflow(1001)
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_of_existing_workflow_by_owner_should_be_ok(self):
+        self.login_fe(USER)
+        response = self.get_workflow(self.workflow.pk)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_of_existing_workflow_by_other_user_should_be_forbidden(self):
+        response = self.get_workflow(self.workflow.pk)
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_of_existing_shared_workflow_by_other_user_should_be_ok(self):
+        self.workflow.share()
+        response = self.get_workflow(self.workflow.pk)
+        self.assertEqual(response.status_code, 200)

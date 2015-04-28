@@ -25,3 +25,8 @@ class ReuseTest(DjangoTestClientTestCase):
     def test_reuse_of_existing_workflow_by_other_user_should_be_forbidden(self):
         response = self.client.get('/design/reuse/%s' % self.workflow.pk)
         self.assertEqual(response.status_code, 403)
+
+    def test_reuse_of_existing_shared_workflow_by_other_user_should_be_ok(self):
+        self.workflow.share()
+        response = self.client.get('/design/reuse/%s' % self.workflow.pk)
+        self.assertEqual(response.status_code, 200)

@@ -81,13 +81,13 @@ class BaseModelAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['summary_link', 'status', 'stageout', 'change_link', link_to_jobs, link_to_tasks, link_to_stageins, 'is_aborting', 'highest_retry_count']
+    list_display = ['summary_link', 'status', 'stageout', 'change_link', link_to_jobs, link_to_tasks, link_to_stageins, 'shared', 'is_aborting', 'highest_retry_count']
     list_filter = ['status', 'user']
     search_fields = ['name']
     actions = ['abort_workflow']
     fieldsets = (
         (None, {
-            'fields': ('name', 'user', 'start_time', 'end_time', 'status', 'stageout')
+            'fields': ('name', 'user', 'shared', 'start_time', 'end_time', 'status', 'stageout')
         }),
     )
 

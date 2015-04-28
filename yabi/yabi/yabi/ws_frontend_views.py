@@ -542,8 +542,12 @@ def get_workflow(request, workflow_id):
         msg = 'Workflow %d not found' % workflow_id
         logger.critical(msg)
         return JsonMessageResponseNotFound(msg)
+    workflow = workflows[0]
 
-    response = workflow_to_response(workflows[0])
+    if not (workflow.user.user == request.user or workflow.shared):
+        return json_error_response("The workflow %s isn't yours and the owner '%s' didn't share it with you." % (workflow.id, workflow.user.user), status=403)
+
+    response = workflow_to_response(workflow)
 
     return HttpResponse(json.dumps(response),
                         mimetype='application/json')

@@ -95,6 +95,7 @@ class Workflow(models.Model, Editable, Status):
     abort_requested_by = models.ForeignKey(User, related_name='aborted_workflows', null=True)
     abort_requested_on = models.DateTimeField(null=True)
     stageout = models.CharField(max_length=1000)
+    shared = models.BooleanField(default=False)
     original_json = models.TextField()
 
     class Meta:
@@ -188,6 +189,10 @@ class Workflow(models.Model, Editable, Status):
     @property
     def highest_retry_count(self):
         return max([0] + [t.retry_count for t in Task.objects.filter(job__workflow__pk=self.pk)])
+
+    def share(self):
+        self.shared = True
+        self.save()
 
 
 class Tag(models.Model):

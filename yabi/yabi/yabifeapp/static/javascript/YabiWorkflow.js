@@ -784,8 +784,9 @@ YUI().use(
         jsUrl = baseURL;
         jsCallback = {
           success: this.hydrateCallback,
-          failure: function(transId, o) {
+          failure: function(transId, o, args) {
             YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+            args.target.fadeHydratingDiv();
           }
         };
         var cfg = {
