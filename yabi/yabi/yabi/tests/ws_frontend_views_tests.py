@@ -2,34 +2,16 @@
 
 import json
 from django.utils import unittest as unittest
-from django.test.client import Client
 from model_mommy import mommy
 from yabi.yabi.ws_frontend_views import munge_name
 from yabi.yabi.models import User, Backend, BackendCredential, Credential, Tool, ToolDesc, ToolSet, ToolGroup
+from yabi.test_utils import USER, ADMIN_USER, DjangoTestClientTestCase
 from django.core.cache import cache
 
 
-USER = 'demo'
-ADMIN_USER = 'admin'
-
-
-class WSTestCase(unittest.TestCase):
-
+class WsMenuTxest(DjangoTestClientTestCase):
     def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.client = Client()
-
-    def login_fe(self, user, password=None):
-        if password is None:
-            password = user
-        response = self.client.post('/login', {
-            'username': user, 'password': password})
-        assert response.status_code == 302, "Couldn't log in to FE"
-
-
-class WsMenuTest(WSTestCase):
-    def setUp(self):
-        WSTestCase.setUp(self)
+        DjangoTestClientTestCase.setUp(self)
         self.tool = None
         cache.clear()
         self.login_fe(ADMIN_USER)
@@ -132,9 +114,9 @@ class TestWorkflowNameMunging(unittest.TestCase):
         self.assertEquals('Munged (3)', name)
 
 
-class TestLsWithExtraBackendCredentials(WSTestCase):
+class TestLsWithExtraBackendCredentials(DjangoTestClientTestCase):
     def setUp(self):
-        WSTestCase.setUp(self)
+        DjangoTestClientTestCase.setUp(self)
         # Preloaded by quickstart
         self.PRELOADED_BC = BackendCredential.objects.get(pk=2)
         self.setUpExtraBackendCredentials()

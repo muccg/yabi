@@ -27,16 +27,16 @@ import os
 from django.conf.urls import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
 from django.core.cache import cache
 from ccg_django_utils import webhelpers
-from yabi.yabi.models import User
+from yabi.yabi.models import Credential, User
+from yabi.yabiengine.models import Workflow
 from yabi.responses import *
 from yabi.preview import html
-from yabi.yabi.models import Credential
 from yabi.decorators import profile_required
 from yabi.crypto_utils import DecryptException
 from yabi.yabi.ws_frontend_views import ls, get
@@ -86,6 +86,12 @@ def files(request):
 @login_required
 @profile_required
 def design(request, id=None):
+    if id is not None:
+        user = User.objects.get(user=request.user)
+        workflow = get_object_or_404(Workflow, pk=id)
+        if user != workflow.user:
+            return HttpResponseForbidden("The workflow %s isn't yours and the owner didn't share it with you." % id)
+
     return render_page("fe/design.html", request, reuseId=id)
 
 

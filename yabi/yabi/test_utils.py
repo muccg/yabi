@@ -1,10 +1,29 @@
 from django.conf import settings, UserSettingsHolder
+from django.utils import unittest as unittest
 from django.utils.functional import wraps
+from django.test.client import Client
+
+
+USER = 'demo'
+ADMIN_USER = 'admin'
+
+
+class DjangoTestClientTestCase(unittest.TestCase):
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.client = Client()
+
+    def login_fe(self, user, password=None):
+        if password is None:
+            password = user
+        response = self.client.post('/login', {
+            'username': user, 'password': password})
+        assert response.status_code == 302, "Couldn't log in to FE"
+
 
 # This is taken (and slightly modified) from Django dev version
 # We can remove this and use Django's instead when it will get into stable and then into Mango
-
-
 class override_settings(object):
     """
     Acts as either a decorator, or a context manager. If it's a decorator it
