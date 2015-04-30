@@ -672,6 +672,20 @@ input {
     height: 1.5em;
 }
 
+#sharingContainer {
+    margin-top: 10px;
+}
+
+label {
+    vertical-align: middle;
+    font-size: 95%;
+}
+
+input.checkbox {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
 .jobInputs {
     padding: 3px;
     padding-bottom:0px;

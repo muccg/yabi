@@ -17,6 +17,7 @@ YUI().use(
         this.editable = editable ? true : false;
         this.reusing = reusing ? true : false;
         this.workflowLoaded = false;
+        this.isShared = null;
         this.draftLoaded = true;
         this.payload = {};
         this.isPropagating = false; //recursion protection
@@ -123,6 +124,7 @@ YUI().use(
         //actions toolbar
         var toolbar = Y.Node.create('<div class="workflowToolbar" />').appendTo(this.mainEl);
         this.toolbar = toolbar;
+        this.sharingContainer = Y.Node.create('<div id="sharingContainer" />').appendTo(this.mainEl);
 
         if (!this.editable) {
           Yabi.util.fakeButton('re-use')
@@ -755,6 +757,7 @@ YUI().use(
         return Y.JSON.stringify({
           name: this.name,
           tags: this.tags,
+          shared: this.isShared == null ? false : this.isShared,
           jobs: _.map(this.jobs, function(job) { return job.toJSON(); })
         });
       };
@@ -815,6 +818,9 @@ YUI().use(
         anim.run();
       };
 
+      YabiWorkflow.prototype.reuseURL = function() {
+        return appURL + 'design/reuse/' + this.workflowId;
+      };
 
       /**
        * reuse
@@ -822,9 +828,17 @@ YUI().use(
        * reload the whole page with a reuse URL
        */
       YabiWorkflow.prototype.reuse = function() {
-        var baseURL = appURL + 'design/reuse/' + this.workflowId;
+        window.location = this.reuseURL();
+      };
 
-        window.location = baseURL;
+      YabiWorkflow.prototype.share = function() {
+        var self = this;
+        this.modifyWorkflowRequest({
+          'operation': 'share',
+          'successCallback': function() {
+            self.isShared = true;
+            self.updateSharedStatus(true); }
+        });
       };
 
       /**
@@ -861,13 +875,13 @@ YUI().use(
       YabiWorkflow.prototype.deleteWorkflow = function() {
         this.modifyWorkflowRequest(
           {'operation': 'delete',
-           'successMsg': 'Workflow deleted',
            'successCallback': function() { window.location = appURL + "jobs"; }});
       };
 
       YabiWorkflow.prototype.modifyWorkflowRequest = function(args) {
         var url = appURL + 'ws/workflows/' + args.operation + '/';
-        var successMsg = args.successMsg || 'Workflow ' + args.operation + 'ed';
+        var opMsg = args.operation + (_.last(args.operation) === 'e' ? 'd' : 'ed');
+        var successMsg = args.successMsg || 'Workflow ' + opMsg;
         var failureMsg = args.failureMsg || 'Failed to ' + args.operation;
         var successCallback = args.successCallback || function() {};
 
@@ -894,7 +908,6 @@ YUI().use(
           data: { id: this.workflowId }
         });
       };
-
 
       YabiWorkflow.prototype.abortWorkflow = function() {
         this.modifyWorkflowRequest({
@@ -1290,9 +1303,39 @@ YUI().use(
         target.setTags(obj.tags);
 
         target.setStatus(obj);
+        if (target.isShared !== obj.shared) {
+          target.isShared = obj.shared;
+
+          target.updateSharedStatus(target.isShared);
+        }
 
         target.solidify(obj.json);
       };
+
+      YabiWorkflow.prototype.updateSharedStatus = function(sharedStatus) {
+        this.sharingContainer.get('childNodes').remove();
+        if (!this.editable) {
+          if (this.isShared) {
+            Y.Node.create('<span>Shared Workflow, use link from re-use to share.</span>').
+              appendTo(this.sharingContainer);
+          } else {
+            Y.Node.create('<span>This is a private workflow. &nbsp;</span>').
+              appendTo(this.sharingContainer);
+            Yabi.util.fakeButton('share')
+              .appendTo(this.sharingContainer)
+              .on('click', this.shareCallback, null, this);
+            Y.Node.create('<span>with others.</span>').
+              appendTo(this.sharingContainer);
+          }
+        } else {
+          this.sharedCheckbox = Y.Node.create('<input id="is_shared" type="checkbox" class="checkbox"' + (this.isShared ? ' checked' : ' ') + '>').appendTo(this.sharingContainer);
+          this.sharedCheckbox.on('change', function (e) {
+            var checkbox = e.target;
+            this.isShared = checkbox.get('checked');
+          }, this);
+          Y.Node.create('<label for="is_shared">Share Workflow?</label>').appendTo(this.sharingContainer);
+        }
+      }
 
       YabiWorkflow.prototype.startDragJobCallback = function(e) {
         var dragNode = e.target.get('dragNode');
@@ -1428,6 +1471,10 @@ YUI().use(
 
       YabiWorkflow.prototype.reuseCallback = function(e, obj) {
         obj.reuse();
+      };
+
+      YabiWorkflow.prototype.shareCallback = function(e, obj) {
+        obj.share();
       };
 
       YabiWorkflow.prototype.nestedWorkflowConfirmationDialog = function(config) {

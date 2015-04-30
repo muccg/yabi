@@ -390,6 +390,7 @@ def submit_workflow(request):
         workflow = EngineWorkflow.objects.create(
             name=workflow_dict["name"],
             user=yabiuser,
+            shared=workflow_dict["shared"],
             original_json=json.dumps(workflow_dict),
             start_time=datetime.now()
         )
@@ -528,7 +529,21 @@ def delete_saved_workflow(request):
 
 
 @authentication_required
-@cache_page(20)
+def share_workflow(request):
+    if "id" not in request.POST:
+        return HttpResponseBadRequest("Need id param")
+
+    workflow = get_object_or_404(Workflow, id=request.POST["id"])
+
+    if workflow.user != request.user.user and not request.user.is_superuser:
+        return json_error_response("That's not yours", status=403)
+
+    workflow.share()
+
+    return json_response("shared")
+
+
+@authentication_required
 def get_workflow(request, workflow_id):
     yabiusername = request.user.username
     logger.debug(yabiusername)
@@ -562,6 +577,7 @@ def workflow_to_response(workflow, parse_json=True, retrieve_tags=True):
         'created_on': workflow.created_on.strftime(fmt),
         'status': workflow.status,
         'is_retrying': workflow.is_retrying,
+        'shared': workflow.shared,
         'json': json.loads(workflow.json) if parse_json else workflow.json,
         'tags': [],
     }
