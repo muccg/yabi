@@ -6,6 +6,7 @@ from model_mommy import mommy
 from yabi.yabi.ws_frontend_views import munge_name
 from yabi.yabi.models import User, Backend, BackendCredential, Credential, Tool, ToolDesc, ToolSet, ToolGroup
 from yabi.test_utils import USER, ADMIN_USER, DjangoTestClientTestCase
+from django.contrib.auth.models import User as DjangoUser
 from django.core.cache import cache
 
 
@@ -185,6 +186,8 @@ class GetWorkflowTests(DjangoTestClientTestCase):
         self.login_fe(USER)
         response = self.get_workflow(self.workflow.pk)
         self.assertEqual(response.status_code, 200)
+        resp = json.loads(response.content)
+        self.assertEqual(resp['id'], self.workflow.pk)
 
     def test_get_of_existing_workflow_by_other_user_should_be_forbidden(self):
         response = self.get_workflow(self.workflow.pk)
@@ -194,3 +197,50 @@ class GetWorkflowTests(DjangoTestClientTestCase):
         self.workflow.share()
         response = self.get_workflow(self.workflow.pk)
         self.assertEqual(response.status_code, 200)
+        resp = json.loads(response.content)
+        self.assertEqual(resp['id'], self.workflow.pk)
+        self.assertEqual(resp['shared'], True)
+
+
+class ShareWorkflowTests(DjangoTestClientTestCase):
+    def setUp(self):
+        DjangoTestClientTestCase.setUp(self)
+        self.user = User.objects.get(name=USER)
+        other_user = DjangoUser.objects.create(username='otheruser')
+        other_user.set_password('otheruser')
+        other_user.save()
+        self.other_user = other_user.user
+        self.workflow = mommy.make('Workflow', name='A test workflow', user=self.user)
+        self.login_fe(ADMIN_USER)
+
+    def tearDown(self):
+        self.workflow.delete()
+        self.other_user.user.delete()
+        self.other_user.delete()
+
+    def share_workflow(self, pk):
+        return self.client.post('/ws/workflows/share', {'id': pk})
+
+    def test_share_of_inexisting_workflow_should_be_404(self):
+        response = self.share_workflow(1001)
+        self.assertEqual(response.status_code, 404)
+
+    def test_share_of_existing_workflow_by_owner_should_be_ok(self):
+        self.login_fe(USER)
+        response = self.share_workflow(self.workflow.pk)
+        self.assertEqual(response.status_code, 200)
+        resp = json.loads(response.content)
+        self.assertEqual(resp['status'], 'success')
+        self.assertEqual(resp['data'], 'shared')
+
+    def test_share_of_existing_workflow_by_admin_should_be_ok(self):
+        response = self.share_workflow(self.workflow.pk)
+        self.assertEqual(response.status_code, 200)
+        resp = json.loads(response.content)
+        self.assertEqual(resp['status'], 'success')
+        self.assertEqual(resp['data'], 'shared')
+
+    def test_share_of_existing_workflow_by_other_user_should_be_forbidden(self):
+        self.login_fe('otheruser')
+        response = self.share_workflow(self.workflow.pk)
+        self.assertEqual(response.status_code, 403)
