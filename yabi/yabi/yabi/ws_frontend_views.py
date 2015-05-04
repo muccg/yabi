@@ -61,6 +61,7 @@ DATE_FORMAT = '%Y-%m-%d'
 
 @authentication_required
 def tool(request, toolname, toolid=None):
+    # TODO does this user has access to this tool?
     toolname_key = "%s-%s" % (cache_keyname(toolname), toolid or "")
     page = cache.get(toolname_key)
 
@@ -641,15 +642,15 @@ def workflow_change_tags(request, id=None):
     yabiusername = request.user.username
     logger.debug(yabiusername)
 
+    workflow = get_object_or_404(EngineWorkflow, pk=id)
+    if workflow.user.user != request.user and not request.user.is_superuser:
+        return json_error_response("That's not yours", status=403)
+
     if 'taglist' not in request.POST:
         return HttpResponseBadRequest("taglist needs to be passed in\n")
 
     taglist = request.POST['taglist'].split(',')
     taglist = [t.strip() for t in taglist if t.strip()]
-    try:
-        workflow = EngineWorkflow.objects.get(pk=id)
-    except EngineWorkflow.DoesNotExist:
-        return HttpResponseNotFound()
 
     workflow.change_tags(taglist)
 
