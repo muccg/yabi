@@ -56,9 +56,6 @@ urlpatterns += patterns('yabi.yabi.views',
                         (r'^admin-pane/', include('yabi.yabi.adminurls'), {'SSL': True}),
                         (r'^admin-pane/', include(admin.site.urls), {'SSL': True}))
 
-urlpatterns += patterns('yabi.yabi.views',
-                        (r'^djcelery-admin/', include(djangoadmin.site.urls), {'SSL': True}))
-
 # redirect / to /admin
 urlpatterns += patterns('',
                         ('^$', RedirectView.as_view(url=urlresolvers.reverse('admin:index'))))
