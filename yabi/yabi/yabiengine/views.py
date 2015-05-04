@@ -37,14 +37,10 @@ logger = logging.getLogger(__name__)
 
 
 @staff_member_required
-def task_json(request, task):
-    logger.debug('task_json> %s' % task)
+def task_json(request, task_id):
 
-    try:
-        task = Task.objects.get(id=int(task))
-        return HttpResponse(content=task.json(), content_type='application/json; charset=UTF-8')
-    except (ObjectDoesNotExist, ValueError):
-        return HttpResponseNotFound('Task not found')
+    task = get_object_or_404(Task, pk=task_id)
+    return HttpResponse(content=task.json(), content_type='application/json; charset=UTF-8')
 
 
 @staff_member_required

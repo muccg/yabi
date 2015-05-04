@@ -259,6 +259,10 @@ class Job(models.Model, Editable, Status):
     def workflowid(self):
         return self.workflow.id
 
+    @property
+    def user(self):
+        return self.workflow.user
+
     def update_status(self):
         '''
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
@@ -428,6 +432,10 @@ class Task(models.Model, Editable, Status):
     @property
     def workflowid(self):
         return self.job.workflow.id
+
+    @property
+    def user(self):
+        return self.job.user
 
     @staticmethod
     def status_attr(status):
