@@ -124,7 +124,8 @@ YUI().use(
         //actions toolbar
         var toolbar = Y.Node.create('<div class="workflowToolbar" />').appendTo(this.mainEl);
         this.toolbar = toolbar;
-        this.sharingContainer = Y.Node.create('<div id="sharingContainer" />').appendTo(this.mainEl);
+        this.sharingContainer = Y.Node.create('<div id="sharingContainer" />')
+                                  .appendTo(this.mainEl);
 
         if (!this.editable) {
           Yabi.util.fakeButton('re-use')
@@ -1328,14 +1329,18 @@ YUI().use(
               appendTo(this.sharingContainer);
           }
         } else {
-          this.sharedCheckbox = Y.Node.create('<input id="is_shared" type="checkbox" class="checkbox"' + (this.isShared ? ' checked' : ' ') + '>').appendTo(this.sharingContainer);
-          this.sharedCheckbox.on('change', function (e) {
+          this.sharedCheckbox = Y.Node.create(
+              '<input id="is_shared" type="checkbox" class="checkbox"' +
+              (this.isShared ? ' checked' : ' ') + '>')
+            .appendTo(this.sharingContainer);
+          this.sharedCheckbox.on('change', function(e) {
             var checkbox = e.target;
             this.isShared = checkbox.get('checked');
           }, this);
-          Y.Node.create('<label for="is_shared">Share Workflow?</label>').appendTo(this.sharingContainer);
+          Y.Node.create('<label for="is_shared">Share Workflow?</label>')
+            .appendTo(this.sharingContainer);
         }
-      }
+      };
 
       YabiWorkflow.prototype.startDragJobCallback = function(e) {
         var dragNode = e.target.get('dragNode');
