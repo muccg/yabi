@@ -23,7 +23,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
 import json
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
@@ -38,8 +38,10 @@ logger = logging.getLogger(__name__)
 
 @staff_member_required
 def task_json(request, task_id):
-
     task = get_object_or_404(Task, pk=task_id)
+    if request.user != task.user.user and not request.user.is_superuser:
+        return HttpResponseForbidden("That's not yours")
+
     return HttpResponse(content=task.json(), content_type='application/json; charset=UTF-8')
 
 
@@ -48,6 +50,8 @@ def workflow_summary(request, workflow_id):
     logger.debug('')
 
     workflow = get_object_or_404(EngineWorkflow, pk=workflow_id)
+    if request.user != workflow.user.user and not request.user.is_superuser:
+        return HttpResponseForbidden("That's not yours")
 
     jobs_by_order = workflow.job_set.all().order_by('order')
     if workflow.json:
