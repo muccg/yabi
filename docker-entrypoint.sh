@@ -38,6 +38,9 @@ function wait_for_services {
     if [[ "$WAIT_FOR_S3" ]] ; then
         dockerwait $S3SERVER $S3PORT
     fi
+    if [[ "$WAIT_FOR_KERBEROS" ]] ; then
+        dockerwait $KERBEROSSERVER $KERBEROSPORT
+    fi
 }
 
 
@@ -54,6 +57,8 @@ function defaults {
     : ${SSHPORT="22"}
     : ${S3SERVER="s3"}
     : ${S3PORT="4569"}
+    : ${KERBEROSSERVER="krb5"}
+    : ${KERBEROSPORT="88"}
 
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}
@@ -116,6 +121,7 @@ function django_defaults {
     
     export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE WRITABLE_DIRECTORY STATIC_ROOT MEDIA_ROOT LOG_DIRECTORY DJANGO_SETTINGS_MODULE
 }
+
 
 echo "HOME is ${HOME}"
 echo "WHOAMI is `whoami`"

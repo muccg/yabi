@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libssl-dev \
   libxml2-dev \
   libxslt1-dev \
+  krb5-config \
+  krb5-user \
+  libkrb5-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN env --unset=DEBIAN_FRONTEND
@@ -46,6 +49,8 @@ RUN rm -rf ..?* .[!.]* *
 
 EXPOSE 8000 9000 9001 9100 9101
 VOLUME ["/app", "/data"]
+
+COPY krb5.conf /etc/krb5.conf
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh

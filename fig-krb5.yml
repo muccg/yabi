@@ -1,0 +1,84 @@
+# data only container pattern
+data:
+  image: muccg/base:debian8
+  volumes:
+    - .:/app
+    - data/dev:/data
+
+ssh:
+  image: muccg/ssh
+  hostname: ssh
+
+db:
+  image: postgres:9.3
+  environment:
+    - POSTGRES_USER=yabiapp
+    - POSTGRES_PASSWORD=yabiapp
+  ports:
+    - ":5432"
+
+mq:
+  image: rabbitmq:management
+  ports:
+    - ":5672"
+    - ":15672"
+
+cache:
+  image: memcached:1.4
+
+web:
+  build: .
+  command: runserver
+  hostname: web
+  domainname: dockerdomain
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - DBUSER=yabiapp
+    - AUTH_KERBEROS_REALM=DOCKERDOMAIN
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_KERBEROS=1
+  volumes_from:
+    - data
+  ports:
+    - "8000:8000"
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+    - krb5
+
+celery:
+  image: yabi_web
+  command: celery
+  hostname: celery
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - CELERY_APP=yabi.backend.celerytasks
+    - CELERY_AUTORELOAD=1
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+  volumes_from:
+    - data
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+
+krb5:
+  image: muccg/kerberos
+  hostname: kerberos.dockerdomain
+  domainname: dockerdomain
+  command: supervisord
+  ports:
+    - ":9001"
+    - ":88"
+    - ":749"
+    - ":464"

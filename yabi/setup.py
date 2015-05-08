@@ -59,6 +59,8 @@ install_requires = [
     'pyinotify==0.9.4',
     'Werkzeug',
     'psycopg2==2.5.5',
+    'pykerberos==1.1.5',
+    'django-auth-kerberos==1.2.3',
     # for tests
     'requests==2.4.1',
     'django-nose',

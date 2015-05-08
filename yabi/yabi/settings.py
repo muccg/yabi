@@ -76,7 +76,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'south',
     'djamboloader',
-    'django.contrib.admin'
+    'django.contrib.admin',
+    'django_auth_kerberos'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -246,9 +247,18 @@ if env.get("auth_ldap_server", ""):
         'ccg.auth.backends.NoAuthModelBackend',
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
+elif env.get("auth_kerberos_realm", ""):
+    AUTHENTICATION_BACKENDS = [
+        'django_auth_kerberos.backends.KrbBackend'
+    ]
+    AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 else:
     AUTHENTICATION_BACKENDS = ['yabi.authbackends.CaseInsensitiveUsernameModelBackend']
     AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
+
+
+KRB5_REALM = env.get('auth_kerberos_realm', 'DOCKERDOMAIN')
+KRB5_SERVICE = env.get('auth_kerberos_service', 'yabi/web.dockerdomain@DOCKERDOMAIN')
 
 AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", [])
 AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", 'ou=People,dc=set_this,dc=edu,dc=au')
