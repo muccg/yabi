@@ -259,10 +259,6 @@ if AUTH_TYPE == 'ldap':
         'yabi.authbackends.ldap.LDAPBackend'
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
-elif AUTH_TYPE == 'kerberos':
-    AUTHENTICATION_BACKENDS = [
-        'django_auth_kerberos.backends.KrbBackend'
-    ]
 elif AUTH_TYPE == 'kerberos+ldap':
     AUTHENTICATION_BACKENDS = [
         'yabi.authbackends.kerberos.KerberosLDAPBackend'

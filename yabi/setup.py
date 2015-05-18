@@ -59,7 +59,6 @@ install_requires = [
     'Werkzeug',
     'psycopg2==2.5.5',
     'pykerberos==1.1.5',
-    'django-auth-kerberos==1.2.3',
     'python-ldap==2.4.19',
     # for tests
     'requests==2.4.1',
