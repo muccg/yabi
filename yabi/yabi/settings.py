@@ -237,41 +237,57 @@ MANAGERS = ADMINS
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
-# yabi uses modelbackend by default, but can be overridden here
-# code used for additional user related operations
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
-if env.get("auth_ldap_server", ""):
+# Default authentication is against the Database (with case insensitive usernames)
+# Change AUTH_TYPE if you would like to use another authentication method to one of:
+#   - ldap : Authenticate against LDAP
+#   - kerberos: Authenticate against Kerberos
+#   - kerberos+ldap: Authenticate against Kerberos but use LDAP to check Yabi group
+#                    membership, superuser status and fetch user details.
+#                    and user details
+
+AUTH_TYPE = env.get("auth_type", "").lower()
+
+# Set to True if you would like to add the Database Authentication as a fallback.
+# This is useful to be able to log in even if there is some problem with your
+# LDAP, Kerberos etc. server.
+AUTH_ENABLE_DB_FALLBACK = env.get("auth_enable_db_fallback", True)
+
+AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
+AUTHENTICATION_BACKENDS = []
+if AUTH_TYPE == 'ldap':
     AUTHENTICATION_BACKENDS = [
-        'ccg.auth.backends.LDAPBackend',
-        'ccg.auth.backends.NoAuthModelBackend',
+        'yabi.authbackends.ldap.LDAPBackend'
     ]
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
-elif env.get("auth_kerberos_realm", ""):
+elif AUTH_TYPE == 'kerberos':
     AUTHENTICATION_BACKENDS = [
         'django_auth_kerberos.backends.KrbBackend'
     ]
-    AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
-else:
-    AUTHENTICATION_BACKENDS = ['yabi.authbackends.CaseInsensitiveUsernameModelBackend']
-    AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
+elif AUTH_TYPE == 'kerberos+ldap':
+    AUTHENTICATION_BACKENDS = [
+        'yabi.authbackends.kerberos.KerberosLDAPBackend'
+    ]
 
+if AUTHENTICATION_BACKENDS == [] or AUTH_ENABLE_DB_FALLBACK:
+    AUTHENTICATION_BACKENDS.append('yabi.authbackends.CaseInsensitiveUsernameModelBackend')
 
 KRB5_REALM = env.get('auth_kerberos_realm', 'DOCKERDOMAIN')
 KRB5_SERVICE = env.get('auth_kerberos_service', 'yabi/web.dockerdomain@DOCKERDOMAIN')
 
-AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", [])
-AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", 'ou=People,dc=set_this,dc=edu,dc=au')
-AUTH_LDAP_GROUP_BASE = env.get("auth_ldap_group_base", 'ou=Yabi,ou=Web Groups,dc=set_this,dc=edu,dc=au')
-AUTH_LDAP_GROUP = env.get("auth_ldap_group", 'yabi')
-AUTH_LDAP_DEFAULT_GROUP = env.get("auth_ldap_default_group", 'baseuser')
-AUTH_LDAP_GROUPOC = env.get("auth_ldap_groupoc", 'groupofuniquenames')
-AUTH_LDAP_USEROC = env.get("auth_ldap_useroc", 'inetorgperson')
-AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", 'uniqueMember')
-AUTH_LDAP_USERDN = env.get("auth_ldap_userdn", 'ou=People')
-LDAP_DONT_REQUIRE_CERT = env.get("ldap_dont_require_cert", False)
-
-AUTH_LDAP_CASE_SENSITIVE_USERNAMES = False
+# LDAP details have to be set correctly if AUTH_TYPE is "ldap" or "kerberos+ldap"
+# LDAP settings you have to set for sure:
+AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", ["ldap://ldap.dockerdomain"])
+AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", "ou=People,dc=dockerdomain")
+AUTH_LDAP_YABI_GROUP_DN = env.get("auth_ldap_group_dn", "cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain")
+AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_group_dn", "cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain")
+# LDAP settings you might want to set:
+AUTH_LDAP_SYNC_USER_ON_LOGIN = env.get("auth_ldap_sync_user_on_login", True)
+AUTH_LDAP_USER_FILTER = env.get("auth_ldap_user_filter", "(objectclass=person)")
+AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", "uniqueMember")
+AUTH_LDAP_USERNAME_ATTR = env.get("auth_ldap_username_attr", "uid")
+AUTH_LDAP_EMAIL_ATTR = env.get("auth_ldap_email_attr", "mail")
+AUTH_LDAP_LASTNAME_ATTR = env.get("auth_ldap_lastname_attr", "sn")
+AUTH_LDAP_FIRSTNAME_ATTR = env.get("auth_ldap_firstname_attr", "givenName")
 
 # This honours the X-Forwarded-Host header set by our nginx frontend when
 # constructing redirect URLS.

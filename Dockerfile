@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   krb5-config \
   krb5-user \
   libkrb5-dev \
+  libssl-dev \
+  libsasl2-dev \
+  libldap2-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN env --unset=DEBIAN_FRONTEND

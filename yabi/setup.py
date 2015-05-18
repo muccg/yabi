@@ -26,7 +26,6 @@ install_requires = [
     # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
     'pytz>=2013b',
     'ccg-django-utils==0.3.1',
-    'ccg-auth==0.3.4',
     'anyjson==0.3.3',
     'celery==3.1.15',
     'amqp==1.4.6',
@@ -61,6 +60,7 @@ install_requires = [
     'psycopg2==2.5.5',
     'pykerberos==1.1.5',
     'django-auth-kerberos==1.2.3',
+    'python-ldap==2.4.19',
     # for tests
     'requests==2.4.1',
     'django-nose',
@@ -99,7 +99,6 @@ mysql_requires = [
 
 dependency_links = [
     'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.3.1.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-auth-0.3.4.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://bitbucket.org/ccgmurdoch/libcloud-drivers/downloads/ccg-libcloud-drivers-0.0.1.tar.gz',
     'https://github.com/muccg/djamboloader/archive/0.1.4.tar.gz#egg=djamboloader-0.1.4',

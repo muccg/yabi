@@ -41,6 +41,9 @@ function wait_for_services {
     if [[ "$WAIT_FOR_KERBEROS" ]] ; then
         dockerwait $KERBEROSSERVER $KERBEROSPORT
     fi
+    if [[ "$WAIT_FOR_LDAP" ]] ; then
+        dockerwait $LDAPSERVER $LDAPPORT
+    fi
 }
 
 
@@ -59,6 +62,8 @@ function defaults {
     : ${S3PORT="4569"}
     : ${KERBEROSSERVER="krb5"}
     : ${KERBEROSPORT="88"}
+    : ${LDAPSERVER="ldap"}
+    : ${LDAPPORT="389"}
 
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}

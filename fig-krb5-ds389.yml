@@ -34,12 +34,19 @@ web:
   environment:
     - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
+    # - AUTH_TYPE=kerberos
+    # - AUTH_TYPE=kerberos+ldap
+    - AUTH_TYPE=ldap
     - AUTH_KERBEROS_REALM=DOCKERDOMAIN
+    - AUTH_LDAP_SERVER=ldap://ldap
+    - AUTH_LDAP_USER_BASE=ou=People,dc=dockerdomain
+    - AUTH_LDAP_GROUP_BASE=ou=Web Groups,ou=Groups,dc=dockerdomain
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
     - WAIT_FOR_KERBEROS=1
+    - WAIT_FOR_LDAP=1
   volumes_from:
     - data
   ports:
@@ -50,6 +57,7 @@ web:
     - cache
     - ssh
     - krb5
+    - ldap
 
 celery:
   image: yabi_web
@@ -74,7 +82,7 @@ celery:
 
 krb5:
   image: muccg/kerberos
-  hostname: kerberos.dockerdomain
+  hostname: kerberos
   domainname: dockerdomain
   command: supervisord
   ports:
@@ -82,3 +90,13 @@ krb5:
     - ":88"
     - ":749"
     - ":464"
+
+ldap:
+  image: muccg/ds389
+  hostname: ldap
+  domainname: dockerdomain
+  command: supervisord
+  ports:
+    - ":9001"
+    - ":389"
+    - ":9830"
