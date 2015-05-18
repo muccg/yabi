@@ -126,7 +126,7 @@ def update_yabi_user(django_user, ldap_user):
 
 
 def create_yabi_user(ldap_user):
-    django_user = User.objects.create_user(username)
+    django_user = User.objects.create_user(ldap_user.username)
     update_yabi_user(django_user, ldap_user)
 
     return django_user
