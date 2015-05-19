@@ -14,14 +14,13 @@ class LDAPBackend(ModelBackend):
             logger.warning('Empty password supplied. Access denied')
             return None
 
-        try:
-            user = ldaputils.get_user(username)
-        except ldaputils.LDAPUserDoesNotExist:
-            logger.info("LDAP user '%s' does not exist" % username)
+        if not self.can_log_in(username, password):
+            logger.info("Couldn't log in with LDAP user '%s' and the supplied password" % username)
             return None
 
-        if not ldaputils.can_bind_as(user.dn, password):
-            logger.info("Can't bind with LDAP user '%s' and the supplied password" % username)
+        user = self.get_ldap_user(username)
+        if user is None:
+            logger.info("LDAP user '%s' doesn't exist" % username)
             return None
 
         if not (ldaputils.is_user_member_of_yabi_group(user.dn) or
@@ -39,3 +38,20 @@ class LDAPBackend(ModelBackend):
         logger.info("Login Success '%s'" % django_user)
 
         return django_user
+
+    def can_log_in(self, username, password):
+        user = self.get_ldap_user(username)
+        if user is None:
+            return False
+        if not ldaputils.can_bind_as(user.dn, password):
+            logger.info("Can't bind with LDAP user '%s' and the supplied password" % username)
+            return False
+
+        return True
+
+    def get_ldap_user(self, username):
+        try:
+            user = ldaputils.get_user(username)
+            return user
+        except ldaputils.LDAPUserDoesNotExist:
+            logger.info("LDAP user '%s' does not exist" % username)

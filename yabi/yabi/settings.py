@@ -77,7 +77,6 @@ INSTALLED_APPS = [
     'south',
     'djamboloader',
     'django.contrib.admin',
-    'django_auth_kerberos'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -261,14 +260,14 @@ if AUTH_TYPE == 'ldap':
     AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 elif AUTH_TYPE == 'kerberos+ldap':
     AUTHENTICATION_BACKENDS = [
-        'yabi.authbackends.kerberos.KerberosLDAPBackend'
+        'yabi.authbackends.kerberosldap.KerberosLDAPBackend'
     ]
 
 if AUTHENTICATION_BACKENDS == [] or AUTH_ENABLE_DB_FALLBACK:
     AUTHENTICATION_BACKENDS.append('yabi.authbackends.CaseInsensitiveUsernameModelBackend')
 
-KRB5_REALM = env.get('auth_kerberos_realm', 'DOCKERDOMAIN')
-KRB5_SERVICE = env.get('auth_kerberos_service', 'yabi/web.dockerdomain@DOCKERDOMAIN')
+AUTH_KERBEROS_REALM = env.get('auth_kerberos_realm', 'DOCKERDOMAIN')
+AUTH_KERBEROS_SERVICE = env.get('auth_kerberos_service', '')
 
 # LDAP details have to be set correctly if AUTH_TYPE is "ldap" or "kerberos+ldap"
 # LDAP settings you have to set for sure:
