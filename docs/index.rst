@@ -13,6 +13,7 @@ Yabi Documentation
     installation/index
     logging
     testing
+    authentication
     addingusers
     backends
     credentials
