@@ -57,6 +57,7 @@ web:
     - cache
     - ssh
     - krb5
+    - krb5:kerberos.dockerdomain
     - ldap
 
 celery:
