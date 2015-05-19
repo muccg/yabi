@@ -1,0 +1,10 @@
+To set up your ldap docker container.
+
+To add the groups needed for Yabi:
+ 
+$ ldapmodify -D "cn=Directory Manager" -w admin -a -f groups.ldif
+
+Then to add the demo and the admin users:
+
+$ ldapmodify -D "cn=Directory Manager" -w admin -a -f users.ldif
+

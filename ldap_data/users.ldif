@@ -1,0 +1,49 @@
+dn: cn=admin,ou=People,dc=dockerdomain
+cn: admin
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+mail: admin@dockerdomain
+givenname: Admin
+sn: User
+ou: People
+uid: admin
+userPassword: admin
+
+dn: cn=demo,ou=People,dc=dockerdomain
+cn: demo
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+mail: demo@dockerdomain
+givenname: Demo
+sn: User
+ou: People
+uid: demo
+street: 123 Down St.
+l: Perth
+st: WA
+postalcode: 6000
+mobile: 042 034567
+userPassword: demo
+
+# not a Yabi user
+dn: cn=other,ou=People,dc=dockerdomain
+cn: other
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+mail: otheruser@dockerdomain
+givenname: Other
+sn: User
+ou: People
+uid: other
+street: 1 Sunset St.
+l: Singleton
+st: WA
+postalcode: 6000
+mobile: 042 034567
+userPassword: other
