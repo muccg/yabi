@@ -68,18 +68,21 @@ def tool(request, toolid):
         logger.debug("Returning cached page for tool:%s using key:%s " % (toolid, toolname_key))
         return page
 
+    user = request.user.user
     try:
-        user = request.user.user
-        tool = Tool.objects.get(
-            Q(id=toolid),
-            Q(backend__backendcredential__credential__user=user) | Q(backend__name="nullbackend"),
-            Q(fs_backend__backendcredential__credential__user=user) | Q(fs_backend__name="nullbackend"))
-        if not ToolSet.objects.filter(users=user, toolgrouping__tool=tool).exists():
-           raise ObjectDoesNotExist()
-        response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
+        tool = Tool.objects.get(pk=toolid)
     except ObjectDoesNotExist:
-        response = JsonMessageResponseNotFound("Object not found")
+        return JsonMessageResponseNotFound("Object not found")
 
+    if not (tool.backend.name == "nullbackend" or tool.backend.backendcredential_set.filter(credential__user=user).exists()):
+       return JsonMessageResponseForbidden("User does not have access to the tool")
+    if not (tool.fs_backend.name == "nullbackend" or tool.fs_backend.backendcredential_set.filter(credential__user=user).exists()):
+       return JsonMessageResponseForbidden("User does not have access to the tool")
+
+    if not ToolSet.objects.filter(users=user, toolgrouping__tool=tool).exists():
+       return JsonMessageResponseForbidden("User does not have access to the tool")
+
+    response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
     cache.set(toolname_key, response, 30)
 
     return response

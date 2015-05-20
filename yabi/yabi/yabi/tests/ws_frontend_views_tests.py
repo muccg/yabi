@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import sys
 from django.utils import unittest as unittest
 from model_mommy import mommy
 from yabi.yabi.ws_frontend_views import munge_name
@@ -251,24 +252,28 @@ class GetToolTest(DjangoTestClientTestCase, AddNewToolMixin):
         cache.clear()
         self.login_fe(ADMIN_USER)
 
+    def test_not_found_is_returned_for_unexisting_tool(self):
+        response = self.client.get('/ws/tool/%s' % sys.maxsize)
+        self.assertEqual(response.status_code, 404, 'Should return not found')
+
     def test_tool_is_returned(self):
         response = self.client.get('/ws/tool/%s' % self.tool.pk)
         self.assertEqual(response.status_code, 200, 'Should be able to get tool')
         tool = json.loads(response.content)['tool']
         self.assertEqual(tool['display_name'], 'new-tool')
 
-    def test_tool_isnt_returned_if_no_backend_credential_for_user(self):
+    def test_forbidden_is_returned_if_no_backend_credential_for_user(self):
         # Changing the credential to belong to the other user
         demo = User.objects.get(name='demo')
         self.cred.user = demo
         self.cred.save()
         response = self.client.get('/ws/tool/%s' % self.tool.pk)
-        self.assertEqual(response.status_code, 404, 'Should not be able to get tool')
+        self.assertEqual(response.status_code, 403, 'Should not be able to get tool')
  
-    def test_tool_isnt_returned_if_not_in_users_toolset(self):
+    def test_forbidden_is_returned_if_not_in_users_toolset(self):
         # Remove the user from the toolset
         admin = User.objects.get(name=ADMIN_USER)
         self.test_tset.users.remove(admin)
         response = self.client.get('/ws/tool/%s' % self.tool.pk)
-        self.assertEqual(response.status_code, 404, 'Should not be able to get tool')
+        self.assertEqual(response.status_code, 403, 'Should not be able to get tool')
         self.test_tset.users.add(admin)
