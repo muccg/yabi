@@ -6,7 +6,6 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Project specific deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  libldap2-dev \
   libpcre3 \
   libpcre3-dev \
   libpq-dev \
