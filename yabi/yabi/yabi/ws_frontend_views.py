@@ -391,7 +391,7 @@ def submit_workflow(request):
         workflow = EngineWorkflow.objects.create(
             name=workflow_dict["name"],
             user=yabiuser,
-            shared=workflow_dict["shared"],
+            shared=workflow_dict.get("shared", False),
             original_json=json.dumps(workflow_dict),
             start_time=datetime.now()
         )

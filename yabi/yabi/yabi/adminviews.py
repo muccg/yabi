@@ -179,23 +179,15 @@ def register_users(request):
     """
     Take a list of names and add them to the Auth User table
     """
-    logger.debug('')
     uids = request.POST.keys()
-
     for uid in uids:
-
         try:
-            # save in auth user
-            username = uid.replace('uid=', '')
-            user, created = DjangoUser.objects.get_or_create(username=username)
-            logger.debug("Django user %s for %s" % ("created" if created else 'already existed', username))
-
-            # save in yabi user
-            user, created = User.objects.get_or_create(name=username)
-            logger.debug("Yabi user %s for %s" % ("created" if created else 'already existed', username))
-
+            if DjangoUser.objects.filter(username=uid).exists():
+                raise Exception("User already exists")
+            ldap_user = ldaputils.get_user(uid)
+            ldaputils.create_yabi_user(ldap_user)
         except Exception as e:
-            logger.critical("Users not registered because of %s" % e)
+            logger.exception("User '%s' not registered because of %s" % (uid, e))
             pass
 
 
@@ -215,11 +207,11 @@ def ldap_users(request):
     if request.method == 'POST':
         register_users(request)
 
-    all_ldap_users = ldaputils.get_all_users()
-    yabi_userids = ldaputils.get_yabi_userids()
+    def to_LDAPUser(search_result):
+        dn, data_dict = search_result
+        return ldaputils.LDAPUser(dn, data_dict)
 
-    ldap_yabi_users = [ldaputils.format(entry[0], entry[1]) for entry in
-                       all_ldap_users.items() if entry[0] in yabi_userids]
+    ldap_yabi_users = map(to_LDAPUser, ldaputils.get_all_yabi_users().items())
 
     db_user_names = [user.name for user in User.objects.all()]
 

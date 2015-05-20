@@ -64,4 +64,4 @@ class LDAPClient:
     def unbind(self):
         if hasattr(self, '_ldap'):
             self._ldap.unbind()
-        del(self._ldap)
+            del(self._ldap)

@@ -20,17 +20,20 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-import hashlib
 import base64
+from functools import partial
+import ldap
+import hashlib
 import logging
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
 
 try:
     from ldap import LDAPError, MOD_REPLACE
-    from yabi.ldapclient import LDAPClient
+    from .ldapclient import LDAPClient
     settings.LDAP_IN_USE = True
 except ImportError as e:
     settings.LDAP_IN_USE = False
@@ -38,40 +41,95 @@ except ImportError as e:
         logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
-class LdapUser:
-    def __init__(self, uid, dn, full_name):
-        self.uid = uid
+class LDAPUser(object):
+    def __init__(self, dn, user_data):
         self.dn = dn
-        self.full_name = full_name
+        self._data = user_data
+
+        self.uid = _first_attr_value(user_data, settings.AUTH_LDAP_USERNAME_ATTR)
+        self.username = self.uid
+        self.email = _first_attr_value(user_data, settings.AUTH_LDAP_EMAIL_ATTR)
+        self.first_name = _first_attr_value(user_data, settings.AUTH_LDAP_FIRSTNAME_ATTR)
+        self.last_name = _first_attr_value(user_data, settings.AUTH_LDAP_LASTNAME_ATTR)
+
+    @property
+    def full_name(self):
+        return ' '.join([self.first_name, self.last_name])
 
 
 class LDAPUserDoesNotExist(ObjectDoesNotExist):
     pass
 
 
-def get_all_users():
+# TODO all these functions make an ldap connection
+# They should at least accept the ldapclient optionally so one
+# can reuse the same connection if doing multiple operations
+
+
+def get_all_yabi_users():
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    filter = "(objectclass=person)"
-    result = ldapclient.search(settings.AUTH_LDAP_USER_BASE, filter)
+    all_users = ldapclient.search(settings.AUTH_LDAP_USER_BASE, settings.AUTH_LDAP_USER_FILTER)
 
-    return dict(result)
+    yabi_user_dns = get_yabi_userdns().union(get_yabi_admin_userdns())
+
+    def is_yabi_user(res):
+        dn, data = res
+        return dn in yabi_user_dns
+
+    yabi_users = filter(is_yabi_user, all_users)
+
+    return dict(yabi_users)
 
 
-def get_yabi_userids():
+def get_userdns_in_group(groupdn):
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    filter = "(cn=%s)" % settings.AUTH_LDAP_GROUP
-    result = ldapclient.search(settings.AUTH_LDAP_GROUP_BASE, filter, ['uniqueMember'])
-    return set(result[0][1]['uniqueMember'])
+    MEMBER_ATTR = settings.AUTH_LDAP_MEMBERATTR
+    try:
+        result = ldapclient.search(groupdn, '%s=*' % MEMBER_ATTR, [MEMBER_ATTR])
+    except ldap.NO_SUCH_OBJECT:
+        logger.warning("Required group '%s' doesn't exist in LDAP" % groupdn)
+        result = []
+
+    if len(result) > 0:
+        first_result = result[0]
+        data_dict = first_result[1]
+    else:
+        data_dict = {}
+
+    return set(data_dict.get(MEMBER_ATTR, []))
 
 
-def get_userdn_of(username):
+get_yabi_userdns = partial(get_userdns_in_group, settings.AUTH_LDAP_YABI_GROUP_DN)
+get_yabi_admin_userdns = partial(get_userdns_in_group, settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN)
+
+
+def get_user(username):
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    userfilter = "(&(objectclass=person) (uid=%s))" % username
-    result = ldapclient.search(settings.AUTH_LDAP_USER_BASE, userfilter, ['dn'])
+    userfilter = "(%s=%s)" % (settings.AUTH_LDAP_USERNAME_ATTR, username)
+
+    result = ldapclient.search(settings.AUTH_LDAP_USER_BASE, userfilter)
     if result and len(result) == 1:
-        return result[0][0]
+        return LDAPUser(*result[0])
     else:
         raise LDAPUserDoesNotExist
+
+
+def update_yabi_user(django_user, ldap_user):
+    django_user.username = ldap_user.username
+    django_user.email = ldap_user.email
+    django_user.first_name = ldap_user.first_name
+    django_user.last_name = ldap_user.last_name
+
+    django_user.is_superuser = is_user_member_of_yabi_admin_group(ldap_user.dn)
+    django_user.is_staff = django_user.is_superuser
+    django_user.save()
+
+
+def create_yabi_user(ldap_user):
+    django_user = User.objects.create_user(ldap_user.username)
+    update_yabi_user(django_user, ldap_user)
+
+    return django_user
 
 
 def can_bind_as(userdn, password):
@@ -83,36 +141,44 @@ def can_bind_as(userdn, password):
         ldapclient.unbind()
 
 
-def is_user_member_of(userdn, groupname):
+def is_user_member_of_group(groupdn, userdn):
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    groupfilter = '(&(objectClass=groupofuniquenames)(uniqueMember=%s)(cn=%s))' % (userdn, groupname)
-    result = ldapclient.search(settings.AUTH_LDAP_GROUP_BASE, groupfilter, ['cn'])
+    groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBERATTR, userdn)
+    try:
+        result = ldapclient.search(groupdn, groupfilter, ['cn'])
+    except ldap.NO_SUCH_OBJECT:
+        logger.warning("Required group '%s' doesn't exist in LDAP" % groupdn)
+        return False
     return len(result) == 1
 
 
-def format(dn, ldap_user):
-    return LdapUser(ldap_user['uid'][0], dn, ldap_user['cn'][0])
+is_user_member_of_yabi_group = partial(is_user_member_of_group,
+                                       settings.AUTH_LDAP_YABI_GROUP_DN)
+is_user_member_of_yabi_admin_group = partial(is_user_member_of_group,
+                                             settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN)
 
 
-def set_ldap_password(user, current_password, new_password, bind_userdn=None, bind_password=None):
+# TODO is this general enough?
+# Why do we md5 directly? The ldap client should take care of the encryption.
+def set_ldap_password(username, current_password, new_password, bind_userdn=None, bind_password=None):
 
     assert current_password, "No currentPassword was supplied."
     assert new_password, "No newPassword was supplied."
 
     try:
-        userdn = get_userdn_of(user.username)
+        user = get_user(username)
         client = LDAPClient(settings.AUTH_LDAP_SERVER)
 
         if bind_userdn and bind_password:
             client.bind_as(bind_userdn, bind_password)
         else:
-            client.bind_as(userdn, current_password)
+            client.bind_as(user.dn, current_password)
 
         md5 = hashlib.md5(new_password).digest()
         modlist = (
             (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
         )
-        client.modify(userdn, modlist)
+        client.modify(user.dn, modlist)
         client.unbind()
         return True
 
@@ -120,3 +186,10 @@ def set_ldap_password(user, current_password, new_password, bind_userdn=None, bi
         logger.critical("Unable to change password on ldap server.")
         logger.critical(e)
         return False
+
+
+def _first_attr_value(d, attr, default=''):
+    values = d.get(attr)
+    if values is None or len(values) == 0:
+        return default
+    return values[0]

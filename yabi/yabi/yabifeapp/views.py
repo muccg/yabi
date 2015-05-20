@@ -27,14 +27,13 @@ import os
 from django.conf.urls import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
 from django.core.cache import cache
 from ccg_django_utils import webhelpers
 from yabi.yabi.models import Credential, User
-from yabi.yabiengine.models import Workflow
 from yabi.responses import *
 from yabi.preview import html
 from yabi.decorators import profile_required
