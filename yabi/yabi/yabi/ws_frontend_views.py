@@ -38,7 +38,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadReque
 from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabi.yabi.models import User, Credential, BackendCredential
-from yabi.yabi.models import ToolGrouping, Tool, ToolDesc, Backend
+from yabi.yabi.models import ToolSet, ToolGrouping, Tool, Backend
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
@@ -49,7 +49,7 @@ from yabi.yabiengine.enginemodels import EngineWorkflow
 from yabi.yabiengine.models import Workflow, WorkflowTag, SavedWorkflow
 from yabi.responses import *
 from yabi.decorators import authentication_required, profile_required
-from yabi.utils import cache_keyname, json_error_response, json_response
+from yabi.utils import json_error_response, json_response
 from yabi.backend import backend
 from yabi.backend.exceptions import FileNotFoundError
 
@@ -60,26 +60,29 @@ DATE_FORMAT = '%Y-%m-%d'
 
 
 @authentication_required
-def tool(request, toolname, toolid=None):
-    # TODO does this user has access to this tool?
-    toolname_key = "%s-%s" % (cache_keyname(toolname), toolid or "")
+def tool(request, toolid):
+    toolname_key = "%s" % toolid
     page = cache.get(toolname_key)
 
     if page:
-        logger.debug("Returning cached page for tool:%s using key:%s " % (toolname, toolname_key))
+        logger.debug("Returning cached page for tool:%s using key:%s " % (toolid, toolname_key))
         return page
 
     try:
-        if toolid is None:
-            tool = ToolDesc.objects.get(name=toolname)
-        else:
-            tool = Tool.objects.get(id=toolid, desc__name=toolname)
-
+        user = request.user.user
+        tool = Tool.objects.get(
+            Q(id=toolid),
+            Q(backend__backendcredential__credential__user=user) | Q(backend__name="nullbackend"),
+            Q(fs_backend__backendcredential__credential__user=user) | Q(fs_backend__name="nullbackend"))
+        if not ToolSet.objects.filter(users=user, toolgrouping__tool=tool).exists():
+           raise ObjectDoesNotExist()
         response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
-        cache.set(toolname_key, response, 30)
-        return response
     except ObjectDoesNotExist:
-        return JsonMessageResponseNotFound("Object not found")
+        response = JsonMessageResponseNotFound("Object not found")
+
+    cache.set(toolname_key, response, 30)
+
+    return response
 
 
 @authentication_required

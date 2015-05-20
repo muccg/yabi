@@ -10,7 +10,33 @@ from django.contrib.auth.models import User as DjangoUser
 from django.core.cache import cache
 
 
-class WsMenuTest(DjangoTestClientTestCase):
+class AddNewToolMixin(object):
+
+    def add_new_tool(self):
+        admin = User.objects.get(name=ADMIN_USER)
+        backend = Backend.objects.get(name='Local Execution')
+        fs_backend = Backend.objects.get(name='nullbackend')
+        self.cred = Credential.objects.create(description="test cred", user=admin, username="admin")
+        self.bc = BackendCredential.objects.create(backend=backend, credential=self.cred)
+        desc = ToolDesc.objects.create(name='new-tool')
+        tool = Tool.objects.create(desc=desc, backend=backend, fs_backend=fs_backend)
+        self.test_tset = ToolSet.objects.create(name='test')
+        self.test_tset.users.add(admin)
+        select_data = ToolGroup.objects.get(name='select data')
+        select_data.toolgrouping_set.create(tool_set=self.test_tset, tool=tool)
+
+        def cleanup():
+            tool.delete()
+            desc.delete()
+            self.test_tset.delete()
+            self.cred.delete()
+            self.bc.delete()
+        self.addCleanup(cleanup)
+
+        return tool
+
+
+class WsMenuTest(DjangoTestClientTestCase, AddNewToolMixin):
     def setUp(self):
         DjangoTestClientTestCase.setUp(self)
         self.tool = None
@@ -53,34 +79,6 @@ class WsMenuTest(DjangoTestClientTestCase):
         user_menu = self.client.get('/ws/menu')
         self.assertNotEqual(admin_menu.content, user_menu.content,
                             "Shouldn't get the same response from cache")
-
-    def add_new_tool(self):
-        admin = User.objects.get(name='admin')
-        backend = Backend.objects.get(name='Local Execution')
-        fs_backend = Backend.objects.get(name='nullbackend')
-        cred, cred_created = Credential.objects.get_or_create(description="test",
-                                                              user=admin, username="admin")
-        bc, bc_created = BackendCredential.objects.get_or_create(backend=backend, credential=cred)
-        bc2, bc2_created = BackendCredential.objects.get_or_create(backend=fs_backend, credential=cred)
-        desc, created = ToolDesc.objects.get_or_create(name='new-tool')
-        tool = Tool.objects.create(desc=desc, backend=backend, fs_backend=fs_backend)
-        test_tset = ToolSet.objects.create(name='test')
-        test_tset.users.add(admin)
-        select_data = ToolGroup.objects.get(name='select data')
-        select_data.toolgrouping_set.create(tool_set=test_tset, tool=tool)
-
-        def cleanup():
-            tool.delete()
-            desc.delete()
-            test_tset.delete()
-            ToolSet.objects.filter(name='test').delete()
-            if cred_created:
-                cred.delete()
-            if bc_created:
-                bc.delete()
-        self.addCleanup(cleanup)
-
-        return desc
 
 
 class TestWorkflowNameMunging(unittest.TestCase):
@@ -244,3 +242,33 @@ class ShareWorkflowTests(DjangoTestClientTestCase):
         self.login_fe('otheruser')
         response = self.share_workflow(self.workflow.pk)
         self.assertEqual(response.status_code, 403)
+
+
+class GetToolTest(DjangoTestClientTestCase, AddNewToolMixin):
+    def setUp(self):
+        DjangoTestClientTestCase.setUp(self)
+        self.tool = self.add_new_tool()
+        cache.clear()
+        self.login_fe(ADMIN_USER)
+
+    def test_tool_is_returned(self):
+        response = self.client.get('/ws/tool/%s' % self.tool.pk)
+        self.assertEqual(response.status_code, 200, 'Should be able to get tool')
+        tool = json.loads(response.content)['tool']
+        self.assertEqual(tool['display_name'], 'new-tool')
+
+    def test_tool_isnt_returned_if_no_backend_credential_for_user(self):
+        # Changing the credential to belong to the other user
+        demo = User.objects.get(name='demo')
+        self.cred.user = demo
+        self.cred.save()
+        response = self.client.get('/ws/tool/%s' % self.tool.pk)
+        self.assertEqual(response.status_code, 404, 'Should not be able to get tool')
+ 
+    def test_tool_isnt_returned_if_not_in_users_toolset(self):
+        # Remove the user from the toolset
+        admin = User.objects.get(name=ADMIN_USER)
+        self.test_tset.users.remove(admin)
+        response = self.client.get('/ws/tool/%s' % self.tool.pk)
+        self.assertEqual(response.status_code, 404, 'Should not be able to get tool')
+        self.test_tset.users.add(admin)

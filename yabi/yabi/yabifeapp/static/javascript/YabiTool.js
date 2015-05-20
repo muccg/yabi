@@ -194,21 +194,21 @@ YabiTool.prototype.matchesFilter = function(needle) {
 var YabiToolCache = (function() {
   var tools = {};
 
-  var cacheKey = function(name, id) {
-    return name + "-" + id;
+  var cacheKey = function(id) {
+    return id;
   };
 
-  var toolUrl = function(name, id) {
-    return appURL + 'ws/tool/' + encodeURIComponent(name) + '/' + id;
+  var toolUrl = function(id) {
+    return appURL + 'ws/tool/' + id ;
   };
 
   return {
-    get: function(name, id, success, failure) {
-      var key = cacheKey(name, id);
+    get: function(id, success, failure) {
+      var key = cacheKey(id);
       if (_.has(tools, key)) {
         window.setTimeout(function() { success(tools[key]); }, 0);
       } else {
-        Y.io(toolUrl(name, id), {
+        Y.io(toolUrl(id), {
           on: {
             success: function(transId, o) {
               tools[key] = o;

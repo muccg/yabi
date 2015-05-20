@@ -23,9 +23,8 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
 import json
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings

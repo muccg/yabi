@@ -159,7 +159,7 @@ YabiJob.prototype.hydrate = function() {
     self.hydrateResponse(o);
   };
 
-  YabiToolCache.get(this.toolName, this.toolId, callback, callback);
+  YabiToolCache.get(this.toolId, callback, callback);
 };
 
 
