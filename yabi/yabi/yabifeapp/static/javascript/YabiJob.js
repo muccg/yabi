@@ -153,13 +153,7 @@ YabiJob.prototype.emittedFileTypes = function() {
  * performs an AJAX json fetch of all the tool details and data
  */
 YabiJob.prototype.hydrate = function() {
-  var self = this;
-
-  var callback = function(o) {
-    self.hydrateResponse(o);
-  };
-
-  YabiToolCache.get(this.toolId, callback, callback);
+  YabiToolCache.get(this.toolId, _.bind(this.hydrateResponse, this), _.bind(this.hydrateResponseFailed, this));
 };
 
 
@@ -293,7 +287,8 @@ YabiJob.prototype.deselectJob = function() {
  * renderLoadFailJob
  */
 YabiJob.prototype.renderLoadFailJob = function() {
-  this.jobNode.set("class", "loadFailJobContainer");
+  this.jobNode.replaceClass("jobContainer", "loadFailJobContainer");
+  this.jobNode.removeClass("selectedJobContainer");
   //hide the options panel
   this.optionsNode.hide();
   this.statusNode.hide();
@@ -696,17 +691,26 @@ YabiJob.prototype.hydrateResponse = function(o) {
   try {
     payload = Y.JSON.parse(o.responseText);
     this.failLoad = false;
-  } catch (e) {
-    this.valid = false;
-    this.failLoad = true;
-    this.displayName = "(tool '" + this.toolName + "' failed to load)";
-    this.updateTitle();
-    this.renderLoadFailJob();
-
-    YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-  }
-
-  if (payload) {
     this.solidify(payload);
+  } catch (e) {
+    this.hydrateResponseFailed(o);
   }
+};
+
+
+YabiJob.prototype.hydrateResponseFailed = function(o) {
+  var payload = null;
+  this.valid = false;
+  this.failLoad = true;
+  var msg = "Tool '" + this.toolName + "' failed to load";
+  if (o.status === 403) {
+      var msg = "You have no access to tool '" + this.toolName  + "'";
+  } else if (o.status === 404) {
+      var msg = "Tool '" + this.toolName + "' not found";
+  }
+  this.displayName = "(" + msg + ")";
+  this.updateTitle();
+  this.renderLoadFailJob();
+
+  YAHOO.ccgyabi.widget.YabiMessage.fail(msg);
 };
