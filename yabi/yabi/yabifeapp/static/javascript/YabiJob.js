@@ -704,7 +704,7 @@ YabiJob.prototype.hydrateResponseFailed = function(o) {
   this.failLoad = true;
   var msg = "Tool '" + this.toolName + "' failed to load";
   if (o.status === 403) {
-      var msg = "You have no access to tool '" + this.toolName  + "'";
+      var msg = "You don't have access to tool '" + this.toolName  + "'";
   } else if (o.status === 404) {
       var msg = "Tool '" + this.toolName + "' not found";
   }
