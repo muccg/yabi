@@ -153,7 +153,9 @@ YabiJob.prototype.emittedFileTypes = function() {
  * performs an AJAX json fetch of all the tool details and data
  */
 YabiJob.prototype.hydrate = function() {
-  YabiToolCache.get(this.toolId, _.bind(this.hydrateResponse, this), _.bind(this.hydrateResponseFailed, this));
+  YabiToolCache.get(this.toolId,
+                    _.bind(this.hydrateResponse, this),
+                    _.bind(this.hydrateResponseFailed, this));
 };
 
 
@@ -704,7 +706,7 @@ YabiJob.prototype.hydrateResponseFailed = function(o) {
   this.failLoad = true;
   var msg = "Tool '" + this.toolName + "' failed to load";
   if (o.status === 403) {
-      var msg = "You don't have access to tool '" + this.toolName  + "'";
+      var msg = "You don't have access to tool '" + this.toolName + "'";
   } else if (o.status === 404) {
       var msg = "Tool '" + this.toolName + "' not found";
   }

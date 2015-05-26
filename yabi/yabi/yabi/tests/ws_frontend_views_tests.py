@@ -269,7 +269,7 @@ class GetToolTest(DjangoTestClientTestCase, AddNewToolMixin):
         self.cred.save()
         response = self.client.get('/ws/tool/%s' % self.tool.pk)
         self.assertEqual(response.status_code, 403, 'Should not be able to get tool')
- 
+
     def test_forbidden_is_returned_if_not_in_users_toolset(self):
         # Remove the user from the toolset
         admin = User.objects.get(name=ADMIN_USER)

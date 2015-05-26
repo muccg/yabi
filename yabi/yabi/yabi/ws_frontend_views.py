@@ -38,7 +38,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadReque
 from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabi.yabi.models import User, Credential, BackendCredential
-from yabi.yabi.models import ToolSet, ToolGrouping, Tool, Backend
+from yabi.yabi.models import ToolGrouping, Tool, Backend
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
@@ -74,13 +74,8 @@ def tool(request, toolid):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-    if not (tool.backend.name == "nullbackend" or tool.backend.backendcredential_set.filter(credential__user=user).exists()):
-       return JsonMessageResponseForbidden("User does not have access to the tool")
-    if not (tool.fs_backend.name == "nullbackend" or tool.fs_backend.backendcredential_set.filter(credential__user=user).exists()):
-       return JsonMessageResponseForbidden("User does not have access to the tool")
-
-    if not ToolSet.objects.filter(users=user, toolgrouping__tool=tool).exists():
-       return JsonMessageResponseForbidden("User does not have access to the tool")
+    if not tool.does_user_have_access_to(user):
+        return JsonMessageResponseForbidden("User does not have access to the tool")
 
     response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
     cache.set(toolname_key, response, 30)

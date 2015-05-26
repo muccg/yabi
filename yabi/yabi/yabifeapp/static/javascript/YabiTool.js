@@ -199,7 +199,7 @@ var YabiToolCache = (function() {
   };
 
   var toolUrl = function(id) {
-    return appURL + 'ws/tool/' + id ;
+    return appURL + 'ws/tool/' + id;
   };
 
   return {

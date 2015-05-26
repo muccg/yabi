@@ -260,6 +260,8 @@ class EngineJob(Job):
         self.tool = Tool.objects.get(id=job_dict["toolId"], desc__name=job_dict["toolName"])
         if not self.tool.enabled:
             raise InvalidRequestError("Can't process workflow with disabled tool '%s'" % self.tool.name)
+        if not self.tool.does_user_have_access_to(self.user):
+            raise InvalidRequestError("Can't process workflow with inaccessible tool '%s'" % self.tool.name)
 
         # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.
         # that will be resolved later when the stagein is created during the walk

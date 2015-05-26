@@ -207,8 +207,22 @@ class Tool(Base):
     lcopy_supported.help_text = "If this tool should use local copies on supported backends where appropriate."
     link_supported.help_text = "If this tool should use symlinks on supported backends where appropriate."
 
+    @property
+    def name(self):
+        return self.desc.name
+
     def get_display_name(self):
         return self.display_name or self.desc.name
+
+    def does_user_have_access_to(self, user):
+        if not (self.backend.name == "nullbackend" or self.backend.backendcredential_set.filter(credential__user=user).exists()):
+            return False
+        if not (self.fs_backend.name == "nullbackend" or self.fs_backend.backendcredential_set.filter(credential__user=user).exists()):
+            return False
+        if not ToolSet.objects.filter(users=user, toolgrouping__tool=self).exists():
+            return False
+
+        return True
 
     def tool_dict(self):
         output = self.desc.tool_dict()
