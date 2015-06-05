@@ -6,104 +6,43 @@
 Adding Tools
 ============
 
-All tools that you wish to run through Yabi must me installed on the machine where they will be executed.
+All tools that you wish to run through Yabi must be installed on the machine where they will be executed.
 Yabi can run any command line tool based on a description of the tool stored in the Yabi Tool table.
 
-When you add a tool to the Yabi Tool table there are a number of fields to fill out. We explain each
-of them here:
+When you add a tool to the Yabi Tool table there are a number of
+fields to fill out. A tool definition is split into two objects:
+
+1. A description of the tool and the parameters it accepts (*ToolDesc*)
+2. Information about how to run the tool on a backend (*Tool*)
+
+Both objects are required to use a tool. A single tool description can
+be used on multiple execution backends.
 
 
-Tool Fields
------------
+Tool Description
+----------------
 
-Name
-^^^^
++---------------+-----------------------------------------------------------+
+| **Field**     | **Meaning**                                               |
++---------------+-----------------------------------------------------------+
+| Name          | A unique name used for identification in the database.    |
++---------------+-----------------------------------------------------------+
+| Description   | The description of the tool that will be seen by the      |
+|               | user.                                                     |
++---------------+-----------------------------------------------------------+
+| Accepts Input | If checked, this tool will accept inputs from prior tools |
+|               | rather than presenting file select widgets. This should   |
+|               | usually be checked.                                       |
++---------------+-----------------------------------------------------------+
+| Tool Output   | This is list of all file extension patterns that this     |
+| Extensions    | tool will output. You can enter patterns either           |
+|               | inline by clicking the green plus beside the              |
+|               | extension list or via the Yabi File Extension             |
+|               | table. The extensions should be entered using a           |
+|               | `Unix Glob`_ pattern such as ``*.txt``.                   |
++---------------+-----------------------------------------------------------+
 
-A unique name used for identification in the database.
-
-Display Name
-^^^^^^^^^^^^
-
-The tool name that the user will see.
-
-Path
-^^^^
-
-The path to the binary for this file. This will often just be binary name but can be a full path.
-
-Description
-^^^^^^^^^^^
-
-The description of the tool that will be seen by the user.
-
-Enabled
-^^^^^^^
-
-If checked the tool will appear to users, otherwise it will not.
-
-Backend
-^^^^^^^
-
-The execution backend where this tool will be run.
-
-FS Backend
-^^^^^^^^^^
-
-The file system associated with the execution backend.
-
-Accepts Input
-^^^^^^^^^^^^^
-
-If checked, this tool will accept inputs from prior tools rather than presenting file select widgets. This should usually be checked.
-
-CPUs
-^^^^
-
-The number of cpus that should be requested in the submission script when running this tool.
-
-Walltime
-^^^^^^^^
-
-The walltime that should be requested in the submission script when running this tool.
-
-Module
-^^^^^^
-
-Yabi supports the use of the `Environment Modules <http://modules.sourceforge.net/>`_ project to manage the 
-dynamic modification of a user's environment via modulefiles. If you are using this system you can add
-a comma-separated list of modules that should be loaded when running this tool.
-
-Queue
-^^^^^
-
-The queue that should be requested in the submission script when running this tool.
-
-Max memory
-^^^^^^^^^^
-
-The maximum memory that should be requested in the submission script when running this tool.
-
-Job type
-^^^^^^^^
-
-The job type that should be requested in the submission script when running this tool.
-
-Submission
-^^^^^^^^^^
-
-Submission template to be used when submitting a task running this tool. Please see :ref:`submissiontemplates`.
-
-Lcopy supported, Link supported
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If the backend this tool will run on supports local copy or symbolic link, check these boxes to make the tool use local copy or
-symlink. See also :ref:`Local Copy and Link <localcopyandlink>`.
-
-Tool Output Extensions
-^^^^^^^^^^^^^^^^^^^^^^
-This is list of all file extension patterns that this tool will output. You can enter patterns either inline by clicking the
-green plus beside the extension list or via the Yabi File Extension table. The extensions should be entered using a 
-`Unix Glob <http://en.wikipedia.org/wiki/Glob_(Unix)>`_ pattern such as ``*.txt``.
+.. _`Unix Glob`: http://en.wikipedia.org/wiki/Glob_(Unix)
 
 
 Tool Parameter Fields
@@ -197,7 +136,7 @@ Specifies how to deal with files that match the accepted filetypes setting.
 Use Output Filename
 ^^^^^^^^^^^^^^^^^^^
 
-You can set a tool in Yabi to name its output file based on an input file from another parameter. i.e. If your tool runs like this: 
+You can set a tool in Yabi to name its output file based on an input file from another parameter. i.e. If your tool runs like this:
 ``mytool -i inputfile.txt`` and produces a ``.html`` output you can set Use Output Filename to ``-i`` and your output will be named
 ``inputfile.txt.html``. When entering your tool you should enter all other parameters first, save the record, edit it again and set this
 parameter. That way the dropdown select widget only shows relevant switches.
@@ -205,6 +144,61 @@ parameter. That way the dropdown select widget only shows relevant switches.
 Accepted Filetypes
 ^^^^^^^^^^^^^^^^^^
 The extensions of accepted filetypes for this switch. When searching for input files Yabi will only consider those
-that match extensions in this list. Again, the extensions should be entered using a 
+that match extensions in this list. Again, the extensions should be entered using a
 `Unix Glob <http://en.wikipedia.org/wiki/Glob_(Unix)>`_ pattern such as ``*.txt``.
 
+
+Tool
+----
+
+A *Tool* object links a tool description and an execution backend for
+the tool to run on.
+
++---------------+-----------------------------------------------------------+
+| **Field**     | **Meaning**                                               |
++---------------+-----------------------------------------------------------+
+| Tool          | The tool description which should be used for this tool.  |
++---------------+-----------------------------------------------------------+
+| Path          | The path to the binary for this file. This will often     |
+|               | just be binary name but can be a full path.               |
++---------------+-----------------------------------------------------------+
+| Display Name  | The tool name that the user will see.                     |
++---------------+-----------------------------------------------------------+
+| Enabled       | If checked the tool will appear to users, otherwise it    |
+|               | will not.                                                 |
++---------------+-----------------------------------------------------------+
+| Exec Backend  | The execution backend where this tool will be run.        |
++---------------+-----------------------------------------------------------+
+| FS Backend    | The file system associated with the execution backend.    |
++---------------+-----------------------------------------------------------+
+| CPUs          | The number of cpus that should be requested in the        |
+|               | submission script when running this tool.                 |
++---------------+-----------------------------------------------------------+
+| Walltime      | The walltime that should be requested in the submission   |
+|               | script when running this tool.                            |
++---------------+-----------------------------------------------------------+
+| Module        | Yabi supports the use of the `Environment Modules`_       |
+|               | project to manage the dynamic modification of a user's    |
+|               | environment via modulefiles. If you are using this system |
+|               | you can add a comma-separated list of modules that should |
+|               | be loaded when running this tool.                         |
++---------------+-----------------------------------------------------------+
+| Queue         | The queue that should be requested in the submission      |
+|               | script when running this tool.                            |
++---------------+-----------------------------------------------------------+
+| Max memory    | The maximum memory that should be requested in the        |
+|               | submission script when running this tool.                 |
++---------------+-----------------------------------------------------------+
+| Job type      | The job type that should be requested in the submission   |
+|               | script when running this tool.                            |
++---------------+-----------------------------------------------------------+
+| Submission    | Submission template to be used when submitting a task     |
+|               | running this tool. Please see :ref:`submissiontemplates`. |
++---------------+-----------------------------------------------------------+
+| Lcopy         | If the backend this tool will run on supports local copy  |
+| supported,    | or symbolic link, check these boxes to make the tool use  |
+| Link          | local copy orsymlink. See also                            |
+| supported     | :ref:`Local Copy and Link <localcopyandlink>`.            |
++---------------+-----------------------------------------------------------+
+
+.. _`Environment Modules`: http://modules.sourceforge.net/

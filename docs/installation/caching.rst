@@ -4,29 +4,17 @@
 
 .. _caching:
 
-Caching
-=======
+Caching and Sessions
+====================
 
-Yabi makes use of the Django caching mechanisms so you should also refer to their documentation:
+By default Yabi uses database caching and file-based sessions but we recommend using memcached for both.
 
-`https://docs.djangoproject.com/en/dev/topics/cache/ <https://docs.djangoproject.com/en/dev/topics/cache/>`_
+Changing both caching and session to memcached is therefore easy. Assuming you already have one or more memcached servers ready to go, all you need to do is open ``/etc/yabiadmin/yabiadmin.conf`` in your editor and set the ``memcache`` variable to a space-separated list of memcache servers.
 
-By default Yabi uses database caching but for any system that is in production use we would recommend using
-memcached. To do so you would need to have memcached installed and running and then set the ``memcache`` config
-variable to a space-separated list of memcache servers.
+This will make Yabi switch to memcached for both caching and sessions.
 
-See :ref:`settings`
-
-
-.. index::
-    single: session
-
-Session Engine
-==============
-
-Yabi uses a file-based session engine by default. However, in production you should look at using a memcache based
-session engine. See:
-
-`https://docs.djangoproject.com/en/1.3/topics/http/sessions/ <https://docs.djangoproject.com/en/1.3/topics/http/sessions/>`_
-
+See:
+  * :ref:`settings`
+  * `Django caching <https://docs.djangoproject.com/en/dev/topics/cache/>`_
+  * `Django sessions <https://docs.djangoproject.com/en/1.3/topics/http/sessions/>`_
 

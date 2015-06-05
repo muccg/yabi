@@ -9,7 +9,12 @@ from ..migrationutils import *
 import six
 
 def homedir():
-    return "%s%s" % (os.environ.get('HOME', '/tmp'), '/')
+    if os.environ.get('USER') == 'root':
+        homedir = '/tmp'
+    else:
+        homedir = os.environ.get('HOME', '/tmp')
+
+    return "%s/" % homedir
 
 class Migration(DataMigration):
 

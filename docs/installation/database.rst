@@ -1,38 +1,33 @@
-.. index::
-    pair: database; postgres
-    pair: database; mysql
-    pair: database; sqlite
+.. highlight:: console
+
+.. _database-setup:
 
 Database Setup
 ==============
 
-The Yabi codebase employs `South <http://south.aeracode.org/>`_ to manage schema and data migrations. Because of this when initially setting
-up your database you need only create an empty data base called yabi_prod and grant access.
-From there the install process will create the schema, insert setup data, create 
-initial users etc.
+We assume that you have a database server (preferably Postgres) installed, that is accessible from the server you're performing the Yabi installation on.
 
-To change the database that Yabi points at you will need to alter your database settings
-in the Django settings file. For more details see :ref:`settings`.
+Create the Yabi database
+------------------------
 
-.. index::
-   single: mysql
+Please create a database (ex. ``yabi_prod``) that will be used by the Yabi application.
+We recommend creating a user called ``yabiapp`` with no special privileges that will be the owner of the database.
 
-MySQL
-^^^^^
-Ensure service is started:
+Configure Yabi to use Yabi database
+-----------------------------------
 
- ``$ /etc/init.d/mysqld start``
+To change the database that Yabi points at you will need to alter the Yabi settings file.
+Open up ``/etc/yabi/yabi.conf`` in your editor and make sure the variables in the *database options* section (``dbserver``, ``dbname``, ``dbuser`` etc.) are set correctly.
 
-Create databases required:
+For more details see :ref:`settings`.
 
- ``$ mysql -uroot -e "create database yabi_prod default charset=UTF8;"``
+Initialise the Yabi database
+----------------------------
 
+The Yabi codebase employs `South <http://south.aeracode.org/>`_ to manage schema and data migrations.
+To initialise the database::
 
- Initialise Yabi database:
-::
- $ export PYTHONPATH=/usr/local/webapps/yabi:/usr/local/webapps/yabi/lib/:$PYTHONPATH
- $ export DJANGO_SETTINGS_MODULE=defaultsettings.yabi
- $ /usr/local/webapps/yabi/bin/django-admin.py syncdb
+ # yabiadmin syncdb --noinput
+ # yabiadmin migrate
 
-Do not create users at this point.
- ``$ /usr/local/webapps/yabi/bin/django-admin.py migrate``
+These will create the schema, insert setup data, and create initial users.

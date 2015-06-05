@@ -5,7 +5,7 @@
 .. _settings:
 
 Settings File
-=============
+~~~~~~~~~~~~~
 
 As Yabi uses the Django web application framework, much of its configuration is
 through the settings.py file. For most settings in this file you can consult
@@ -34,5 +34,5 @@ A list of variables you would like to edit for a usual Yabi server are:
 ===============  ============
 
 If you need more control you can always edit your ``/etc/yabi/settings.py``
-file directly.
+file directly. The settings in this file will overwrite the settings in ``yabi/settings.py`` and the config options you set in ``/etc/yabi/yabi.conf``.
 
