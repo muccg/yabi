@@ -1,13 +1,33 @@
+.. highlight:: console
+
 .. _database-setup:
 
 Database Setup
 ==============
 
-The Yabi codebase employs `South <http://south.aeracode.org/>`_ to manage schema and data migrations. Because of this when initially setting
-up your database you need only create an empty database (recommended name yabi_prod) and change settings so that Yabi will point to it.
-From there the install process will create the schema, insert setup data, create 
-initial users etc.
+We assume that you have a database server (preferably Postgres) installed, that is accessible from the server you're performing the Yabi installation on.
 
-To change the database that Yabi points at you will need to alter your database settings
-in the Django settings file. For more details see :ref:`settings`.
+Create the Yabi database
+------------------------
 
+Please create a database (ex. ``yabi_prod``) that will be used by the Yabi application.
+We recommend creating a user called ``yabiapp`` with no special privileges that will be the owner of the database.
+
+Configure Yabi to use Yabi database
+-----------------------------------
+
+To change the database that Yabi points at you will need to alter the Yabi settings file.
+Open up ``/etc/yabiadmin/yabiadmin.conf`` in your editor and make sure the variables in the *database options* section (``dbserver``, ``dbname``, ``dbuser`` etc.) are set correctly.
+
+For more details see :ref:`settings`.
+
+Initialise the Yabi database
+----------------------------
+
+The Yabi codebase employs `South <http://south.aeracode.org/>`_ to manage schema and data migrations.
+To initialise the database::
+
+ # yabiadmin syncdb --noinput
+ # yabiadmin migrate
+
+These will create the schema, insert setup data, and create initial users.

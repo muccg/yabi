@@ -30,8 +30,7 @@ The Centre for Comparative Genomics has been addressing the problem of facilitat
 through various iterations to address this issue. Now we have drawn on our experience in HPC and Internet based solutions to produce Yabi, an intuitive abstraction of compute
 and data environments.
 
-.. index::
-    single: yabi; architecture
+.. _architecture:
 
 Architecture
 ------------
@@ -75,6 +74,11 @@ The Yabi Backend Server makes use of the Celery Task Engine to queue user jobs b
 a message broker ( typically RabbitMQ but this is configurable.)
 
 The Yabi Backend server is responsible for the communication with individual data and compute resources.
+
+Source code
+-----------
+
+The Yabi source code is available on Bitbucket: `https://bitbucket.org/ccgmurdoch/yabi <https://bitbucket.org/ccgmurdoch/yabi>`_.
 
 Licence
 -------

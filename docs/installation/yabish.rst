@@ -5,13 +5,8 @@
 Setting up Yabish
 -----------------
 
-Yabish is installed via yabi-shell RPM.
+Yabish is the command line client that you might want to install on machines used by end users of Yabi.
 
-.. index::
-    single: yabish
-
-Yabish ( The command line client )
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Make sure you've added the CCG repo as described in :ref:`extra-repos`.
 Then install the ``yabi-shell`` package::
 
