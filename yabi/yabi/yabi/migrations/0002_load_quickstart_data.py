@@ -66,7 +66,7 @@ class Migration(DataMigration):
                                 backend=yabi_backend_1, fs_backend=yabi_backend_1,
                                 accepts_input=False,
                                 cpus='',
-                                walltime='',module='',queue='',max_memory='',job_type='',lcopy=False, link=False )
+                                walltime='',module='',queue='',max_memory='',job_type='',lcopy=True, link=True )
         yabi_tool_1.save()
         
         yabi_tooloutputextension_1 = yabi_tooloutputextension( yabi_tool_1, yabi_fileextension_1 )
@@ -195,8 +195,8 @@ ${command}
                                   queue='',
                                   max_memory='',
                                   job_type='',
-                                  lcopy=False,
-                                  link=False
+                                  lcopy=True,
+                                  link=True
                                   )
         yabi_tool_cat.save()
 
@@ -246,8 +246,8 @@ ${command}
                                   queue='',
                                   max_memory='',
                                   job_type='',
-                                  lcopy=False,
-                                  link=False
+                                  lcopy=True,
+                                  link=True
                                   )
         yabi_tool_hostname.save()
 
