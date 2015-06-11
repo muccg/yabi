@@ -16,5 +16,5 @@ This will make Yabi switch to memcached for both caching and sessions.
 See:
   * :ref:`settings`
   * `Django caching <https://docs.djangoproject.com/en/dev/topics/cache/>`_
-  * `Django sessions <https://docs.djangoproject.com/en/1.3/topics/http/sessions/>`_
+  * `Django sessions <https://docs.djangoproject.com/en/dev/topics/http/sessions/>`_
 

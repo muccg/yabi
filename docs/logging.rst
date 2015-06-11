@@ -12,4 +12,4 @@ name of the handler into the yabiadmin logger section. For further details consu
 
 `http://docs.python.org/library/logging.html <http://docs.python.org/library/logging.html>`_
 
-`https://docs.djangoproject.com/en/1.4/topics/logging/ <https://docs.djangoproject.com/en/1.4/topics/logging/>`_
+`https://docs.djangoproject.com/en/dev/topics/logging/ <https://docs.djangoproject.com/en/dev/topics/logging/>`_
