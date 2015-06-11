@@ -68,10 +68,20 @@ class SelectFileBackend(FSBackend):
 
         fsbackend = FSBackend.urifactory(self.yabiusername, stagein.src)
         if stagein.method == 'lcopy':
-            return fsbackend.local_copy(stagein.src, dst_uri)
+            if stagein.src.endswith('/'):
+                return fsbackend.local_copy_recursive(stagein.src, dst_uri)
+            else:
+                return fsbackend.local_copy(stagein.src, dst_uri)
 
         if stagein.method == 'link':
-            return fsbackend.symbolic_link(stagein.src, dst_uri)
+            if stagein.src.endswith('/'):
+                listing = fsbackend.ls(stagein.src).values()[0]
+                for entry in listing['files'] + listing['directories']:
+                    name, _, _, _ = entry
+                    fsbackend.symbolic_link(url_join(stagein.src, name), url_join(dst_uri, name))
+                return
+            else:
+                return fsbackend.symbolic_link(stagein.src, dst_uri)
 
         raise RuntimeError("Invalid stagein.method '%s' for stagein %s" %
                            (stagein.method, stagein.pk))

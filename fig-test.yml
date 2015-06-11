@@ -85,6 +85,7 @@ testhost:
 #    - TEST_CASES=/app/tests/fsbackend_tests.py:LocalfsBackendTests.test_ls_file
 #    - TEST_CASES=/app/tests/ssh_tests.py
 #    - TEST_CASES=/app/yabi/yabi/yabi/tests/ws_frontend_views_tests.py:WsMenuTest.test_menu_contains_new_tool
+#    - TEST_CASES=/app/tests/file_transfer_tests.py:FileUploadSmallFilesTest
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1

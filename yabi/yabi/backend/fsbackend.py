@@ -312,7 +312,10 @@ class FSBackend(BaseBackend):
                 return FSBackend.remote_file_copy(self.yabiusername, stagein.src, stagein.dst)
 
         if stagein.method == 'lcopy':
-            return self.local_copy(stagein.src, stagein.dst)
+            if stagein.src.endswith('/'):
+                return self.local_copy_recursive(stagein.src, stagein.dst)
+            else:
+                return self.local_copy(stagein.src, stagein.dst)
 
         if stagein.method == 'link':
             dst = stagein.dst
