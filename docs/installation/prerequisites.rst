@@ -34,9 +34,9 @@ We recommend using RabbitMQ as Celery's message broker. RabbitMQ requires Erlang
 To install RabbitMQ::
 
  # rpm --import https://www.rabbitmq.com/rabbitmq-signing-key-public.asc
- # yum install https://www.rabbitmq.com/releases/rabbitmq-server/v3.1.3/rabbitmq-server-3.1.3-1.noarch.rpm
+ # yum install https://www.rabbitmq.com/releases/rabbitmq-server/v3.5.3/rabbitmq-server-3.5.3-1.noarch.rpm
 
-Start the service with::
+Start the RabbitMQ service with::
 
- # /etc/init.d/rabbitmq-server start
+ # service rabbitmq-server start
 
