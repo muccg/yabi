@@ -186,13 +186,10 @@ if [ "$1" = 'runtests' ]; then
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
     NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
-    IGNORES="-I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -a !external_service"
+    IGNORES="-a !external_service"
 
     # Setting TEST_CASES in fig file allows you to choose tests
     : ${TEST_CASES="/app/tests /app/yabi/yabi"}
-
-    # tests want to import module tests
-    export PYTHONPATH=/app
 
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
     ${NOSETESTS} ${IGNORES} ${TEST_CASES} 2>&1 | tee /data/nosetests.log
