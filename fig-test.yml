@@ -98,6 +98,7 @@ testhost:
   links:
     - dbtest:db
     - webtest:web
+    - celerytest:celery
     - mqtest:mq
     - sshtest:ssh
     - s3test:s3
