@@ -64,6 +64,7 @@ rpmbuild() {
 
 
 runtests() {
+    rm -Rf data/tests
     mkdir -p data/tests
     chmod o+rwx data/tests
 
