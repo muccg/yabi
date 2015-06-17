@@ -4,72 +4,72 @@
             "parameterList": {
                 "parameter": [
                     {
-                        "valid": true, 
+                        "valid": true,
                         "value": [
                             {
-                                "path": [], 
-                                "type": "file", 
-                                "filename": "${FILENAME}", 
-                                "root": "localfs://demo@localhost${DIR}", 
+                                "path": [],
+                                "type": "file",
+                                "filename": "${FILENAME}",
+                                "root": "localfs://demo@localhost${DIR}",
                                 "pathComponents": [
                                     "localfs://demo@localhost${DIR}"
                                 ]
                             }
-                        ], 
+                        ],
                         "switchName": "files"
                     }
                 ]
-            }, 
-            "toolName": "fileselector", 
-            "valid": true, 
+            },
+            "toolName": "fileselector",
+            "valid": true,
             "jobId": 1
-        }, 
+        },
         {
             "parameterList": {
                 "parameter": [
                     {
-                        "valid": true, 
+                        "valid": true,
                         "value": [
                             {
-                                "type": "job", 
+                                "type": "job",
                                 "jobId": 1
                             }
-                        ], 
+                        ],
                         "switchName": "if"
-                    }, 
+                    },
                     {
-                        "valid": true, 
+                        "valid": true,
                         "value": [
                             "copied_by_dd"
-                        ], 
+                        ],
                         "switchName": "of"
                     }
                 ]
-            }, 
-            "toolName": "dd", 
-            "valid": true, 
+            },
+            "toolName": "dd",
+            "valid": true,
             "jobId": 2
-        }, 
+        },
         {
             "parameterList": {
                 "parameter": [
                     {
-                        "valid": true, 
+                        "valid": true,
                         "value": [
                             {
-                                "type": "job", 
+                                "type": "job",
                                 "jobId": 2
                             }
-                        ], 
+                        ],
                         "switchName": "inputfiles"
                     }
                 ]
-            }, 
-            "toolName": "cksum", 
-            "valid": true, 
+            },
+            "toolName": "cksum",
+            "valid": true,
             "jobId": 3
         }
-    ], 
-    "name": "dd chrome then cksum it", 
+    ],
+    "name": "dd a file then cksum it",
     "tags": []
 }

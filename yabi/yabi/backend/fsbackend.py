@@ -287,41 +287,60 @@ class FSBackend(BaseBackend):
             task.envvars_json = json.dumps(envvars)
             task.save()
 
-    def stage_in_files(self):
-        task_logger = create_task_logger(logger, self.task.pk)
+    def _create_working_dir_structure(self):
         self.mkdir(self.working_dir_uri())
         self.mkdir(self.working_input_dir_uri())
         self.mkdir(self.working_output_dir_uri())
 
+    def before_stage_in_files(self):
+        self._create_working_dir_structure()
+
+    def stage_in_files(self):
+        self.before_stage_in_files()
+        task_logger = create_task_logger(logger, self.task.pk)
         stageins = self.task.get_stageins()
         task_logger.info("About to stagein %d stageins", len(stageins))
         for stagein in stageins:
-            self.stage_in(stagein)
+            backend = FSBackend.urifactory(self.yabiusername, stagein.src)
+            backend.stage_in(stagein)
             if stagein.matches_filename(ENVVAR_FILENAME):
                 self.save_envvars(self.task, stagein.src)
 
     def stage_in(self, stagein):
         """Perform a single stage in."""
-        task_logger = create_task_logger(logger, self.task.pk)
+        task_logger = create_task_logger(logger, stagein.task.pk)
         task_logger.info("Stagein: %sing '%s' to '%s'", stagein.method, stagein.src, stagein.dst)
+
+        method = stagein.method
+        if method == 'link' and not self.link_supported:
+            method = 'lcopy'
+        if method == 'lcopy' and not self.lcopy_supported:
+            method = 'copy'
+        if stagein.method != method:
+            task_logger.info("Preferred stagein method '%s' not supported, changing it to '%s'", stagein.method, method)
+            stagein.method = method
+            stagein.save()
 
         if stagein.method == 'copy':
             if stagein.src.endswith('/'):
-                return FSBackend.remote_copy(self.yabiusername, stagein.src, stagein.dst)
+                FSBackend.remote_copy(self.yabiusername, stagein.src, stagein.dst)
             else:
-                return FSBackend.remote_file_copy(self.yabiusername, stagein.src, stagein.dst)
+                FSBackend.remote_file_copy(self.yabiusername, stagein.src, stagein.dst)
 
         if stagein.method == 'lcopy':
             if stagein.src.endswith('/'):
-                return self.local_copy_recursive(stagein.src, stagein.dst)
+                self.local_copy_recursive(stagein.src, stagein.dst)
             else:
-                return self.local_copy(stagein.src, stagein.dst)
+                self.local_copy(stagein.src, stagein.dst)
 
         if stagein.method == 'link':
-            dst = stagein.dst
             if stagein.src.endswith('/'):
-                dst = stagein.dst + os.path.basename(stagein.src[:-1])
-            return self.symbolic_link(stagein.src, dst)
+                listing = self.ls(stagein.src).values()[0]
+                for entry in listing['files'] + listing['directories']:
+                    name, _, _, _ = entry
+                    self.symbolic_link(url_join(stagein.src, name), url_join(stagein.dst, name))
+            else:
+                self.symbolic_link(stagein.src, stagein.dst)
 
     def stage_out_files(self):
         """
@@ -356,7 +375,13 @@ class FSBackend(BaseBackend):
     def clean_up_task(self):
         # remove working directory
         working_dir_backend = FSBackend.urifactory(self.yabiusername, self.working_dir_uri())
-        working_dir_backend.rm(self.working_dir_uri())
+        # Don't fail just because we can't delete the working dir
+        # We do log the error and proceed.
+        try:
+            working_dir_backend.rm(self.working_dir_uri())
+        except:
+            task_logger = create_task_logger(logger, self.task.pk)
+            task_logger.exception("Couldn't delete working dir '%s' of task %s.", self.working_dir_uri(), self.task.pk)
 
     def ls_recursive(self, uri):
         result = self.ls(uri)
