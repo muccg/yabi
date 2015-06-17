@@ -3,6 +3,7 @@ from .support import YabiTestCase, StatusResult, FileUtils, all_items, json_path
 from .fixture_helpers import admin
 import os
 import shutil
+from datetime import datetime
 
 class RewalkTest(YabiTestCase, FileUtils):
     '''
@@ -64,7 +65,8 @@ class RewalkTest(YabiTestCase, FileUtils):
         self.delete_on_exit(changed_json_file)
 
         self.prepare_json(wfl_json_file, changed_json_file, {
-            'DIR': localfs_dir, 'FILENAME': os.path.basename(filename)})
+            'DIR': localfs_dir, 'FILENAME': os.path.basename(filename),
+            'NOW': datetime.now().strftime("%Y-%m-%d %H-%M-%S")})
 
         result = self.yabi.run(['submitworkflow', '--backend', 'Local Execution',
                                 changed_json_file])

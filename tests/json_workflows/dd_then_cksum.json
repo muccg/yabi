@@ -70,6 +70,6 @@
             "jobId": 3
         }
     ],
-    "name": "dd a file then cksum it",
+    "name": "dd a file then cksum it (${NOW})",
     "tags": []
 }
