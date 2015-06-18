@@ -31,50 +31,13 @@ class SelectFileBackend(FSBackend):
     backend_desc = "Select file (\"null\" backend)"
     backend_auth = {}
 
-    def stage_in_files(self):
-        """
-        For the select backend stage in goes straight to stage out directory.
-        We do not create the working directory.
-        """
-        # we need to make the stageout directory so we can push the stage in files straight there
-        logger.debug('stage_in_files for SelectFileBackend, making stageout {0}'.format(self.task.stageout))
-        from yabi.backend.fsbackend import FSBackend
-        backend = FSBackend.urifactory(self.yabiusername, self.task.stageout)
-        backend.mkdir(self.task.stageout)
-
-        # do the stage in
-        stageins = self.task.get_stageins()
-        for stagein in stageins:
-            self.stage_in(stagein)
-
-    def stage_in(self, stagein):
-        """ For the select backend stage in goes straight to stage out directory"""
-        logger.debug('SelectFileBackend.stage_in {0} {1}'.format(stagein.method, stagein.src))
-        # we need to create the path to the destination file in the stageout area for the file copy
-        filename = stagein.src.rsplit('/', 1)[1]
-        dst_uri = url_join(self.task.stageout, filename)
-
-        # We have to determine the stagin method here again
-        # We don't actually copy to working_dir, so the method determined
-        # at task creation time can't be valid
-        stagein.method = self.task.determine_stagein_method(stagein.src, dst_uri)
-        stagein.save()
-
-        if stagein.method == 'copy':
-            if stagein.src.endswith('/'):
-                return FSBackend.remote_copy(self.yabiusername, stagein.src, dst_uri)
-            else:
-                return FSBackend.remote_file_copy(self.yabiusername, stagein.src, dst_uri)
-
-        fsbackend = FSBackend.urifactory(self.yabiusername, stagein.src)
-        if stagein.method == 'lcopy':
-            return fsbackend.local_copy(stagein.src, dst_uri)
-
-        if stagein.method == 'link':
-            return fsbackend.symbolic_link(stagein.src, dst_uri)
-
-        raise RuntimeError("Invalid stagein.method '%s' for stagein %s" %
-                           (stagein.method, stagein.pk))
+    def before_stage_in_files(self):
+        # For the select backend stage in goes straight to stage out directory.
+        # We do not create the working directory.
+        # We create the stageout directory and update the stageins with the new destination.
+        # The rest of the stagein is the same, so we just rely on the superclass to deal with it.
+        stageout_dir = self._create_stageout_dir()
+        self._update_stageins_with_new_destination(stageout_dir)
 
     def stage_out_files(self):
         """No stageout for select file backend"""
@@ -83,3 +46,29 @@ class SelectFileBackend(FSBackend):
     def clean_up_task(self):
         """No clean_up_task for select file backend"""
         return
+
+    # Implementation
+
+    def _create_stageout_dir(self):
+        logger.debug('stage_in_files for SelectFileBackend, making stageout {0}'.format(self.task.stageout))
+        from yabi.backend.fsbackend import FSBackend
+        backend = FSBackend.urifactory(self.yabiusername, self.task.stageout)
+        backend.mkdir(self.task.stageout)
+        return self.task.stageout
+
+    def _update_stageins_with_new_destination(self, new_destination):
+        stageins = self.task.get_stageins()
+        for stagein in stageins:
+            self._update_stagein_destination(stagein, new_destination)
+
+    def _update_stagein_destination(self, stagein, dst_uri):
+        if stagein.src.endswith('/'):
+            dst_uri = self.task.stageout
+        else:
+            filename = stagein.src.rsplit('/', 1)[1]
+            dst_uri = url_join(self.task.stageout, filename)
+
+        stagein.dst = dst_uri
+        # Destination changed so we have to determine the stagein method again
+        stagein.method = self.task.determine_stagein_method(stagein.src, stagein.dst)
+        stagein.save()
