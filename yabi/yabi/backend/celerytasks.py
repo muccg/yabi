@@ -91,13 +91,45 @@ def log_it(ctx_type):
     return logging_decorator
 
 
+# In June 2015 the python module names have been changed to drop the older yabiadmin
+# name in favour of just yabi.
+# Celery messages have the full python module of functions in them
+# (ex. yabiadmin.backend.celerytasks.create_jobs) so when people will upgrade to this
+# release they might have messages in the queue with the old package name.
+# To prevent this messages from being discarded (and therefore the Workflows associated
+# never ending) we provide a temporary fix.
+# celery_task is a decorator that delegates to the Celery @app.task decorater but it also
+# registers the tasks with the module names defined in OLD_CELERY_TASKS_MODULE_NAMES.
+# For details see: https://ccgmurdoch.atlassian.net/browse/YABI-564
+
+# TODO: this has to be disabled in a later release when we are sure the old names aren't used anymore.
+
+OLD_CELERY_TASKS_MODULE_NAMES = ('yabiadmin.backend.celerytasks',)
+
+
+def celery_task(*args, **kwargs):
+    def make_wrapper(**kwargs):
+        def inner_wrapper(fn):
+            for old_modname in OLD_CELERY_TASKS_MODULE_NAMES:
+                app.task(name='%s.%s' % (old_modname, fn.__name__), **kwargs)(fn)
+            return app.task(**kwargs)(fn)
+        return inner_wrapper
+
+    if kwargs:
+        # decorator received **kwargs, we have to return a decorator function
+        return make_wrapper(**kwargs)
+    else:
+        # we return a decorated function
+        return make_wrapper()(args[0])
+
+
 # Celery Tasks working on a Workflow
 
 def process_workflow(workflow_id):
     return chain(create_jobs.s(workflow_id) | process_jobs.s())
 
 
-@app.task
+@celery_task
 @log_it('workflow')
 def create_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
@@ -128,7 +160,7 @@ def _process_job(job):
     job_chain.apply_async()
 
 
-@app.task
+@celery_task
 @log_it('workflow')
 def process_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
@@ -141,7 +173,7 @@ def process_jobs(workflow_id):
         _process_job(job)
 
 
-@app.task
+@celery_task
 @log_it('workflow')
 def abort_workflow(workflow_id):
     wfl_logger = create_workflow_logger(logger, workflow_id)
@@ -156,7 +188,7 @@ def abort_workflow(workflow_id):
         abort_task.apply_async((task.pk,))
 
 
-@app.task
+@celery_task
 def on_workflow_completed(workflow_id):
     delete_all_syslog_messages(workflow_id)
 
@@ -164,7 +196,7 @@ def on_workflow_completed(workflow_id):
 # Celery Tasks working on a Job
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @log_it('job')
 def provision_fs_be(job_id):
     job_logger = create_job_logger(logger, job_id)
@@ -177,7 +209,7 @@ def provision_fs_be(job_id):
         raise
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @log_it('job')
 def provision_ex_be(job_id):
     job_logger = create_job_logger(logger, job_id)
@@ -190,7 +222,7 @@ def provision_ex_be(job_id):
         raise
 
 
-@app.task(max_retries=None, default_retry_delay=DYNBE_READY_POLL_INTERVAL)
+@celery_task(max_retries=None, default_retry_delay=DYNBE_READY_POLL_INTERVAL)
 @log_it('job')
 def poll_until_dynbes_ready(job_id):
     job_logger = create_job_logger(logger, job_id)
@@ -218,7 +250,7 @@ def poll_until_dynbes_ready(job_id):
         raise get_current_celery_task().retry()
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @log_it('job')
 def clean_up_dynamic_backends(job_id):
     job_logger = create_job_logger(logger, job_id)
@@ -238,7 +270,7 @@ def clean_up_dynamic_backends(job_id):
         raise get_current_celery_task().retry()
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @log_it('job')
 def create_db_tasks(job_id):
     if job_id is None:
@@ -276,7 +308,7 @@ def create_db_tasks(job_id):
         raise
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 def spawn_ready_tasks(job_id):
     if job_id is None:
         logger.info("spawn_ready_tasks received no job_id. Skipping processing.")
@@ -319,7 +351,7 @@ def spawn_ready_tasks(job_id):
         raise
 
 
-@app.task
+@celery_task
 def on_job_finished(job_id):
     job = Job.objects.get(pk=job_id)
     if job.has_dynamic_backend:
@@ -434,7 +466,7 @@ def skip_if_no_task_id(original_function):
     return decorated_function
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 @log_it('task')
@@ -447,7 +479,7 @@ def stage_in_files(task_id):
     return task_id
 
 
-@app.task(max_retries=MAX_CELERY_TASK_RETRIES)
+@celery_task(max_retries=MAX_CELERY_TASK_RETRIES)
 @retry_on_error
 @skip_if_no_task_id
 @log_it('task')
@@ -462,7 +494,7 @@ def submit_task(task_id):
     return task_id
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 @log_it('task')
@@ -477,7 +509,7 @@ def poll_task_status(task_id):
         raise
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 @log_it('task')
@@ -490,7 +522,7 @@ def stage_out_files(task_id):
     return task_id
 
 
-@app.task(max_retries=None)
+@celery_task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 @log_it('task')
@@ -503,7 +535,7 @@ def clean_up_task(task_id):
     change_task_status(task.pk, STATUS_COMPLETE)
 
 
-@app.task
+@celery_task
 @log_it('task')
 def abort_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
