@@ -17,7 +17,7 @@ AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|start|start_full|rpmbuild|rpm_publish|runtests|selenium|ci_staging)"
+    echo "Usage ./develop.sh (pythonlint|jslint|start|start_full|rpmbuild|dockerbuild_unstable|rpm_publish|runtests|selenium|ci_staging)"
     echo ""
 }
 
@@ -60,6 +60,13 @@ rpmbuild() {
     pip install fig
 
     fig --project-name yabi -f fig-rpmbuild.yml up
+}
+
+
+dockerbuild_unstable() {
+    cd docker/unstable
+    docker build -t muccg/yabi:unstable .
+    cd ../../
 }
 
 
@@ -157,6 +164,9 @@ start_full)
     ;;
 rpmbuild)
     rpmbuild
+    ;;
+dockerbuild_unstable)
+    dockerbuild_unstable
     ;;
 rpm_publish)
     ci_ssh_agent
