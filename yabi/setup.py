@@ -8,7 +8,7 @@ if 'INSTALL_ONLY_DEPENDENCIES' in os.environ:
     package_data = {}
     package_scripts = []
 else:
-    packages = ['yabi'] + ['yabi.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend']] + ['yabi.yabi.migrations', 'yabi.yabi.migrationutils', 'yabi.yabiengine.migrations', 'yabi.yabi.templatetags', 'yabi.yabifeapp.management', 'yabi.yabifeapp.management.commands', 'yabi.backend.cloud']
+    packages = ['yabi'] + ['yabi.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend', 'authbackends']] + ['yabi.yabi.migrations', 'yabi.yabi.migrationutils', 'yabi.yabiengine.migrations', 'yabi.yabi.templatetags', 'yabi.yabifeapp.management', 'yabi.yabifeapp.management.commands', 'yabi.backend.cloud']
 
     package_data = {
         '': ["%s/%s" % (dirglob, fileglob)
