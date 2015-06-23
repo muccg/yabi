@@ -7,13 +7,18 @@ ENV DEBIAN_FRONTEND noninteractive
 # Project specific deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
-  libldap2-dev \
   libpcre3 \
   libpcre3-dev \
   libpq-dev \
   libssl-dev \
   libxml2-dev \
   libxslt1-dev \
+  krb5-config \
+  krb5-user \
+  libkrb5-dev \
+  libssl-dev \
+  libsasl2-dev \
+  libldap2-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN env --unset=DEBIAN_FRONTEND
