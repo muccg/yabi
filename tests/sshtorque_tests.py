@@ -6,6 +6,7 @@ from yabi.yabi import models
 from socket import gethostname
 
 
+@unittest.skip('Needs Torque?')
 class SSHTorqueBackendTest(YabiTestCase):
 
     def setUp(self):

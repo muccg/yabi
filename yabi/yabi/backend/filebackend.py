@@ -158,7 +158,7 @@ class FileBackend(FSBackend):
 
     def symbolic_link(self, target_uri, link_uri):
         """symbolic link to target_uri called link_uri."""
-        logger.debug('symbolic_link {0} -> {1}'.format(link_uri, target_uri))
+        logger.debug('symbolic_link {0} -> {1}'.format(target_uri, link_uri))
         target_scheme, target_parts = uriparse(target_uri)
         link_scheme, link_parts = uriparse(link_uri)
         target = target_parts.path
