@@ -17,7 +17,7 @@ AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|start|start_full|rpmbuild|dockerbuild_unstable|rpm_publish|runtests|selenium|ci_staging)"
+    echo "Usage ./develop.sh (pythonlint|jslint|start|start_full|rpmbuild|dockerbuild_unstable|rpm_publish|runtests|selenium|ci_staging|staging_selenium)"
     echo ""
 }
 
