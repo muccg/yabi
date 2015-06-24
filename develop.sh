@@ -120,6 +120,19 @@ selenium() {
 }
 
 
+staging_selenium() {
+    mkdir -p data/selenium
+    chmod o+rwx data/selenium
+
+    make_virtualenv
+    . ${VIRTUALENV}/bin/activate
+    pip install fig
+
+    fig --project-name yabi -f fig-staging-selenium.yml build
+    fig --project-name yabi -f fig-staging-selenium.yml up
+}
+
+
 # lint using flake8
 pythonlint() {
     make_virtualenv
@@ -182,6 +195,9 @@ ci_staging)
 ci_staging_tests)
     ci_ssh_agent
     ci_staging_tests
+    ;;
+staging_selenium)
+    staging_selenium
     ;;
 selenium)
     selenium

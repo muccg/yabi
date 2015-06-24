@@ -201,6 +201,9 @@ fi
 if [ "$1" = 'lettuce' ]; then
     echo "[Run] Starting lettuce"
 
+    # Hack to make sure the selenium stack is running before we hit it
+    sleep 10
+
     django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml 2>&1 | tee /data/lettuce.log
     exit $?
 fi
