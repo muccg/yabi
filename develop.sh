@@ -116,6 +116,7 @@ selenium() {
     . ${VIRTUALENV}/bin/activate
     pip install fig
 
+    ( fig --project-name yabi -f fig-selenium.yml rm --force || exit 0 )
     fig --project-name yabi -f fig-selenium.yml up
 }
 
@@ -128,7 +129,7 @@ staging_selenium() {
     . ${VIRTUALENV}/bin/activate
     pip install fig
 
-    fig --project-name yabi -f fig-staging-selenium.yml build
+    ( fig --project-name yabi -f fig-staging-selenium.yml rm --force || exit 0 )
     fig --project-name yabi -f fig-staging-selenium.yml up
 }
 
