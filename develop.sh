@@ -13,11 +13,16 @@ ACTION="$1"
 PROJECT_NAME='yabi'
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
+AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (pythonlint|jslint|start|start_full|rpmbuild|dockerbuild_unstable|rpm_publish|runtests|selenium|ci_staging|staging_selenium)"
+    echo "Usage ./develop.sh (start|start_full|runtests|selenium)"
+    echo "Usage ./develop.sh (pythonlint|jslint)"
+    echo "Usage ./develop.sh (ci_docker_staging|docker_staging_selenium|ci_rpm_staging|docker_rpm_staging_selenium)"
+    echo "Usage ./develop.sh (dockerbuild_unstable)"
+    echo "Usage ./develop.sh (rpmbuild|rpm_publish)"
     echo ""
 }
 
@@ -92,7 +97,7 @@ rpm_publish() {
 
 
 # build a docker image and start stack on staging using fig
-ci_staging() {
+ci_docker_staging() {
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/docker/unstable'
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/data'
     ccg ${AWS_STAGING_INSTANCE} drun:'chmod o+w yabi/data'
@@ -105,6 +110,14 @@ ci_staging() {
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml build --no-cache webstaging'
     ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml up -d'
     ccg ${AWS_STAGING_INSTANCE} drun:'docker-clean || true'
+}
+
+
+# puppet up staging which will install the latest rpm
+ci_rpm_staging() {
+    ccg ${AWS_RPM_INSTANCE} boot
+    ccg ${AWS_RPM_INSTANCE} puppet
+    ccg ${AWS_RPM_INSTANCE} shutdown:120
 }
 
 
@@ -121,7 +134,7 @@ selenium() {
 }
 
 
-staging_selenium() {
+docker_staging_selenium() {
     mkdir -p data/selenium
     chmod o+rwx data/selenium
 
@@ -131,6 +144,19 @@ staging_selenium() {
 
     ( fig --project-name yabi -f fig-staging-selenium.yml rm --force || exit 0 )
     fig --project-name yabi -f fig-staging-selenium.yml up
+}
+
+
+docker_rpm_staging_selenium() {
+    mkdir -p data/selenium
+    chmod o+rwx data/selenium
+
+    make_virtualenv
+    . ${VIRTUALENV}/bin/activate
+    pip install fig
+
+    ( fig --project-name yabi -f fig-staging-rpm-selenium.yml rm --force || exit 0 )
+    fig --project-name yabi -f fig-staging-rpm-selenium.yml up
 }
 
 
@@ -189,16 +215,19 @@ rpm_publish)
 runtests)
     runtests
     ;;
-ci_staging)
+ci_docker_staging)
     ci_ssh_agent
-    ci_staging
+    ci_docker_staging
     ;;
-ci_staging_tests)
+ci_rpm_staging)
     ci_ssh_agent
-    ci_staging_tests
+    ci_rpm_staging
     ;;
-staging_selenium)
-    staging_selenium
+docker_staging_selenium)
+    docker_staging_selenium
+    ;;
+docker_rpm_staging_selenium)
+    docker_rpm_staging_selenium
     ;;
 selenium)
     selenium
