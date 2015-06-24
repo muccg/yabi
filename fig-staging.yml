@@ -38,7 +38,7 @@ webstaging:
     - DBSERVER=dbstaging
     - DBUSER=yabiapp
     - QUEUESERVER=mqstaging
-    - BROKER_URL=amqp://guest:guest@mqstaging:5672//
+    - CELERY_BROKER=amqp://guest:guest@mqstaging:5672//
     - CACHESERVER=cachestaging
     - SSHSERVER=sshstaging
     - S3SERVER=s3staging
