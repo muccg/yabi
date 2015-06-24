@@ -1,10 +1,12 @@
 YUI().use(
     'node', 'event', 'dd-drag', 'dd-proxy', 'dd-drop', 'io', 'json', 'anim', 'cookie',
     function(Y) {
-      isFinishedStatus = _.partial(_.include, ['complete', 'aborted', 'error']);
+      isFinishedStatus = function(status) {
+          return _.contains(['complete', 'aborted', 'error'], status);
+      };
 
       didWorkflowFinish = function(wfl_status, jobs) {
-        return isFinishedStatus(wfl_status) && _.all(_.pluck(jobs, 'status'), isFinishedStatus);
+        return isFinishedStatus(wfl_status) && _.every(_.pluck(jobs, 'status'), isFinishedStatus);
       };
 
       /**
