@@ -1,12 +1,30 @@
 Yabi
 ====
 
+About
+-----
+
+Yabi is a 3-tier application stack to provide users with an intuitive, easy to use, abstraction of compute and data environments. Developed at the Centre for Comparative Genomics, Yabi has been deployed across a diverse set of scientific disciplines and high performance computing environments.
+
+Yabi has a few key features:
+
+- simplified web based access to High Performance Computing
+- easy tool addition and maintenance
+- handling of disparate compute and storage resouces ie. PBSPro, SGE, Torque, Slurm, SSH, SFTP, Amazon S3, Openstack Swift
+- easy and powerful workflow creation environment
+
+More docs at Read the Docs (https://yabi.readthedocs.org/).
+
 Contact
 -------
 
 Hosted on Bitbucket: 
 
 https://bitbucket.org/ccgmurdoch/yabi/
+
+Or if you prefer, GitHub:
+
+https://github.com/muccg/yabi/
 
 Documentation on Read the Docs: 
 
@@ -43,7 +61,7 @@ Some typical usages are:
 
   - ./develop.sh start
         To start up all the docker containers needed for dev. 
-        You can access the Django Yabi application on http://localhost:8000i
+        You can access the Django Yabi application on http://localhost:8000
         (replace localhost with `boot2docker ip` if using boot2docker) after this.
         You can login with one of the default users demo/demo or admin/admin.
 
@@ -64,3 +82,8 @@ Contributing
 1. Fork next_release branch
 2. Make changes on a feature branch
 3. Submit pull request
+
+Citation
+--------
+
+Hunter AA, Macgregor AB, Szabo TO, Wellington CA and Bellgard MI, Yabi: An online research environment for Grid, High Performance and Cloud computing, Source Code for Biology and Medicine 2012, 7:1 doi:10.1186/1751-0473-7-1 Published: 15 February 2012 Source Code for Biology and Medicine (http://www.scfbm.org/content/7/1/1/abstract)
