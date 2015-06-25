@@ -25,6 +25,7 @@ node default {
     dbuser                 => $globals::dbuser_postgresql_ccg_prod,
     dbpass                 => $globals::dbpass_postgresql_ccg_prod,
     memcache               => $globals::memcache_ccg_prod,
+    auth_type              => 'ldap',
     auth_ldap_server       => $globals::ldap_ccg_prod,
     auth_ldap_user_base    => $globals::ldap_ccg_prod_user_base,
     auth_ldap_group_base   => $globals::ldap_ccg_prod_group_base,
