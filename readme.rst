@@ -4,7 +4,7 @@ Yabi
 About
 -----
 
-Yabi is a 3-tier application stack to provide users with an intuitive, easy to use, abstraction of compute and data environments. Developed at the Centre for Comparative Genomics, Yabi has been deployed across a diverse set of scientific disciplines and high performance computing environments.
+Yabi is a 3-tier application stack to provide users with an intuitive, easy to use, abstraction of compute and data environments. Developed at the Centre for Comparative Genomics (https://ccg.murdoch.edu.au/), Yabi has been deployed across a diverse set of scientific disciplines and high performance computing environments.
 
 Yabi has a few key features:
 
