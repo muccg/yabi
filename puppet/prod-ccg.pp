@@ -28,7 +28,7 @@ node default {
     auth_type              => 'ldap',
     auth_ldap_server       => $globals::ldap_ccg_prod,
     auth_ldap_user_base    => $globals::ldap_ccg_prod_user_base,
-    auth_ldap_group_base   => $globals::ldap_ccg_prod_group_base,
+    auth_ldap_group_dn     => $globals::ldap_ccg_prod_group_base,
     ldap_dont_require_cert => true,
     secret_key             => $globals::secretkey_ccg_yabi,
     admin_email            => $globals::system_email,
