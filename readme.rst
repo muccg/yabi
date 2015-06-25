@@ -59,19 +59,19 @@ Please run it without any arguments for help on its usage.
 
 Some typical usages are:
 
-  - ./develop.sh start
+- ./develop.sh start
         To start up all the docker containers needed for dev. 
         You can access the Django Yabi application on http://localhost:8000
         (replace localhost with ``$ boot2docker ip`` if using boot2docker) after this.
         You can login with one of the default users demo/demo or admin/admin.
 
-  - ./develop.sh runtests
+- ./develop.sh runtests
         Starts up all the docker containers and runs all our tests against them.
 
-  - ./develop.sh pythonlint
+- ./develop.sh pythonlint
         Lint your python code.
 
-  - ./develop.sh jslint
+- ./develop.sh jslint
         Lint your javascript code.
 
 Note: Our docker containers are coordinated using fig (http://www.fig.sh/) but fig will be installed into a virtualenv environment automatically by the ``./develop.sh`` script for you.
