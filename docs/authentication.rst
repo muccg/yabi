@@ -61,6 +61,7 @@ AUTH_LDAP_USERNAME_ATTR         LDAP user attribute for username. Default is *"u
 AUTH_LDAP_EMAIL_ATTR            LDAP user attribute for email. Default is *"mail"*.
 AUTH_LDAP_LASTNAME_ATTR         LDAP user attribute for last name. Default is *"sn"*.
 AUTH_LDAP_FIRSTNAME_ATTR        LDAP user attribute for first name. Default is *"givenName"*.
+AUTH_LDAP_DONT_REQUIRE_CERT     Don't require server to have a valid TLS certificate.
 =============================  ===============
 
 

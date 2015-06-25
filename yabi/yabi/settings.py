@@ -283,7 +283,7 @@ AUTH_KERBEROS_SERVICE = env.get('auth_kerberos_service', '')
 AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", ["ldap://ldap.dockerdomain"])
 AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", "ou=People,dc=dockerdomain")
 AUTH_LDAP_YABI_GROUP_DN = env.get("auth_ldap_group_dn", "cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain")
-AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_group_dn", "cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain")
+AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_admin_group_dn", "cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain")
 # LDAP settings you might want to set:
 AUTH_LDAP_SYNC_USER_ON_LOGIN = env.get("auth_ldap_sync_user_on_login", True)
 AUTH_LDAP_USER_FILTER = env.get("auth_ldap_user_filter", "(objectclass=person)")
@@ -292,6 +292,7 @@ AUTH_LDAP_USERNAME_ATTR = env.get("auth_ldap_username_attr", "uid")
 AUTH_LDAP_EMAIL_ATTR = env.get("auth_ldap_email_attr", "mail")
 AUTH_LDAP_LASTNAME_ATTR = env.get("auth_ldap_lastname_attr", "sn")
 AUTH_LDAP_FIRSTNAME_ATTR = env.get("auth_ldap_firstname_attr", "givenName")
+AUTH_LDAP_DONT_REQUIRE_CERT = env.get("auth_ldap_dont_require_cert", False)
 
 # This honours the X-Forwarded-Host header set by our nginx frontend when
 # constructing redirect URLS.
