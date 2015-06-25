@@ -46,6 +46,14 @@ SSL_FORCE = PRODUCTION
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.get("debug", not PRODUCTION)
 
+# django-secure
+SECURE_SSL_REDIRECT = env.get("secure_ssl_redirect", PRODUCTION)
+SECURE_FRAME_DENY = env.get("secure_frame_deny", PRODUCTION)
+SECURE_CONTENT_TYPE_NOSNIFF = env.get("secure_content_type_nosniff", PRODUCTION)
+SECURE_BROWSER_XSS_FILTER = env.get("secure_browser_xss_filter", PRODUCTION)
+SECURE_HSTS_SECONDS = env.get("secure_hsts_seconds", 10)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.get("secure_hsts_include_subdomains", PRODUCTION)
+
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
@@ -53,11 +61,11 @@ ATOMIC_REQUESTS = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
+    'djangosecure.middleware.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'ccg_django_utils.middleware.ssl.SSLRedirect',
     'django.contrib.messages.middleware.MessageMiddleware'
 ]
 

@@ -67,6 +67,7 @@ install_requires = [
     'mockito>=0.5.0,<0.6.0',
     'sniffer==0.3.2',
     'model_mommy==1.2.2',
+    'django-secure==1.0.1',
 ]
 
 # Compiled python modules which are usually provided by system packages

@@ -42,19 +42,19 @@ urlpatterns = patterns('yabi.yabifeapp.views',
                        (r'^jobs[/]*$', 'jobs'),
                        (r'^files[/]*$', 'files'),
                        (r'^admin[/]*$', 'admin'),
-                       (r'^login[/]*$', 'login', {'SSL': True}),
+                       (r'^login[/]*$', 'login'),
                        (r'^logout[/]*$', 'logout'),
-                       (r'^wslogin[/]*$', 'wslogin', {'SSL': True}),
+                       (r'^wslogin[/]*$', 'wslogin'),
                        (r'^wslogout[/]*$', 'wslogout'),
                        (r'^exception[/]*$', 'exception_view'))
 
 # dispatch to either webservice, admin or general
 urlpatterns += patterns('yabi.yabi.views',
-                        (r'^ws/', include('yabi.yabi.wsurls'), {'SSL': True}),
+                        (r'^ws/', include('yabi.yabi.wsurls')),
                         (r'^engine/', include('yabi.yabiengine.urls')),
                         url(r'^status_page[/]*$', 'status_page', name='status_page'),
-                        (r'^admin-pane/', include('yabi.yabi.adminurls'), {'SSL': True}),
-                        (r'^admin-pane/', include(admin.site.urls), {'SSL': True}))
+                        (r'^admin-pane/', include('yabi.yabi.adminurls')),
+                        (r'^admin-pane/', include(admin.site.urls)))
 
 # redirect / to /admin
 urlpatterns += patterns('',
