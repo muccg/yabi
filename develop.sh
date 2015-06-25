@@ -130,6 +130,7 @@ selenium() {
     pip install fig
 
     ( fig --project-name yabi -f fig-selenium.yml rm --force || exit 0 )
+    fig --project-name yabi -f fig-selenium.yml build
     fig --project-name yabi -f fig-selenium.yml up
 }
 
@@ -143,6 +144,7 @@ docker_staging_selenium() {
     pip install fig
 
     ( fig --project-name yabi -f fig-staging-selenium.yml rm --force || exit 0 )
+    fig --project-name yabi -f fig-staging-selenium.yml build
     fig --project-name yabi -f fig-staging-selenium.yml up
 }
 
@@ -156,6 +158,7 @@ docker_rpm_staging_selenium() {
     pip install fig
 
     ( fig --project-name yabi -f fig-staging-rpm-selenium.yml rm --force || exit 0 )
+    fig --project-name yabi -f fig-staging-rpm-selenium.yml build
     fig --project-name yabi -f fig-staging-rpm-selenium.yml up
 }
 

@@ -76,7 +76,6 @@ node default {
     require    => [
       Service['rabbitmq-server'],
       Package[$packages],
-      Ccgdatabase::Postgresql[$django_config['dbname']],
       Package['yabi-admin'] ]
   }
 
