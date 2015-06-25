@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'south',
     'djamboloader',
     'django.contrib.admin',
+    'djangosecure',
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
