@@ -378,7 +378,10 @@ class CommandTemplate(object):
             self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches = pickle.loads(data)
         except ImportError:
             # might be caused by frontend editing causing \n's to be replaced with \r\n's
-            self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches = pickle.loads(data.replace('\r\n', '\n'))
+            # Or temporarily by our renames from yabiadmin to yabi
+            data = data.replace('\r\n', '\n')
+            data = data.replace('yabiadmin.yabiengine', 'yabi.yabiengine')
+            self.command, self.arguments, self.files, self.backrefs, self.username, self.backfiles, self.batchfiles, self.batch_switches, self.consume_switches = pickle.loads(data)
 
     def set_uri_conversion(self, string):
         self.uri_conversion_string = string
