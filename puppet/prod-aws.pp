@@ -17,7 +17,7 @@ node default {
 
   $django_config = {
     deployment            => 'prod',
-    release               => '9.4.0-1',
+    release               => '9.5.0-1',
     dbdriver              => 'django.db.backends.postgresql_psycopg2',
     dbserver              => $globals::dbhost_rds_syd_postgresql_prod,
     dbhost                => $globals::dbhost_rds_syd_postgresql_prod,
@@ -67,18 +67,18 @@ node default {
   }
 
   # Disabled until releasing on this branch
-  #service { 'celeryd':
-  #  ensure     => 'running',
-  #  enable     => true,
-  #  hasstatus  => true,
-  #  hasrestart => true,
-  #  name       => 'celeryd',
-  #  require    => [
-  #    Service['rabbitmq-server'],
-  #    Package[$packages],
-  #    Ccgdatabase::Postgresql[$django_config['dbname']],
-  #    Package['yabi-admin'] ]
-  #}
+  service { 'celeryd':
+    ensure     => 'running',
+    enable     => true,
+    hasstatus  => true,
+    hasrestart => true,
+    name       => 'celeryd',
+    require    => [
+      Service['rabbitmq-server'],
+      Package[$packages],
+      Ccgdatabase::Postgresql[$django_config['dbname']],
+      Package['yabi-admin'] ]
+  }
 
   logrotate::rule { 'celery':
     path          => '/var/log/celery/*log',
