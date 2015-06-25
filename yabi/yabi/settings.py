@@ -48,7 +48,7 @@ DEBUG = env.get("debug", not PRODUCTION)
 
 # django-secure
 SECURE_SSL_REDIRECT = env.get("secure_ssl_redirect", PRODUCTION)
-SECURE_FRAME_DENY = env.get("secure_frame_deny", PRODUCTION)
+SECURE_FRAME_DENY = False
 SECURE_CONTENT_TYPE_NOSNIFF = env.get("secure_content_type_nosniff", PRODUCTION)
 SECURE_BROWSER_XSS_FILTER = env.get("secure_browser_xss_filter", PRODUCTION)
 SECURE_HSTS_SECONDS = env.get("secure_hsts_seconds", 10)
