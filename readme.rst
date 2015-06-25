@@ -63,7 +63,7 @@ Some typical usages are:
         To start up all the docker containers needed for dev. 
         You can access the Django Yabi application on http://localhost:8000
         (replace localhost with ``$ boot2docker ip`` if using boot2docker) after this.
-        You can login with one of the default users demo/demo or admin/admin.
+        You can login with one of the default users *demo/demo* or *admin/admin*.
 
 - ./develop.sh runtests
         Starts up all the docker containers and runs all our tests against them.
