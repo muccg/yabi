@@ -51,16 +51,16 @@ node default {
     provider => 'yum_nogpgcheck'
   }
 
-  django::config { 'yabiadmin':
+  django::config { 'yabi':
     config_hash => $django_config,
   }
 
   # Disabled until releasing on this branch
-  django::syncdbmigrate{'yabiadmin':
+  django::syncdbmigrate{'yabi':
     dbsync  => true,
     require => [
       Package['yabi-admin'],
-      Django::Config['yabiadmin'] ]
+      Django::Config['yabi'] ]
   }
 
   service { 'rabbitmq-server':
