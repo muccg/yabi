@@ -30,7 +30,7 @@ node default {
     auth_ldap_user_base          => $globals::ldap_ccg_prod_user_base,
     auth_ldap_group_dn           => 'cn=yabi, ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au',
     auth_ldap_admin_group_dn     => 'cn=admin, ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au',
-    ldap_dont_require_cert       => true,
+    auth_ldap_require_TLS_cert   => false,
     auth_ldap_sync_user_on_login => true,
     secret_key                   => $globals::secretkey_ccg_yabi,
     admin_email                  => $globals::system_email,
