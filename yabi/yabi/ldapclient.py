@@ -26,7 +26,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-if settings.AUTH_LDAP_DONT_REQUIRE_CERT:
+if not settings.AUTH_LDAP_REQUIRE_TLS_CERT:
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
 
 

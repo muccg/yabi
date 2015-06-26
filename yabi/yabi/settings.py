@@ -292,7 +292,7 @@ AUTH_LDAP_USERNAME_ATTR = env.get("auth_ldap_username_attr", "uid")
 AUTH_LDAP_EMAIL_ATTR = env.get("auth_ldap_email_attr", "mail")
 AUTH_LDAP_LASTNAME_ATTR = env.get("auth_ldap_lastname_attr", "sn")
 AUTH_LDAP_FIRSTNAME_ATTR = env.get("auth_ldap_firstname_attr", "givenName")
-AUTH_LDAP_DONT_REQUIRE_CERT = env.get("auth_ldap_dont_require_cert", False)
+AUTH_LDAP_REQUIRE_TLS_CERT = env.get("auth_ldap_require_tls_cert", True)
 
 # This honours the X-Forwarded-Host header set by our nginx frontend when
 # constructing redirect URLS.
