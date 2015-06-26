@@ -17,7 +17,7 @@ Configure Yabi to use Yabi database
 -----------------------------------
 
 To change the database that Yabi points at you will need to alter the Yabi settings file.
-Open up ``/etc/yabiadmin/yabiadmin.conf`` in your editor and make sure the variables in the *database options* section (``dbserver``, ``dbname``, ``dbuser`` etc.) are set correctly.
+Open up ``/etc/yabi/yabi.conf`` in your editor and make sure the variables in the *database options* section (``dbserver``, ``dbname``, ``dbuser`` etc.) are set correctly.
 
 For more details see :ref:`settings`.
 

@@ -2,8 +2,8 @@ This directory contains end to end tests for the YABI project.
 
 To kick off the test, activate the virtual python and run nosetests:
 
-$ source virt_yabiadmin/bin/activate
-$ export DJANGO_SETTINGS_MODULE=yabiadmin.settings
+$ source virt_yabi/bin/activate
+$ export DJANGO_SETTINGS_MODULE=yabi.settings
 $ nosetests --logging-clear-handlers -v
 
 The development server should already be running (./develop.sh start).

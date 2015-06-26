@@ -2,10 +2,11 @@ import unittest
 from .support import YabiTestCase, StatusResult, all_items, json_path
 from .fixture_helpers import admin
 import time
-from yabiadmin.yabi import models
+from yabi.yabi import models
 from socket import gethostname
 
 
+@unittest.skip('Needs Torque')
 class TorqueBackendTest(YabiTestCase):
 
     def setUp(self):

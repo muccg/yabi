@@ -14,9 +14,9 @@ the `Django documentation <https://docs.djangoproject.com/en/dev/ref/settings/>`
 Yabi supports the pattern advocated in the `Twelve-Factor app document <http://12factor.net/config/>`_.
 
 This means that most of the configuration you need to do can be done by setting
-simple variables in your ``/etc/yabiadmin/yabiadmin.conf`` file. For the full
+simple variables in your ``/etc/yabi/yabi.conf`` file. For the full
 list of variables you can edit in your config file refer to your
-``yabiadmin/settings.py`` file and look for the settings that are set using ``env.get``.
+``yabi/settings.py`` file and look for the settings that are set using ``env.get``.
 
 A list of variables you would like to edit for a usual Yabi server are:
 
@@ -33,6 +33,6 @@ A list of variables you would like to edit for a usual Yabi server are:
  admin_email      The email address that will receive Admin emails.
 ===============  ============
 
-If you need more control you can always edit your ``/etc/yabiadmin/settings.py``
-file directly. The settings in this file will overwrite the settings in ``yabiadmin/settings.py`` and the config options you set in ``/etc/yabiadmin/yabiadmin.conf``.
+If you need more control you can always edit your ``/etc/yabi/settings.py``
+file directly. The settings in this file will overwrite the settings in ``yabi/settings.py`` and the config options you set in ``/etc/yabi/yabi.conf``.
 

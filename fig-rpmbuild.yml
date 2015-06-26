@@ -1,0 +1,15 @@
+# data only container pattern
+datarpmbuild:
+  image: muccg/debian8-base:latest
+  volumes:
+    - data/rpmbuild:/data
+    - .:/app
+
+rpmbuild:
+  image: muccg/rpmbuild:centos6
+  command: rpmbuild
+  environment:
+    - SPECFILE=/app/centos/yabi.spec
+    - APPEND_PATH=/usr/pgsql-9.4/bin
+  volumes_from:
+    - datarpmbuild

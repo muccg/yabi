@@ -15,9 +15,12 @@ node default {
   class { 'yum::repo::pgdg93':
     stage => 'setup',
   }
-  include globals
   include ccgdatabase::postgresql::devel
   include profile::rsyslog
+
+  class { 'memcached':
+    max_memory => '12%'
+  }
 
   # There are some leaked local secrets here we don't care about
   $django_config = {
@@ -27,42 +30,20 @@ node default {
     dbname      => 'yabi_staging',
     dbuser      => 'yabi',
     dbpass      => 'yabi',
-    memcache    => $globals::memcache_syd,
+    memcache    => 'localhost:11211',
     secret_key  => 'isbfiusbef)#$)(#)((@',
-    admin_email => $globals::system_email,
+    admin_email => 'root@localhost',
     allowed_hosts => '.ccgapps.com.au localhost',
   }
 
   $packages = ['python27-psycopg2', 'rabbitmq-server']
   package {$packages: ensure => installed}
 
-  # tests need firefox and a virtual X server
-  $testingpackages = ['xorg-x11-server-Xvfb', 'dbus-x11']
-  package {$testingpackages:
-    ensure => installed,
-  }
-
-  # TODO
-  # Remove the specific version when the problem described below is solved:
-  # https://support.mozilla.org/en-US/questions/1025819?esab=a&s=gdk_window_get_visual&r=0&as=s
-  package {'firefox':
-    ensure => '31.1.0-5.el6.centos',
-  }
-
   # fakes3 is required for tests
   package {'fakes3':
     ensure     => installed,
     provider   => gem
   }
-
-  # TODO Need to port this across
-  # drop in auth details for e2e tests
-  #file {'/usr/local/src/yabi':
-  #  ensure => directory
-  #} ->
-  #file {'/usr/local/src/yabi/staging_tests.conf':
-  #  source => 'puppet:///modules/staging/yabi_staging_tests.conf'
-  #}
 
   ccgdatabase::postgresql::db { $django_config['dbname']:
     user     => $django_config['dbuser'],
@@ -71,17 +52,17 @@ node default {
 
   package {'yabi-admin': ensure => installed, provider => 'yum_nogpgcheck'}
 
-  django::config { 'yabiadmin':
+  django::config { 'yabi':
     config_hash => $django_config,
   }
 
-  django::syncdbmigrate{'yabiadmin':
+  django::syncdbmigrate{'yabi':
     dbsync  => true,
     notify  => Service[$ccgapache::params::service_name],
     require => [
       Ccgdatabase::Postgresql::Db[$django_config['dbname']],
       Package['yabi-admin'],
-      Django::Config['yabiadmin'] ]
+      Django::Config['yabi'] ]
   }
 
   package {'yabi-shell': provider => yum_nogpgcheck}
@@ -106,7 +87,7 @@ node default {
       Package[$packages],
       Ccgdatabase::Postgresql::Db[$django_config['dbname']],
       Package['yabi-admin'],
-      Django::Config['yabiadmin'] ]
+      Django::Config['yabi'] ]
   }
 
   logrotate::rule { 'celery':

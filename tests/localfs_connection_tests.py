@@ -12,7 +12,7 @@ import shutil
 
 from .request_test_base import RequestTest
 
-TEST_LOCALFS_SERVER = "localfs://username@localhost.localdomain/tmp/yabi-localfs-test/"
+TEST_LOCALFS_SERVER = "localfs://username@localhost.localdomain/data/yabi-localfs-test/"
 
 def make_random_string(length=None):
     import random
@@ -35,9 +35,9 @@ class LocalfsFileTests(RequestTest):
         admin.destroy_localfs_backend()
         RequestTest.tearDown(self)
 
-    def build_file_archive(self, base='/tmp/yabi-localfs-test', include_parent_dir=False):
+    def build_file_archive(self, base='/data/yabi-localfs-test', include_parent_dir=False):
         """Builds a test directory nested full of files and directories to test archive stuff"""
-        # make some /tmp file structures
+        # make some tmp file structures
         TOP_DIR = "."
         if include_parent_dir:
             TOP_DIR = "yabi-localfs-test"
@@ -79,13 +79,13 @@ class LocalfsFileTests(RequestTest):
         self.assertEqual(r.status_code, 200, "Could not list localfs backend contents")
         data = json.loads(r.text)
 
-        self.assertIn("/tmp/yabi-localfs-test/", data)
-        self.assertIn('files', data["/tmp/yabi-localfs-test/"])
-        self.assertIn('directories', data["/tmp/yabi-localfs-test/"])
+        self.assertIn("/data/yabi-localfs-test/", data)
+        self.assertIn('files', data["/data/yabi-localfs-test/"])
+        self.assertIn('directories', data["/data/yabi-localfs-test/"])
 
     def test_localfs_rcopy(self):
-        # make some /tmp file structures
-        basedir = '/tmp/yabi-localfs-test/'
+        # make some tmp file structures
+        basedir = '/data/yabi-localfs-test/'
         srcdir = basedir + "input-rcopy"
         destdir = basedir + "output-rcopy/"
         dirs = self.build_file_archive(srcdir)
@@ -109,8 +109,8 @@ class LocalfsFileTests(RequestTest):
         shutil.rmtree(basedir)
 
     def test_localfs_zget(self):
-        # make some /tmp file structures
-        dirs = self.build_file_archive('/tmp/yabi-localfs-test/', include_parent_dir=True)
+        # make some tmp file structures
+        dirs = self.build_file_archive('/data/yabi-localfs-test/', include_parent_dir=True)
 
         payload = {
             'yabiusername':conf.yabiusername,
@@ -138,7 +138,7 @@ class LocalfsFileTests(RequestTest):
         for d in detar_result:
             self.assertIn(d, dirs)
 
-        shutil.rmtree('/tmp/yabi-localfs-test/')
+        shutil.rmtree('/data/yabi-localfs-test/')
 
 
     def test_localfs_file_upload_and_download(self):
@@ -159,7 +159,7 @@ class LocalfsFileTests(RequestTest):
         self.assertEqual(r.status_code, 200, "Could not list localfs backend contents - status code = %s" % r.status_code)
         data = json.loads(r.text)
 
-        files = data["/tmp/yabi-localfs-test/"]["files"]
+        files = data["/data/yabi-localfs-test/"]["files"]
         self.assertEqual(len(files), 1)
 
         filename,filesize,filedate,symlink = files[0]

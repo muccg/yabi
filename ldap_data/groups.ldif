@@ -1,0 +1,20 @@
+dn: ou=Web Groups,ou=Groups,dc=dockerdomain
+objectClass: top
+objectClass: organizationalunit
+ou: Web Groups
+
+dn: cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain
+objectClass: top
+objectClass: groupOfUniqueNames
+cn: Yabi
+ou: Web Groups
+description: People who can use the Yabi webapplication
+uniqueMember: cn=demo,ou=People,dc=dockerdomain
+
+dn: cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain
+objectClass: top
+objectClass: groupOfUniqueNames
+cn: Yabi
+ou: Web Groups
+description: People who can use the Yabi webapplication
+uniqueMember: cn=admin,ou=People,dc=dockerdomain

@@ -1,0 +1,68 @@
+# data only container pattern
+data:
+  image: muccg/debian8-base:latest
+  volumes:
+    - .:/app
+    - data/dev:/data
+
+ssh:
+  image: muccg/ssh
+  hostname: ssh
+
+db:
+  image: postgres:9.3
+  environment:
+    - POSTGRES_USER=yabiapp
+    - POSTGRES_PASSWORD=yabiapp
+  ports:
+    - ":5432"
+
+mq:
+  image: rabbitmq:management
+  ports:
+    - ":5672"
+    - ":15672"
+
+cache:
+  image: memcached:1.4
+
+web:
+  build: .
+  command: runserver
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+  volumes_from:
+    - data
+  ports:
+    - "8000:8000"
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+
+celery:
+  image: yabi_web
+  command: celery
+  hostname: celery
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - CELERY_APP=yabi.backend.celerytasks
+    - CELERY_AUTORELOAD=1
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+  volumes_from:
+    - data
+  links:
+    - db
+    - mq
+    - cache
+    - ssh

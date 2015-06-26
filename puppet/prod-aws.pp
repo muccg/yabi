@@ -17,7 +17,7 @@ node default {
 
   $django_config = {
     deployment            => 'prod',
-    release               => '9.3.0-1',
+    release               => '9.5.0-1',
     dbdriver              => 'django.db.backends.postgresql_psycopg2',
     dbserver              => $globals::dbhost_rds_syd_postgresql_prod,
     dbhost                => $globals::dbhost_rds_syd_postgresql_prod,
@@ -45,16 +45,16 @@ node default {
     provider => 'yum_nogpgcheck'
   }
 
-  django::config { 'yabiadmin':
+  django::config { 'yabi':
     config_hash => $django_config,
   }
 
   # Disabled until releasing on this branch
-  django::syncdbmigrate{'yabiadmin':
+  django::syncdbmigrate{'yabi':
     dbsync  => true,
     require => [
       Package['yabi-admin'],
-      Django::Config['yabiadmin'] ]
+      Django::Config['yabi'] ]
   }
 
   service { 'rabbitmq-server':
@@ -67,18 +67,17 @@ node default {
   }
 
   # Disabled until releasing on this branch
-  #service { 'celeryd':
-  #  ensure     => 'running',
-  #  enable     => true,
-  #  hasstatus  => true,
-  #  hasrestart => true,
-  #  name       => 'celeryd',
-  #  require    => [
-  #    Service['rabbitmq-server'],
-  #    Package[$packages],
-  #    Ccgdatabase::Postgresql[$django_config['dbname']],
-  #    Package['yabi-admin'] ]
-  #}
+  service { 'celeryd':
+    ensure     => 'running',
+    enable     => true,
+    hasstatus  => true,
+    hasrestart => true,
+    name       => 'celeryd',
+    require    => [
+      Service['rabbitmq-server'],
+      Package[$packages],
+      Package['yabi-admin'] ]
+  }
 
   logrotate::rule { 'celery':
     path          => '/var/log/celery/*log',

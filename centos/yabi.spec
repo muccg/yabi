@@ -4,14 +4,14 @@
 %define pyver 27
 %define pybasever 2.7
 
-%define version 9.4.0
-%define unmangled_version 9.4.0
+%define version 9.5.0
+%define unmangled_version 9.5.0
 %define release 1
 %define webapps /usr/local/webapps
-%define webappname yabiadmin
+%define webappname yabi
 %define shellname yabish
 
-# Variables used for yabiadmin django app
+# Variables used for yabi django app
 %define installdir %{webapps}/%{webappname}
 %define buildinstalldir %{buildroot}/%{installdir}
 %define staticdir %{buildinstalldir}/static
@@ -25,7 +25,7 @@
 %define shbuildinstalldir %{buildroot}/%{shinstalldir}
 
 
-Summary: yabiadmin django webapp, celery backend and yabi shell utility
+Summary: yabi django webapp, celery backend and yabi shell utility
 Name: yabi
 Version: %{version}
 Release: %{release}
@@ -35,7 +35,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <web@ccg.murdoch.edu.au>
-BuildRequires: python%{pyver}-virtualenv python%{pyver}-devel openssl-devel libxslt-devel libxml2-devel
+BuildRequires: python%{pyver}-virtualenv python%{pyver}-devel openssl-devel libxslt-devel libxml2-devel postgresql94-devel openldap-devel
 Requires: python%{pyver} openssl
 Requires(pre): shadow-utils, /usr/sbin/useradd, /usr/bin/getent
 Requires(postun): /usr/sbin/userdel
@@ -44,7 +44,7 @@ Requires(postun): /usr/sbin/userdel
 Test.
 
 %package admin
-Summary: yabiadmin Django web application
+Summary: yabi Django web application
 Group: Applications/Internet
 Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 MySQL-python%{pyver} python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
 
@@ -87,7 +87,7 @@ cp build-number.txt %{buildinstalldir}/
 ##############################
 # yabi-admin
 
-cd $CCGSOURCEDIR/yabiadmin
+cd $CCGSOURCEDIR/yabi
 
 # Create a python prefix with app requirements
 mkdir -p %{buildinstalldir}
@@ -139,7 +139,7 @@ install -D ../centos/django.wsgi %{buildinstalldir}/django.wsgi
 mkdir -p %{buildroot}/%{_bindir}
 ln -fsT %{installdir}/bin/%{webappname}-manage.py %{buildroot}/%{_bindir}/%{webappname}
 
-# Install yabiadmin's celeryd init script system wide
+# Install yabi's celeryd init script system wide
 install -m 0755 -D init_scripts/centos/celeryd.init %{buildroot}/etc/init.d/celeryd
 install -m 0644 -D init_scripts/centos/celeryd.default %{buildroot}/etc/default/celeryd
 # also install celery-flower
@@ -150,9 +150,9 @@ mkdir -p %{buildroot}/var/log/celery
 mkdir -p %{buildroot}/var/run/celery
 
 # Install prodsettings conf file to /etc, and replace with symlink
-install --mode=0640 -D ../centos/yabiadmin.conf.example %{buildroot}/etc/yabiadmin/yabiadmin.conf
-install --mode=0640 -D yabiadmin/prodsettings.py %{buildroot}/etc/yabiadmin/settings.py
-ln -sfT /etc/yabiadmin/settings.py %{buildinstalldir}/${APP_PACKAGE_DIR}/prodsettings.py
+install --mode=0640 -D ../centos/yabi.conf.example %{buildroot}/etc/yabi/yabi.conf
+install --mode=0640 -D yabi/prodsettings.py %{buildroot}/etc/yabi/settings.py
+ln -sfT /etc/yabi/settings.py %{buildinstalldir}/${APP_PACKAGE_DIR}/prodsettings.py
 
 ##############################
 # yabi-shell
@@ -198,7 +198,7 @@ exit 0
 
 %post admin
 rm -rf %{installdir}/static/*
-yabiadmin collectstatic --noinput > /dev/null
+yabi collectstatic --noinput > /dev/null
 # Remove root-owned logged files just created by collectstatic
 rm -rf /var/log/%{webappname}/*
 # Touch the wsgi file to get the app reloaded by mod_wsgi
@@ -228,11 +228,11 @@ fi
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/default/celeryd
 %attr(-,root,,root) /etc/init.d/celery-flower
-%attr(710,root,apache) /etc/yabiadmin
-%attr(640,root,apache) /etc/yabiadmin/settings.py
-%attr(640,root,apache) /etc/yabiadmin/yabiadmin.conf
-%config(noreplace) /etc/yabiadmin/settings.py
-%config(noreplace) /etc/yabiadmin/yabiadmin.conf
+%attr(710,root,apache) /etc/yabi
+%attr(640,root,apache) /etc/yabi/settings.py
+%attr(640,root,apache) /etc/yabi/yabi.conf
+%config(noreplace) /etc/yabi/settings.py
+%config(noreplace) /etc/yabi/yabi.conf
 
 %files shell
 %defattr(-,root,root,-)

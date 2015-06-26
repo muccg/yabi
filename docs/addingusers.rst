@@ -1,8 +1,8 @@
-.. _addingusers:
-
 .. index::
    single: users
    single: users; adding
+
+.. _addingusers:
 
 Adding Users
 ============
@@ -34,9 +34,13 @@ is where additional user information can be stored. If you edit the Yabi User re
 Using Different Authentication Backends
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are using a different authentication method such as LDAP then you will need to set up the Auth
-User record as above but **replace the password field with '!'**. This means Django will not attempt to use
-the password field for authentication.
+If you are using a different authentication method such as LDAP or "Kerberos and LDAP" you don't have to add
+users manually to the Yabi. After you set up Yabi to use one of these authentication methods all you have to do is
+add the user to the Yabi or Yabi Administrators LDAP group and their user account will be created automatically
+the first time they log in into Yabi.
+
+See :ref:`authentication` for more detail on setting up LDAP or "Kerberos and LDAP" authentication.
+
 
 .. index::
    single: users; administrator

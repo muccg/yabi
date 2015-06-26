@@ -10,6 +10,7 @@ from .fixture_helpers import admin
 from .request_test_base import RequestTest
 from .fakes3 import fakes3_setup
 
+@unittest.skip('S3 tests currently disabled in docker containers')
 class S3FileUploadTest(RequestTest):
     """
     Tests the S3 backend against the fakes3 server.

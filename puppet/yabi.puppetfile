@@ -7,7 +7,7 @@ mod "rodjek/logrotate", "1.1.1"
 
 mod "muccg/ccgcommon",
   :git => "git://github.com/muccg/puppet-ccgcommon.git",
-  :ref => "1.4.5"
+  :ref => "1.5.7"
 
 mod "muccg/profile",
   :git => "git://github.com/muccg/puppet-profile.git",
@@ -27,7 +27,7 @@ mod "muccg/ccgdatabase",
 
 mod "muccg/repo",
   :git => "git://github.com/muccg/puppet-repo.git",
-  :ref => "1.2.16"
+  :ref => "1.2.21"
 
 mod "muccg/ccgapache",
   :git => "git://github.com/muccg/puppet-ccgapache.git",
