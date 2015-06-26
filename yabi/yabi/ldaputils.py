@@ -137,6 +137,8 @@ def can_bind_as(userdn, password):
     try:
         if ldapclient.bind_as(userdn, password):
             return True
+
+        return False
     finally:
         ldapclient.unbind()
 
