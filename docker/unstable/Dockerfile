@@ -28,9 +28,9 @@ ENV APP_RELEASE next_release
 WORKDIR /app
 RUN git clone --depth=1 --branch=$APP_RELEASE https://bitbucket.org/ccgmurdoch/yabi.git . \
   && pip install -r yabi/runtime-requirements.txt \
-  && pip install yabi \
+  && pip install ./yabi \
   && pip install -r yabish/requirements.txt \
-  && pip install yabish \
+  && pip install ./yabish \
   && cp /app/docker-entrypoint.sh / \
   && chmod +x /docker-entrypoint.sh \
   && mv /app/uwsgi / \

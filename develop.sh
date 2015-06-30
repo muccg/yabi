@@ -65,9 +65,7 @@ rpmbuild() {
 
 
 dockerbuild_unstable() {
-    cd docker/unstable
-    docker build -t muccg/yabi:unstable .
-    cd ../../
+    docker build -t muccg/yabi:unstable docker/unstable
 }
 
 
