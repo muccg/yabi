@@ -74,7 +74,7 @@ Some typical usages are:
 - ./develop.sh jslint
         Lint your javascript code.
 
-Note: Our docker containers are coordinated using fig (http://www.fig.sh/) but fig will be installed into a virtualenv environment automatically by the ``./develop.sh`` script for you.
+Note: Our docker containers are coordinated using docker-compose (https://docs.docker.com/compose/) but docker-compose will be installed into a virtualenv environment automatically by the ``./develop.sh`` script for you.
 
 Contributing
 ------------
