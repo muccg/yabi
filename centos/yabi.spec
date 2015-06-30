@@ -35,7 +35,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <yabi@ccg.murdoch.edu.au>
-Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 MySQL-python%{pyver} python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
+Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
 Requires: python%{pyver} openssl
 Requires(pre): shadow-utils, /usr/sbin/useradd, /usr/bin/getent
 Requires(postun): /usr/sbin/userdel
