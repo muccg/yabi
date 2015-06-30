@@ -22,40 +22,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN env --unset=DEBIAN_FRONTEND
 
-# Deps for tests
-RUN pip install \
-  lettuce \
-  lettuce_webdriver \
-  nose \
-  selenium
-
-# Install dependencies only (not the app itself) to use the build cache more efficiently
-# This will be redone only if setup.py changes
-# INSTALL_ONLY_DEPENDENCIES stops the app installing inside setup.py (pip --deps-only ??)
-COPY yabi/setup.py /app/yabi/setup.py
-WORKDIR /app/yabi
-RUN INSTALL_ONLY_DEPENDENCIES=True pip install --process-dependency-links .
-
-# Copy code and install the app
-COPY . /app
-RUN pip install --process-dependency-links --no-deps -e .
-
-# Install yabish
-WORKDIR /app/yabish
-RUN pip install --process-dependency-links -e .
-
-WORKDIR /app
-
-EXPOSE 8000 9000 9001 9100 9101
-VOLUME ["/app", "/data"]
-
 COPY krb5.conf /etc/krb5.conf
+
+# install python deps
+WORKDIR /app
+COPY yabi/*requirements.txt /app/yabi/
+COPY yabish/*requirements.txt /app/yabish/
+RUN pip install -r yabish/requirements.txt
+RUN pip install -r yabi/requirements.txt
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Drop privileges, set home for ccg-user
-USER ccg-user
+# Copy code and install the app itself
+COPY . /app
+RUN pip install -e yabi
+RUN pip install -e yabish
+
+EXPOSE 8000 9000 9001 9100 9101
+VOLUME ["/app", "/data"]
+
+# Allow celery to run as root for dev
+ENV C_FORCE_ROOT=1
 ENV HOME /data
 WORKDIR /data
 
