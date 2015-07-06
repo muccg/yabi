@@ -120,10 +120,6 @@ class WorkflowAdmin(admin.ModelAdmin):
     abort_workflow.short_description = "Abort selected Workflows."
 
 
-class QueuedWorkflowAdmin(admin.ModelAdmin):
-    list_display = ['workflow', 'created_on']
-
-
 class SyslogAdmin(admin.ModelAdmin):
     list_display = ['message', 'table_name', 'table_id', 'created_on']
     search_fields = ['table_name', 'table_id']
@@ -191,7 +187,6 @@ class DynamicBackendInstanceAdmin(BaseModelAdmin):
 
 def register(site):
     site.register(EngineWorkflow, WorkflowAdmin)
-    site.register(QueuedWorkflow, QueuedWorkflowAdmin)
     site.register(Syslog, SyslogAdmin)
     site.register(Job, JobAdmin)
     site.register(Task, TaskAdmin)

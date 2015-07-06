@@ -551,24 +551,6 @@ class StageIn(models.Model, Editable):
         return filename == os.path.basename(parts.path)
 
 
-class QueueBase(models.Model):
-    class Meta:
-        abstract = True
-
-    workflow = models.ForeignKey(Workflow)
-    created_on = models.DateTimeField(auto_now_add=True)
-
-    def name(self):
-        return self.workflow.name
-
-    def user_name(self):
-        return self.workflow.user.name
-
-
-class QueuedWorkflow(QueueBase):
-    pass
-
-
 class Syslog(models.Model):
     message = models.TextField(blank=True)
     table_name = models.CharField(max_length=64, null=True)

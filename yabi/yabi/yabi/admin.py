@@ -161,10 +161,6 @@ class FileExtensionAdmin(AdminBase):
     search_fields = ['pattern']
 
 
-class QueueAdmin(admin.ModelAdmin):
-    list_display = ['name', 'user_name', 'created_on']
-
-
 class CredentialAdmin(AdminBase):
     form = CredentialForm
     list_display = ['description', 'user', 'username']
@@ -273,8 +269,6 @@ class HostKeyAdmin(AdminBase):
 def register(site):
     site.register(FileExtension, FileExtensionAdmin)
     site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
-    # site.register(QueuedWorkflow, QueueAdmin)
-    # site.register(InProgressWorkflow, QueueAdmin)
     site.register(FileType, FileTypeAdmin)
     site.register(ToolDesc, ToolDescAdmin)
     site.register(Tool, ToolAdmin)
