@@ -40,14 +40,12 @@ start() {
     chmod o+rwx data/dev
 
     make_virtualenv
-    . ${VIRTUALENV}/bin/activate
-    pip install fig
 
     figfile="fig.yml"
     if [ "$1" = "full" ]; then
       figfile="fig-full.yml"
     fi
-    fig --project-name yabi -f $figfile up
+    docker-compose --project-name yabi -f $figfile up
 }
 
 start_full() {
@@ -61,17 +59,13 @@ rpmbuild() {
     chmod o+rwx data/rpmbuild
 
     make_virtualenv
-    . ${VIRTUALENV}/bin/activate
-    pip install fig
 
-    fig --project-name yabi -f fig-rpmbuild.yml up
+    docker-compose --project-name yabi -f fig-rpmbuild.yml up
 }
 
 
 dockerbuild_unstable() {
-    cd docker/unstable
-    docker build -t muccg/yabi:unstable .
-    cd ../../
+    docker build -t muccg/yabi:unstable docker/unstable
 }
 
 
@@ -80,13 +74,11 @@ runtests() {
     chmod o+rwx data/tests
 
     make_virtualenv
-    . ${VIRTUALENV}/bin/activate
-    pip install fig
 
     # clean up containers from past runs
-    ( fig --project-name yabi -f fig-test.yml rm --force || exit 0 )
-    fig --project-name yabi -f fig-test.yml build --no-cache
-    fig --project-name yabi -f fig-test.yml up
+    ( docker-compose --project-name yabi -f fig-test.yml rm --force || exit 0 )
+    docker-compose --project-name yabi -f fig-test.yml build --no-cache
+    docker-compose --project-name yabi -f fig-test.yml up
 }
 
 
@@ -96,7 +88,7 @@ rpm_publish() {
 }
 
 
-# build a docker image and start stack on staging using fig
+# build a docker image and start stack on staging using docker-compose
 ci_docker_staging() {
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/docker/unstable'
     ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/data'
@@ -126,12 +118,10 @@ selenium() {
     chmod o+rwx data/selenium
 
     make_virtualenv
-    . ${VIRTUALENV}/bin/activate
-    pip install fig
 
-    ( fig --project-name yabi -f fig-selenium.yml rm --force || exit 0 )
-    fig --project-name yabi -f fig-selenium.yml build
-    fig --project-name yabi -f fig-selenium.yml up
+    ( docker-compose --project-name yabi -f fig-selenium.yml rm --force || exit 0 )
+    docker-compose --project-name yabi -f fig-selenium.yml build
+    docker-compose --project-name yabi -f fig-selenium.yml up
 }
 
 
@@ -140,12 +130,10 @@ docker_staging_selenium() {
     chmod o+rwx data/selenium
 
     make_virtualenv
-    . ${VIRTUALENV}/bin/activate
-    pip install fig
 
-    ( fig --project-name yabi -f fig-staging-selenium.yml rm --force || exit 0 )
-    fig --project-name yabi -f fig-staging-selenium.yml build
-    fig --project-name yabi -f fig-staging-selenium.yml up
+    ( docker-compose --project-name yabi -f fig-staging-selenium.yml rm --force || exit 0 )
+    docker-compose --project-name yabi -f fig-staging-selenium.yml build
+    docker-compose --project-name yabi -f fig-staging-selenium.yml up
 }
 
 
@@ -154,31 +142,29 @@ docker_rpm_staging_selenium() {
     chmod o+rwx data/selenium
 
     make_virtualenv
-    . ${VIRTUALENV}/bin/activate
-    pip install fig
 
-    ( fig --project-name yabi -f fig-staging-rpm-selenium.yml rm --force || exit 0 )
-    fig --project-name yabi -f fig-staging-rpm-selenium.yml build
-    fig --project-name yabi -f fig-staging-rpm-selenium.yml up
+    ( docker-compose --project-name yabi -f fig-staging-rpm-selenium.yml rm --force || exit 0 )
+    docker-compose --project-name yabi -f fig-staging-rpm-selenium.yml build
+    docker-compose --project-name yabi -f fig-staging-rpm-selenium.yml up
 }
 
 
 # lint using flake8
 pythonlint() {
     make_virtualenv
-    ${VIRTUALENV}/bin/pip install 'flake8>=2.0,<2.1'
-    ${VIRTUALENV}/bin/flake8 yabi/yabi yabish/yabishell --count
+    pip install 'flake8>=2.0,<2.1'
+    flake8 yabi/yabi yabish/yabishell --count
 }
 
 
 # lint js, assumes closure compiler
 jslint() {
     make_virtualenv
-    ${VIRTUALENV}/bin/pip install 'closure-linter==2.3.13'
+    pip install 'closure-linter==2.3.13'
     JSFILES="yabi/yabi/yabifeapp/static/javascript/*.js yabi/yabi/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
-        ${VIRTUALENV}/bin/gjslint --disable 0131 --max_line_length 100 --nojsdoc $JS
+        gjslint --disable 0131 --max_line_length 100 --nojsdoc $JS
     done
 }
 
@@ -189,6 +175,8 @@ make_virtualenv() {
     if [ ! -e ${VIRTUALENV} ]; then
         virtualenv ${VIRTUALENV}
     fi
+    . ${VIRTUALENV}/bin/activate
+    pip install docker-compose
 }
 
 

@@ -4,8 +4,8 @@
 %define pyver 27
 %define pybasever 2.7
 
-%define version 9.5.0
-%define unmangled_version 9.5.0
+%define version 9.5.1
+%define unmangled_version 9.5.1
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabi
@@ -34,8 +34,8 @@ Group: Applications/Internet
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
-Vendor: Centre for Comparative Genomics <web@ccg.murdoch.edu.au>
-BuildRequires: python%{pyver}-virtualenv python%{pyver}-devel openssl-devel libxslt-devel libxml2-devel postgresql94-devel openldap-devel
+Vendor: Centre for Comparative Genomics <yabi@ccg.murdoch.edu.au>
+Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
 Requires: python%{pyver} openssl
 Requires(pre): shadow-utils, /usr/sbin/useradd, /usr/bin/getent
 Requires(postun): /usr/sbin/userdel
@@ -46,7 +46,7 @@ Test.
 %package admin
 Summary: yabi Django web application
 Group: Applications/Internet
-Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 MySQL-python%{pyver} python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
+Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
 
 %description admin
 Django web application implementing the web front end for Yabi.
@@ -96,10 +96,12 @@ virtualenv-%{pybasever} %{buildinstalldir}
 
 # Use specific version of pip -- avoids surprises with deprecated
 # options, etc.
-pip install --force-reinstall --upgrade 'pip>=1.5,<1.6'
+pip install --force-reinstall --upgrade 'pip>=7.0,<8.0'
+pip --version
 
 # Install package into the prefix
-pip install --process-dependency-links .
+pip install -r runtime-requirements.txt
+pip install .
 
 # Fix up paths in virtualenv, enable use of global site-packages
 virtualenv-%{pybasever} --relocatable %{buildinstalldir}
@@ -166,10 +168,11 @@ virtualenv-%{pybasever} %{shbuildinstalldir}
 
 # Use specific version of pip -- avoids surprises with deprecated
 # options, etc.
-pip install --force-reinstall --upgrade 'pip>=1.5,<1.6'
+pip install --force-reinstall --upgrade 'pip>=7.0,<8.0'
 
 # Install package into the prefix
-pip install --process-dependency-links .
+pip install -r requirements.txt
+pip install .
 
 # Fix up paths in virtualenv, enable use of global site-packages
 virtualenv-%{pybasever} --relocatable %{shbuildinstalldir}

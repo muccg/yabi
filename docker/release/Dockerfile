@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
 RUN env --unset=DEBIAN_FRONTEND
 
 WORKDIR /app
-RUN git clone --depth=1 --branch=9.5 https://bitbucket.org/ccgmurdoch/yabi.git .
+RUN git clone --depth=1 --branch=9.5.1 https://bitbucket.org/ccgmurdoch/yabi.git .
 
 WORKDIR /app/yabi
 RUN pip install --process-dependency-links .

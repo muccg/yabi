@@ -1,0 +1,2 @@
+six==1.8
+https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz

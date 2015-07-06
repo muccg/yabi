@@ -10,7 +10,7 @@ ssh:
   hostname: ssh
 
 db:
-  image: postgres:9.3
+  image: postgres:9.4
   environment:
     - POSTGRES_USER=yabiapp
     - POSTGRES_PASSWORD=yabiapp
@@ -27,7 +27,7 @@ cache:
   image: memcached:1.4
 
 nginx:
-  image: muccg/nginx-uwsgi:1.7
+  image: muccg/nginx-uwsgi:1.9
   links:
     - uwsgi
   ports:
