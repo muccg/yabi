@@ -293,10 +293,9 @@ class SFTPBackend(FSBackend):
 
         return dirs, files
 
-    def local_copy(self, src_uri, dst_uri, recursive=False):
+    def local_copy(self, src_uri, dst_uri):
         """Copy src_uri to dst_uri on the remote backend"""
-        logger.debug("SFTPBackend.local_copy(recursive=%s): %s => %s",
-                     recursive, src_uri, dst_uri)
+        logger.debug("SFTPBackend.local_copy: %s => %s", src_uri, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
         logger.debug('{0} -> {1}'.format(src_uri, dst_uri))
@@ -304,13 +303,29 @@ class SFTPBackend(FSBackend):
         # use cp on server via exec backend
         executer = create_executer(self.yabiusername, src_uri)
         try:
-            executer.local_copy(src_parts.path, dst_parts.path, recursive)
+            executer.local_copy(src_parts.path, dst_parts.path)
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def local_copy_recursive(self, src_uri, dst_uri):
         """recursively copy src_uri to dst_uri on the remote backend"""
-        self.local_copy(src_uri, dst_uri, recursive=True)
+        logger.debug("SFTPBackend.local_copy_recursive: %s => %s", src_uri, dst_uri)
+        dst_scheme, dst_parts = uriparse(dst_uri)
+        dst_path = dst_parts.path
+
+        listing = self.ls(src_uri)
+
+        executer = create_executer(self.yabiusername, src_uri)
+        try:
+            for key in listing:
+                for listing_file in listing[key]['files']:
+                    file_path = os.path.join(key, listing_file[0])
+                    executer.local_copy(file_path, dst_path)
+                for listing_dir in listing[key]['directories']:
+                    dir_path = os.path.join(key, listing_dir[0])
+                    executer.local_copy(dir_path, dst_path, recursive=True)
+        except Exception as exc:
+            raise RetryException(exc, traceback.format_exc())
 
     def symbolic_link(self, src_uri, dst_uri):
         """symbolic link to target_uri called link_uri."""
@@ -368,7 +383,7 @@ cp -p "{0}" "{1}"
 
     COPY_RECURSIVE_COMMAND_TEMPLATE = """
 #!/bin/sh
-cp -rp "{0}/" "{1}"
+cp -rp "{0}" "{1}"
 """
 
     SYMLINK_COMMAND_TEMPLATE = """
