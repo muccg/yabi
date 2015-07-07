@@ -35,7 +35,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <yabi@ccg.murdoch.edu.au>
-BuildRequires: python%{pyver}-virtualenv python%{pyver}-devel postgresql94-devel libxml2-devel
+BuildRequires: python%{pyver}-virtualenv python%{pyver}-devel postgresql94-devel libxml2-devel libxslt-devel openldap-devel
 Requires: python%{pyver} openssl httpd python%{pyver}-mod_wsgi postgresql94-libs libxml2
 Requires(pre): shadow-utils, /usr/sbin/useradd, /usr/bin/getent
 Requires(postun): /usr/sbin/userdel
