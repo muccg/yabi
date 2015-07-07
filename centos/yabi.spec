@@ -35,8 +35,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <yabi@ccg.murdoch.edu.au>
-Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
-Requires: python%{pyver} openssl
+BuildRequires: python%{pyver}-virtualenv python%{pyver}-devel postgresql94-devel libxml2-devel
+Requires: python%{pyver} openssl httpd python%{pyver}-mod_wsgi postgresql94-libs libxml2
 Requires(pre): shadow-utils, /usr/sbin/useradd, /usr/bin/getent
 Requires(postun): /usr/sbin/userdel
 
@@ -46,7 +46,6 @@ Test.
 %package admin
 Summary: yabi Django web application
 Group: Applications/Internet
-Requires: httpd python%{pyver}-mod_wsgi python%{pyver}-psycopg2 python%{pyver}-crypto python%{pyver}-sqlalchemy python%{pyver}-lxml
 
 %description admin
 Django web application implementing the web front end for Yabi.
@@ -98,6 +97,8 @@ virtualenv-%{pybasever} %{buildinstalldir}
 # options, etc.
 pip install --force-reinstall --upgrade 'pip>=7.0,<8.0'
 pip --version
+
+export PATH=$PATH:/usr/pgsql-9.4/bin
 
 # Install package into the prefix
 pip install -r runtime-requirements.txt
