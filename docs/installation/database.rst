@@ -31,3 +31,14 @@ To initialise the database::
  # yabiadmin migrate
 
 These will create the schema, insert setup data, and create initial users.
+
+Make sure Apache can connect to the database
+--------------------------------------------
+
+SELinux on CentOS systems will prevent Apache to connect to any network services by default.
+Yabi needs to be able to connect to your database, so you will need to set at least the first of the following SELinux booleans to on:
+
+    httpd_can_network_connect_db (HTTPD Service)
+        Allow HTTPD scripts and modules to network connect to databases.
+    httpd_can_network_connect (HTTPD Service)
+        Allow HTTPD scripts and modules to connect to the network.

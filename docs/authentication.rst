@@ -84,6 +84,9 @@ AUTH_TYPE                        Authentication type. Set it to *"kerberos+ldap"
 AUTH_KERBEROS_REALM              Your Kerberos realm. Ex. *"CCGMURDOCH"*.
 ==============================  ===============
 
+*Note*: For Kerberos Authentication to work properly the Kerberos must be configured properly on this machine.
+That will likely mean ensuring that the edu.mit.Kerberos preference file has the correct realms and KDCs listed.
+
 
 Fallback on Database Authentication
 -----------------------------------
