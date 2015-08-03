@@ -38,7 +38,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadReque
 from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabi.yabi.models import User, Credential, BackendCredential
-from yabi.yabi.models import ToolGrouping, Tool, Backend
+from yabi.yabi.models import ToolGrouping, Tool, ToolDesc, Backend
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
@@ -60,7 +60,24 @@ DATE_FORMAT = '%Y-%m-%d'
 
 
 @authentication_required
+def tooldesc(request, tooldesc_id):
+    user = request.user.user
+    try:
+        tool = ToolDesc.objects.get(pk=tooldesc_id)
+    except ObjectDoesNotExist:
+        return JsonMessageResponseNotFound("Object not found")
+
+    response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
+
+    return response
+
+
+@authentication_required
 def tool(request, toolid):
+    admin_access = False
+    if request.GET.get('admin_access', 'false').lower() != 'false':
+        admin_access = True
+
     toolname_key = "%s" % toolid
     page = cache.get(toolname_key)
 
@@ -74,8 +91,9 @@ def tool(request, toolid):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-    if not tool.does_user_have_access_to(user):
-        return JsonMessageResponseForbidden("User does not have access to the tool")
+    if not (admin_access and request.user.is_superuser):
+        if not tool.does_user_have_access_to(user):
+            return JsonMessageResponseForbidden("User does not have access to the tool")
 
     response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
     cache.set(toolname_key, response, 30)

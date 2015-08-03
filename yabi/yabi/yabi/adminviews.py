@@ -116,7 +116,7 @@ def tool(request, tool_id):
         'title': 'Tool Details',
         'root_path': urlresolvers.reverse('admin:index'),
         'edit_url': urlresolvers.reverse('admin:yabi_tooldesc_change', args=(tool.id,)),
-        'json_url': webhelpers.url('/ws/tool/' + quote(tool.name)),
+        'json_url': webhelpers.url('/ws/tooldesc/%s' % tool.id),
         'tool_params': format_params(tool.toolparameter_set.order_by('id')),
     })
 

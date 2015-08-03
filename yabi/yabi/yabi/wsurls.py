@@ -28,6 +28,7 @@ from django.conf.urls import *
 urlpatterns = patterns(
     'yabi.yabi.ws_frontend_views',
     url(r'^tool/(?P<toolid>[^/]*)[/]*$', 'tool', name='tool'),
+    url(r'^tooldesc/(?P<tooldesc_id>[^/]*)[/]*$', 'tooldesc', name='tooldesc'),
     url(r'^menu[/]*$', 'menu', name='menu'),
     url(r'^menu_saved_workflows[/]*$',
         'menu_saved_workflows', name='menu_saved_workflows'),

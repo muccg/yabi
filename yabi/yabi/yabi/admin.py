@@ -127,7 +127,7 @@ class ToolDescAdmin(AdminBase):
 
 class ToolAdmin(AdminBase):
     form = ToolForm
-    list_display = ['desc', 'path', 'display_name', 'tool_groups_str', 'backend', 'fs_backend', 'enabled']
+    list_display = ['desc', 'path', 'display_name', 'view_json', 'tool_groups_str', 'backend', 'fs_backend', 'enabled']
     search_fields = ['desc__name', 'display_name', 'path']
     save_as = False
     list_filter = ["backend", "fs_backend", "enabled"]
@@ -137,6 +137,12 @@ class ToolAdmin(AdminBase):
             return "%s (%s)" % (tg.tool_group, tg.tool_set)
         return ",".join(map(fmt, ob.toolgrouping_set.all()))
     tool_groups_str.short_description = 'Belongs to Tool Groups'
+
+    def view_json(self, ob):
+        view_url = reverse('tool', kwargs={'toolid': ob.id}) + '?admin_access=true'
+        return '<a href="%s">View JSON</a>' % view_url
+    view_json.short_description = 'View JSON'
+    view_json.allow_tags = True
 
 
 class ToolGroupAdmin(AdminBase):
