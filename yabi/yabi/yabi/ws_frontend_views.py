@@ -61,7 +61,6 @@ DATE_FORMAT = '%Y-%m-%d'
 
 @authentication_required
 def tooldesc(request, tooldesc_id):
-    user = request.user.user
     try:
         tool = ToolDesc.objects.get(pk=tooldesc_id)
     except ObjectDoesNotExist:
