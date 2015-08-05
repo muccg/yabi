@@ -40,7 +40,7 @@ Required settings:
 Setting                          Description
 ==============================  ===============
 AUTH_TYPE                       Authenticaton type. Set it to *"ldap"*.
-AUTH_SERVER                     List of at least 1 ldap servers. Servers will be tried in order. Ex. *["ldaps://ldap1.your.domain", "ldap://ldap2.your.domain"]*
+AUTH_LDAP_SERVER                List of at least 1 ldap servers. Servers will be tried in order. Ex. *["ldaps://ldap1.your.domain", "ldap://ldap2.your.domain"]*
 AUTH_LDAP_USER_BASE             Parent DN of place where your users are stored. Ex. *"ou=People, dc=your_domain"*
 AUTH_LDAP_YABI_GROUP_DN         DN of the Yabi user group. Ex. *"cn=Yabi, ou=Groups, dc=your_domain"*
 AUTH_LDAP_YABI_ADMIN_GROUP_DN   DN of the Yabi Administrators user group. Ex. *"cn=Yabi Administrators, ou=Groups, dc=your_domain"*
