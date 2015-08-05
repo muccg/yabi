@@ -1,6 +1,10 @@
 # Config for Yabi web application.
 # You can also edit /etc/yabi/settings.py.
 
+
+# Timezone, set to one of: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+TIME_ZONE=Australia/Perth
+
 # database options
 DBTYPE=pgsql
 DBNAME=yabi
