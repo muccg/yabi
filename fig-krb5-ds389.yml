@@ -34,13 +34,14 @@ web:
   environment:
     - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
-    # - AUTH_TYPE=kerberos
-    # - AUTH_TYPE=kerberos+ldap
-    - AUTH_TYPE=ldap
+    # - AUTH_TYPE=ldap
+    - AUTH_TYPE=kerberos+ldap
     - AUTH_KERBEROS_REALM=DOCKERDOMAIN
     - AUTH_LDAP_SERVER=ldap://ldap
     - AUTH_LDAP_USER_BASE=ou=People,dc=dockerdomain
-    - AUTH_LDAP_GROUP_BASE=ou=Web Groups,ou=Groups,dc=dockerdomain
+    - AUTH_LDAP_YABI_GROUP_DN=cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain
+    - AUTH_LDAP_YABI_ADMIN_GROUP_DN=cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain
+    - AUTH_ENABLE_DB_FALLBACK=false
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1

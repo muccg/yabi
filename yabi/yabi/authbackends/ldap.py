@@ -1,5 +1,6 @@
 import logging
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.auth.backends import ModelBackend
 from yabi import ldaputils
@@ -9,9 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class LDAPBackend(ModelBackend):
+    MANDATORY_SETTINGS = ('AUTH_LDAP_SERVER', 'AUTH_LDAP_USER_BASE', 'AUTH_LDAP_YABI_GROUP_DN')
+
     def authenticate(self, username=None, password=None):
         if not password:
             logger.warning('Empty password supplied. Access denied')
+            return None
+
+        if not self.assert_correct_configuration():
             return None
 
         if not self.can_log_in(username, password):
@@ -55,3 +61,24 @@ class LDAPBackend(ModelBackend):
             return user
         except ldaputils.LDAPUserDoesNotExist:
             logger.info("LDAP user '%s' does not exist" % username)
+
+    def assert_correct_configuration(self):
+        def get_setting(setting):
+            return getattr(settings, setting, None)
+        setting_not_set = _complement(get_setting)
+        unset_mandatory_settings = filter(setting_not_set, self.MANDATORY_SETTINGS)
+
+        if len(unset_mandatory_settings) > 0:
+            if len(unset_mandatory_settings) == 1:
+                msg = 'The mandatory setting %s is NOT set' % unset_mandatory_settings[0]
+            else:
+                msg = 'The mandatory settings %s are NOT set' % ', '.join(unset_mandatory_settings)
+            raise ImproperlyConfigured(msg)
+
+        return True
+
+
+def _complement(fn):
+    def compl(*args, **kwargs):
+        return not fn(*args, **kwargs)
+    return compl

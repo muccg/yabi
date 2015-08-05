@@ -258,6 +258,7 @@ AUTH_TYPE = env.get("auth_type", "").lower()
 # Set to True if you would like to add the Database Authentication as a fallback.
 # This is useful to be able to log in even if there is some problem with your
 # LDAP, Kerberos etc. server.
+# AUTH_ENABLE_DB_FALLBACK = env.get("auth_enable_db_fallback", True)
 AUTH_ENABLE_DB_FALLBACK = env.get("auth_enable_db_fallback", True)
 
 AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
@@ -275,15 +276,15 @@ elif AUTH_TYPE == 'kerberos+ldap':
 if AUTHENTICATION_BACKENDS == [] or AUTH_ENABLE_DB_FALLBACK:
     AUTHENTICATION_BACKENDS.append('yabi.authbackends.CaseInsensitiveUsernameModelBackend')
 
-AUTH_KERBEROS_REALM = env.get('auth_kerberos_realm', 'DOCKERDOMAIN')
+AUTH_KERBEROS_REALM = env.get('auth_kerberos_realm', '')
 AUTH_KERBEROS_SERVICE = env.get('auth_kerberos_service', '')
 
 # LDAP details have to be set correctly if AUTH_TYPE is "ldap" or "kerberos+ldap"
 # LDAP settings you have to set for sure:
-AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", ["ldap://ldap.dockerdomain"])
-AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", "ou=People,dc=dockerdomain")
-AUTH_LDAP_YABI_GROUP_DN = env.get("auth_ldap_group_dn", "cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain")
-AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_admin_group_dn", "cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain")
+AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", [])
+AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", "")
+AUTH_LDAP_YABI_GROUP_DN = env.get("auth_ldap_yabi_group_dn", "")
+AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_yabi_admin_group_dn", "")
 # LDAP settings you might want to set:
 AUTH_LDAP_SYNC_USER_ON_LOGIN = env.get("auth_ldap_sync_user_on_login", False)
 AUTH_LDAP_USER_FILTER = env.get("auth_ldap_user_filter", "(objectclass=person)")
