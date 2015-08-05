@@ -111,8 +111,8 @@ CSRF_COOKIE_SECURE = env.get("csrf_cookie_secure", PRODUCTION)
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
 #      https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 #      https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
-TIME_ZONE = 'Australia/Perth'
-LANGUAGE_CODE = 'en-us'
+TIME_ZONE = env.get("time_zone", "Australia/Perth")
+LANGUAGE_CODE = env.get("language_code", "en-us")
 USE_I18N = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#login-url
