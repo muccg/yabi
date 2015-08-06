@@ -5,6 +5,17 @@ from collections import OrderedDict
 import logging
 
 
+# Adapts from old South orm calls to new apps calls
+# ie. orm['yabi.User'] becomes apps.get_model('yabi', 'User')
+class SouthAdapter(object):
+    def __init__(self, apps):
+        self._apps = apps
+
+    def __getitem__(self, name):
+        app, model = name.split('.', 1)
+        return self._apps.get_model(app, model)
+
+
 class Settings:
     user = None
     orm = None
@@ -17,8 +28,8 @@ def set_default_user(user):
     settings.user = user
 
 
-def set_default_orm(orm):
-    settings.orm = orm
+def set_default_orm(apps):
+    settings.orm = SouthAdapter(apps)
 
 
 def auth_user(username, password, email, active=True, staff=False, superuser=False, user=None, orm=None):
@@ -51,12 +62,16 @@ def yabi_user(username, user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
 
+    # return orm['yabi.User'].objects.get(user__username=username)
     yabi_user = orm['yabi.User']()
+    # yabi_user, created = orm['yabi.User'].objects.get_or_create(name=username)
+    # if created:
     yabi_user.last_modified_by = user
     yabi_user.last_modified_on = datetime.now()
     yabi_user.created_by = user
     yabi_user.created_on = datetime.now()
     yabi_user.name = username
+    yabi_user.user = orm['auth.user'].objects.get(username=username)
 
     return yabi_user
 
@@ -163,12 +178,17 @@ def yabi_parameterswitchuse(display_text, formatstring, description, user=None, 
 
 def yabi_tool(name, display_name, path, description, backend, fs_backend,
               enabled=True, accepts_input=False, cpus='', walltime='', module='',
-              queue='', max_memory='', job_type='', lcopy=False, link=False,
+              queue='', max_memory='', job_type='', lcopy=True, link=True,
               user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
 
+    yabi_tooldesc = orm['yabi.ToolDesc']()
+    yabi_tooldesc.name = name
+    yabi_tooldesc.description = description
+    yabi_tooldesc.save()
     yabi_tool = orm['yabi.Tool']()
+    yabi_tool.desc = yabi_tooldesc
     yabi_tool.last_modified_by = user
     yabi_tool.last_modified_on = datetime.now()
     yabi_tool.created_by = user
@@ -201,7 +221,7 @@ def yabi_toolparameter(tool, switch, switch_use, rank, mandatory, hidden, output
     yabi_toolparameter.last_modified_on = datetime.now()
     yabi_toolparameter.created_by = user
     yabi_toolparameter.created_on = datetime.now()
-    yabi_toolparameter.tool = tool
+    yabi_toolparameter.tool = tool.desc
     yabi_toolparameter.switch = switch
     yabi_toolparameter.switch_use = switch_use
     yabi_toolparameter.rank = rank
@@ -227,7 +247,7 @@ def yabi_tooloutputextension(tool, extension, user=None, orm=None):
     yabi_tooloutputextension.last_modified_on = datetime.now()
     yabi_tooloutputextension.created_by = user
     yabi_tooloutputextension.created_on = datetime.now()
-    yabi_tooloutputextension.tool = tool
+    yabi_tooloutputextension.tool = tool.desc
     yabi_tooloutputextension.file_extension = extension
 
     yabi_tooloutputextension.must_exist = None

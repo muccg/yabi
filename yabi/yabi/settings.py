@@ -82,7 +82,6 @@ INSTALLED_APPS = [
     'yabi.yabiengine',
     'kombu.transport.django',
     'django_extensions',
-    'south',
     'djamboloader',
     'django.contrib.admin',
     'djangosecure',
