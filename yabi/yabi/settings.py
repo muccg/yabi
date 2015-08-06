@@ -493,6 +493,10 @@ JAVASCRIPT_LIBRARIES = {
     },
 }
 
+# We're not running tests through Django but the System Check Frameworks complains if
+# TEST_RUNNER isn't set
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 # The logging settings here apply only to the Django WSGI process.
 # Celery is left to hijack the root logger. We add our custom handlers after
 # that in yabi.backend.celerytasks.

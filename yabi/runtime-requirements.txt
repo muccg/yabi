@@ -1,4 +1,4 @@
-Django==1.6.11
+Django==1.7.9
 pytz>=2013b
 anyjson==0.3.3
 celery==3.1.15
