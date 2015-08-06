@@ -44,22 +44,6 @@ def authentication_required(f):
     return new_function
 
 
-def profile_required(func):
-    from .yabi.models import User
-
-    def newfunc(request, *args, **kwargs):
-        # Check if the user has a profile; if not, nothing's going to work anyway,
-        # so we might as well fail more spectacularly.
-        try:
-            request.user.get_profile()
-        except ObjectDoesNotExist:
-            User.objects.create(user=request.user)
-
-        return func(request, *args, **kwargs)
-
-    return newfunc
-
-
 # Number of times to indent output
 # A list is used to force access by reference
 __report_indent = [0]

@@ -260,13 +260,11 @@ AUTH_TYPE = env.get("auth_type", "").lower()
 # AUTH_ENABLE_DB_FALLBACK = env.get("auth_enable_db_fallback", True)
 AUTH_ENABLE_DB_FALLBACK = env.get("auth_enable_db_fallback", True)
 
-AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 AUTHENTICATION_BACKENDS = []
 if AUTH_TYPE == 'ldap':
     AUTHENTICATION_BACKENDS = [
         'yabi.authbackends.ldap.LDAPBackend'
     ]
-    AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 elif AUTH_TYPE == 'kerberos+ldap':
     AUTHENTICATION_BACKENDS = [
         'yabi.authbackends.kerberosldap.KerberosLDAPBackend'

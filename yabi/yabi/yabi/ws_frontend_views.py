@@ -48,7 +48,7 @@ from yabi.backend.celerytasks import process_workflow, request_workflow_abort
 from yabi.yabiengine.enginemodels import EngineWorkflow
 from yabi.yabiengine.models import Workflow, WorkflowTag, SavedWorkflow
 from yabi.responses import *
-from yabi.decorators import authentication_required, profile_required
+from yabi.decorators import authentication_required
 from yabi.utils import json_error_response, json_response
 from yabi.backend import backend
 from yabi.backend.exceptions import FileNotFoundError
@@ -676,12 +676,11 @@ def workflow_change_tags(request, id=None):
 
 
 @authentication_required
-@profile_required
 def passchange(request):
     if request.method != "POST":
         return HttpResponseNotAllowed("Method must be POST")
 
-    profile = request.user.get_profile()
+    profile = request.user.user
     success, message = profile.passchange(request)
     if success:
         return HttpResponse(json.dumps(message))

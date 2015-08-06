@@ -11,7 +11,7 @@ class CredentialTests(unittest.TestCase):
         self.django_user = DjangoUser.objects.create(username=u'győzike')
         self.django_user.set_password('pass')
         self.django_user.save()
-        self.user = self.django_user.get_profile()
+        self.user = self.django_user.user
         self.credential = Credential.objects.create(description='test cred', username=self.user.name, user=self.user, password='wombles', cert='cheese', key='it')
         self.credential.save()
 

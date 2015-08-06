@@ -33,10 +33,9 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 from django import forms
 from django.core.cache import cache
 from ccg_django_utils import webhelpers
-from yabi.yabi.models import Credential, User
+from yabi.yabi.models import Credential, User, ModelBackendUserProfile, LDAPBackendUserProfile
 from yabi.responses import *
 from yabi.preview import html
-from yabi.decorators import profile_required
 from yabi.crypto_utils import DecryptException
 from yabi.yabi.ws_frontend_views import ls, get
 from yabi.yabifeapp.utils import preview_key, logout, using_dev_settings  # NOQA
@@ -77,37 +76,32 @@ def render_page(template, request, response=None, **kwargs):
 
 
 @login_required
-@profile_required
 def files(request):
     return render_page("fe/files.html", request)
 
 
 @login_required
-@profile_required
 def design(request, id=None):
     return render_page("fe/design.html", request, reuseId=id)
 
 
 @login_required
-@profile_required
 def jobs(request):
     return render_page("fe/jobs.html", request)
 
 
 @login_required
-@profile_required
 @user_passes_test(lambda user: user.is_staff)
 def admin(request):
     return render_page("fe/admin.html", request)
 
 
 @login_required
-@profile_required
 def account(request):
-    if not request.user.get_profile().has_account_tab():
+    profile = request.user.user
+    if not profile.has_account_tab():
         return render_page("fe/errors/403.html", request, response=HttpResponseForbidden())
 
-    profile = request.user.get_profile()
     username = request.user.username
     return render_page("fe/account.html", request, profile=profile, username=username)
 
@@ -217,12 +211,15 @@ def wslogout(request):
 
 
 @login_required
-@profile_required
 def password(request):
     if request.method != "POST":
         return JsonMessageResponseNotAllowed(["POST"])
 
-    profile = request.user.get_profile()
+    profile_class = ModelBackendUserProfile 
+    if settings.AUTH_TYPE == 'ldap':
+        profile_class = LDAPBackendUserProfile
+
+    profile = profile_class.objects.get(user=request.user)
     (valid, errormsg) = profile.change_password(request)
     if not valid:
         return JsonMessageResponseServerError(errormsg)
