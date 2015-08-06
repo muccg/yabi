@@ -584,7 +584,7 @@ def get_workflow(request, workflow_id):
     response = workflow_to_response(workflow)
 
     return HttpResponse(json.dumps(response),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 
 def workflow_to_response(workflow, parse_json=True, retrieve_tags=True):
@@ -648,7 +648,7 @@ def workflow_datesearch(request):
         workflow_response["tags"] = tags.get(workflow.id, [])
         response.append(workflow_response)
 
-    return HttpResponse(json.dumps(response), mimetype='application/json')
+    return HttpResponse(json.dumps(response), content_type='application/json')
 
 
 @authentication_required
