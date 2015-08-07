@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.utils import unittest as unittest
+import unittest
 from crypto_utils import encrypt_to_annotated_block, \
     decrypt_annotated_block, looks_like_annotated_block, DecryptException
 

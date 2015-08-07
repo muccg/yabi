@@ -1,4 +1,4 @@
-from django.utils import unittest as unittest
+import unittest
 from yabi.yabiengine.models import Syslog
 from yabi.yabiengine.engine_logging import create_task_logger, create_job_logger, create_workflow_logger, YabiDBHandler
 

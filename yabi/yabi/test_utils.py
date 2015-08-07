@@ -1,5 +1,5 @@
+import unittest
 from django.conf import settings, UserSettingsHolder
-from django.utils import unittest as unittest
 from django.utils.functional import wraps
 from django.test.client import Client
 

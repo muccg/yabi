@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 import logging
-from django.utils import unittest
+import unittest
 import subprocess
 from nose.plugins.attrib import attr
 

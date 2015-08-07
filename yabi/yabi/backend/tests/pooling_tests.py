@@ -1,4 +1,4 @@
-from django.utils import unittest as unittest
+import unittest
 
 from yabi.backend import pooling
 from mockito import *

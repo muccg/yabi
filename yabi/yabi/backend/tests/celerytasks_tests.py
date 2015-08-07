@@ -1,4 +1,4 @@
-from django.utils import unittest as unittest
+import unittest
 
 import celery
 from mockito import *

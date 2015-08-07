@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import six
-from django.utils import unittest as unittest
+import unittest
 from django.contrib.auth.models import User as DjangoUser
 from yabi.yabi.models import Credential
 

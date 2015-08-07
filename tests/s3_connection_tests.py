@@ -4,7 +4,7 @@ import sys
 import json
 from StringIO import StringIO
 
-from django.utils import unittest
+import unittest
 from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
 from .fixture_helpers import admin
 from .request_test_base import RequestTest

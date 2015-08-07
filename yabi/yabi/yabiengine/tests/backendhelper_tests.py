@@ -1,4 +1,4 @@
-from django.utils import unittest as unittest
+import unittest
 from model_mommy import mommy
 from yabi.yabi import models as m
 from yabi.yabiengine import backendhelper as bh

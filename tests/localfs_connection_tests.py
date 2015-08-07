@@ -1,5 +1,5 @@
 from __future__ import print_function
-from django.utils import unittest
+import unittest
 from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
 from .fixture_helpers import admin
 import os

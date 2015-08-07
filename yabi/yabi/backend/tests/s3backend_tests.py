@@ -1,6 +1,6 @@
 import os
 from functools import partial
-from django.utils import unittest as unittest
+import unittest
 import boto.s3.key
 import boto.s3.prefix
 import logging

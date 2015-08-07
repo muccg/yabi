@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.utils import unittest
+import unittest
 from yabi.backend.swiftbackend import SwiftBackend
 
 

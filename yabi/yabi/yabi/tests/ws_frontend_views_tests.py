@@ -2,7 +2,7 @@
 
 import json
 import sys
-from django.utils import unittest as unittest
+import unittest
 from model_mommy import mommy
 from yabi.yabi.ws_frontend_views import munge_name
 from yabi.yabi.models import User, Backend, BackendCredential, Credential, Tool, ToolDesc, ToolSet, ToolGroup
