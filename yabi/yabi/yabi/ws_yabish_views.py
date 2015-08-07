@@ -29,6 +29,7 @@ import uuid
 from datetime import datetime
 from django.db import transaction
 from django.http import HttpResponse
+form django.view.decorators.http import require_POST
 from yabi.yabi import models
 from yabi.backend.celerytasks import process_workflow
 from yabi.yabiengine.enginemodels import EngineWorkflow
@@ -152,11 +153,12 @@ def split_job(job):
 
 
 @authentication_required
+@require_POST
 def createstageindir(request):
     logger.debug(request.user.username)
     try:
-        guid = request.REQUEST['uuid']
-        dirs_to_create = [p[1] for p in request.REQUEST.items() if p[0].startswith('dir_')]
+        guid = request.POST['uuid']
+        dirs_to_create = [p[1] for p in request.POST.items() if p[0].startswith('dir_')]
         uuid.UUID(guid)  # validation
         user = models.User.objects.get(name=request.user.username)
 

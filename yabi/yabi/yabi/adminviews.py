@@ -124,7 +124,7 @@ def tool(request, tool_id):
 def modify_backend_by_id(request, id):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(id=id)
-    for key, val in six.iteritems(request.REQUEST):
+    for key, val in six.iteritems(getattr(request, request.method)):
         logger.debug('{0}={1}'.format(key, val))
         setattr(be, key, None if val == "None" else val)
     be.save()
@@ -136,7 +136,7 @@ def modify_backend_by_id(request, id):
 def modify_backend_by_name(request, scheme, hostname):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(scheme=scheme, hostname=hostname)
-    for key, val in six.iteritems(request.REQUEST):
+    for key, val in six.iteritems(getattr(request, request.method)):
         logger.debug('{0}={1}'.format(key, val))
         setattr(be, key, None if val == "None" else val)
     be.save()

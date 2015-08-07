@@ -68,14 +68,12 @@ def make_http_request(request, original_request, ajax_call):
 
 
 def make_request_object(url, request):
-    params = {}
-    for k in request.REQUEST:
-        params[k] = request.REQUEST[k]
     if request.method == 'GET':
-        return GetRequest(url, params)
+        return GetRequest(url, request.GET.dict())
+
     elif request.method == 'POST':
         files = [('file%d' % (i + 1), f.name, f.temporary_file_path()) for i, f in enumerate(request.FILES.values())]
-        return PostRequest(url, params, files=files)
+        return PostRequest(url, request.POST.dict(), files=files)
 
 
 def copy_non_empty_headers(src, to, header_names):

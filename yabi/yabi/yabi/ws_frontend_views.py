@@ -251,7 +251,7 @@ def rcopy(request):
     """
     yabiusername = request.user.username
 
-    src, dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
+    src, dst = unquote(request.GET['src']), unquote(request.GET['dst'])
 
     # check that src does not match dst
     srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
