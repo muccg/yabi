@@ -20,9 +20,8 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-import json
 from django.utils.encoding import smart_str
-from django.http import HttpResponse
+from django.http import JsonResponse
 
 
 def cache_keyname(key):
@@ -33,14 +32,12 @@ def cache_keyname(key):
 
 
 def json_response(data):
-    return HttpResponse(json.dumps({
+    return JsonResponse({
         'status': 'success',
-        'data': data,
-    }), content_type="application/json")
+        'data': data})
 
 
 def json_error_response(message, **response_kwargs):
-    return HttpResponse(json.dumps({
+    return JsonResponse({
         'status': 'error',
-        'message': message,
-    }), content_type="application/json", **response_kwargs)
+        'message': message}, **response_kwargs)
