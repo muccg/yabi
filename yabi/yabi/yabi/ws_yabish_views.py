@@ -29,7 +29,7 @@ import uuid
 from datetime import datetime
 from django.db import transaction
 from django.http import HttpResponse
-form django.view.decorators.http import require_POST
+from django.views.decorators.http import require_POST
 from yabi.yabi import models
 from yabi.backend.celerytasks import process_workflow
 from yabi.yabiengine.enginemodels import EngineWorkflow
