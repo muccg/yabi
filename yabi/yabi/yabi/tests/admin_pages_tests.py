@@ -18,11 +18,9 @@ class CreateUserFromAdminTest(unittest.TestCase):
 
     # TODO refactor when we add more tests
     def login_admin(self):
-        response = self.client.post('/admin-pane/', {
-            'username': 'admin', 'password': 'admin',
-            'this_is_the_login_form': 1, 'next': '/admin-pane/'})
-        # This assert might be a bit fragile
-        assert response.status_code == 302, "Couldn't log in admin user"
+        response = self.client.post('/admin-pane/login/', {
+            'username': 'admin', 'password': 'admin'})
+        assert response.status_code == 200 or (response.status_code == 302 and 'login' not in response['Location']), "Couldn't log in admin user"
 
     def test_user_creation(self):
         self.login_admin()
