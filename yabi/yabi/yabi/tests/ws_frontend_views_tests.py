@@ -126,6 +126,7 @@ class TestLsWithExtraBackendCredentials(DjangoTestClientTestCase):
     def setUpExtraBackendCredentials(self):
         # just use first preloaded Credential of USER
         credential = Credential.objects.filter(user__name=USER)[0]
+        self.credential_username = credential.username
 
         self.be = mommy.make('Backend', scheme='sftp', hostname='some.host.com', port=2222, path='/some/home/')
         self.dynbe = mommy.make('Backend', dynamic_backend=True)
@@ -154,7 +155,7 @@ class TestLsWithExtraBackendCredentials(DjangoTestClientTestCase):
         # The listing will have the preloaded BackendCredential and the only
         # BackendCredential we created with visible True and associated with a
         # non-dynamic backend
-        expected_homedir_uri = 'sftp://%s@some.host.com:2222/some/home/someusername' % USER
+        expected_homedir_uri = 'sftp://%s@some.host.com:2222/some/home/someusername' % self.credential_username
         self.assertIn(USER, listing, 'Should be keyed by username')
         self.assertEquals(1, len(listing), 'Should be only one entry')
         self.assertEquals([], listing[USER]['files'], 'Should have empty files array')
