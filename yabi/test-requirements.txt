@@ -6,3 +6,4 @@ model_mommy==1.2.2
 lettuce
 lettuce_webdriver
 selenium
+file:.../../tests/SetupDjango-0.1.tar.gz#egg=SetupDjango

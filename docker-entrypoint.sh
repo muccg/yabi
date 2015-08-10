@@ -183,7 +183,7 @@ if [ "$1" = 'runtests' ]; then
     echo "[Run] Starting tests"
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
-    NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
+    NOSETESTS="nosetests -v --logging-clear-handlers --with-setup-django ${XUNIT_OPTS}"
     IGNORES="-a !external_service"
 
     # Setting TEST_CASES in fig file allows you to choose tests
