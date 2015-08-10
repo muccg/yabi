@@ -226,7 +226,8 @@ def copy(request):
     """
     yabiusername = request.user.username
 
-    src, dst = request.GET['src'], request.GET['dst']
+    params = request.POST if request.method == 'POST' else request.GET
+    src, dst = params['src'], params['dst']
 
     # check that src does not match dst
     srcpath, srcfile = src.rsplit('/', 1)
@@ -251,7 +252,8 @@ def rcopy(request):
     """
     yabiusername = request.user.username
 
-    src, dst = unquote(request.GET['src']), unquote(request.GET['dst'])
+    params = request.POST if request.method == 'POST' else request.GET
+    src, dst = unquote(params['src']), unquote(params['dst'])
 
     # check that src does not match dst
     srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
