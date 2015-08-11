@@ -44,6 +44,7 @@ class BackendForm(forms.ModelForm):
 
     class Meta:
         model = Backend
+        fields = '__all__'
 
     def clean(self):
         cleaned_data = super(BackendForm, self).clean()
@@ -92,6 +93,7 @@ class CredentialForm(forms.ModelForm):
 
     class Meta:
         model = Credential
+        fields = '__all__'
 
     def clean(self):
         cleaned_data = super(CredentialForm, self).clean()
@@ -114,6 +116,7 @@ class CredentialForm(forms.ModelForm):
 class BackendCredentialForm(forms.ModelForm):
     class Meta:
         model = BackendCredential
+        fields = '__all__'
 
     def clean_homedir(self):
         homedir = self.cleaned_data['homedir']
@@ -147,6 +150,7 @@ class BackendCredentialForm(forms.ModelForm):
 class ToolForm(forms.ModelForm):
     class Meta:
         model = Tool
+        fields = '__all__'
         exclude = ('use_same_dynamic_backend',)
 
     def clean_backend(self):
@@ -159,6 +163,7 @@ class ToolForm(forms.ModelForm):
 class ToolParameterForm(forms.ModelForm):
     class Meta:
         model = ToolParameter
+        fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super(ToolParameterForm, self).__init__(*args, **kwargs)
@@ -174,6 +179,9 @@ class ToolParameterForm(forms.ModelForm):
 
 
 class ToolOutputExtensionForm(forms.ModelForm):
+    class Meta:
+        fields = '__all__'
+
     def __init__(self, *args, **kwargs):
         super(ToolOutputExtensionForm, self).__init__(*args, **kwargs)
         self.fields['file_extension'].queryset = FileExtension.objects.all().order_by('pattern')
@@ -182,6 +190,7 @@ class ToolOutputExtensionForm(forms.ModelForm):
 class DynamicBackendConfigurationForm(forms.ModelForm):
     class Meta:
         model = DynamicBackendConfiguration
+        fields = '__all__'
 
     def clean_configuration(self):
         validator = _compose(_validate_json, _wspace_to_empty)

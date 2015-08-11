@@ -77,7 +77,7 @@ class FileExtension(Base):
 class FileType(Base):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    extensions = models.ManyToManyField(FileExtension, null=True, blank=True)
+    extensions = models.ManyToManyField(FileExtension, blank=True)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.file_extensions_text())
@@ -100,7 +100,7 @@ class ToolDesc(Base):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
+    output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', blank=True)
     accepts_input = models.BooleanField(default=False)
 
     name.help_text = "Unique tool name."
@@ -193,7 +193,7 @@ class Tool(Base):
     submission = models.TextField(blank=True)
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
-    groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
+    groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', blank=True)
 
     desc.help_text = "The tool definition"
     path.help_text = "The path to the binary for this file. Will normally just be binary name."
@@ -540,7 +540,7 @@ class Credential(Base):
     cert = models.TextField(blank=True)
     key = models.TextField(blank=True)
     user = models.ForeignKey(User)
-    backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
+    backends = models.ManyToManyField('Backend', through='BackendCredential', blank=True)
     expires_on = models.DateTimeField(null=True)   # null mean never expire this
 
     username.help_text = "The username on the backend this credential is for."

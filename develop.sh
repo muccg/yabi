@@ -76,8 +76,8 @@ runtests() {
     make_virtualenv
 
     # clean up containers from past runs
-    ( docker-compose --project-name yabi -f fig-test.yml rm --force || exit 0 )
-    docker-compose --project-name yabi -f fig-test.yml build --no-cache
+    # ( docker-compose --project-name yabi -f fig-test.yml rm --force || exit 0 )
+    # docker-compose --project-name yabi -f fig-test.yml build --no-cache
     docker-compose --project-name yabi -f fig-test.yml up
 }
 

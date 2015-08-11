@@ -35,7 +35,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='BackendCredential',
@@ -52,7 +51,6 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name_plural': 'Backend Credentials',
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Credential',
@@ -67,12 +65,11 @@ class Migration(migrations.Migration):
                 ('cert', models.TextField(help_text=b'Certificate for backend auth, if required.', blank=True)),
                 ('key', models.TextField(help_text=b'Key for backend auth, if required.', blank=True)),
                 ('expires_on', models.DateTimeField(null=True)),
-                ('backends', models.ManyToManyField(to='yabi.Backend', null=True, through='yabi.BackendCredential', blank=True)),
+                ('backends', models.ManyToManyField(to='yabi.Backend', through='yabi.BackendCredential', blank=True)),
             ],
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='DynamicBackendConfiguration',
@@ -86,7 +83,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='FileExtension',
@@ -99,7 +95,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('pattern',),
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='FileType',
@@ -113,7 +108,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='HostKey',
@@ -130,7 +124,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ParameterSwitchUse',
@@ -145,7 +138,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Tool',
@@ -171,7 +163,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ToolDesc',
@@ -187,7 +178,6 @@ class Migration(migrations.Migration):
                 'ordering': ('name',),
                 'verbose_name': 'tool description',
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ToolGroup',
@@ -200,7 +190,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ToolGrouping',
@@ -212,7 +201,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ToolOutputExtension',
@@ -226,7 +214,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ToolParameter',
@@ -252,7 +239,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ToolSet',
@@ -265,7 +251,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='User',
@@ -283,7 +268,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('name',),
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='YabiCache',
@@ -295,295 +279,246 @@ class Migration(migrations.Migration):
             options={
                 'db_table': 'yabi_cache',
             },
-            bases=(models.Model,),
         ),
         migrations.AddField(
             model_name='toolset',
             name='created_by',
             field=models.ForeignKey(related_name='toolset_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolset',
             name='last_modified_by',
             field=models.ForeignKey(related_name='toolset_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolset',
             name='users',
             field=models.ManyToManyField(related_name='users', db_table=b'yabi_user_toolsets', to='yabi.User', blank=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolparameter',
             name='created_by',
             field=models.ForeignKey(related_name='toolparameter_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolparameter',
             name='extension_param',
             field=models.ForeignKey(blank=True, to='yabi.FileExtension', help_text=b'If an extension is selected then this extension will be appended to the filename. This should only be set for specifying output files.', null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolparameter',
             name='last_modified_by',
             field=models.ForeignKey(related_name='toolparameter_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolparameter',
             name='switch_use',
             field=models.ForeignKey(help_text=b'The way the switch should be combined with the value.', to='yabi.ParameterSwitchUse'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolparameter',
             name='tool',
             field=models.ForeignKey(to='yabi.ToolDesc'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolparameter',
             name='use_output_filename',
             field=models.ForeignKey(blank=True, to='yabi.ToolParameter', null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tooloutputextension',
             name='created_by',
             field=models.ForeignKey(related_name='tooloutputextension_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tooloutputextension',
             name='file_extension',
             field=models.ForeignKey(to='yabi.FileExtension'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tooloutputextension',
             name='last_modified_by',
             field=models.ForeignKey(related_name='tooloutputextension_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tooloutputextension',
             name='tool',
             field=models.ForeignKey(to='yabi.ToolDesc'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolgrouping',
             name='created_by',
             field=models.ForeignKey(related_name='toolgrouping_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolgrouping',
             name='last_modified_by',
             field=models.ForeignKey(related_name='toolgrouping_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolgrouping',
             name='tool',
             field=models.ForeignKey(to='yabi.Tool'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolgrouping',
             name='tool_group',
             field=models.ForeignKey(to='yabi.ToolGroup'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolgrouping',
             name='tool_set',
             field=models.ForeignKey(to='yabi.ToolSet'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolgroup',
             name='created_by',
             field=models.ForeignKey(related_name='toolgroup_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='toolgroup',
             name='last_modified_by',
             field=models.ForeignKey(related_name='toolgroup_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tooldesc',
             name='created_by',
             field=models.ForeignKey(related_name='tooldesc_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tooldesc',
             name='last_modified_by',
             field=models.ForeignKey(related_name='tooldesc_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tooldesc',
             name='output_filetypes',
-            field=models.ManyToManyField(to='yabi.FileExtension', null=True, through='yabi.ToolOutputExtension', blank=True),
-            preserve_default=True,
+            field=models.ManyToManyField(to='yabi.FileExtension', through='yabi.ToolOutputExtension', blank=True),
         ),
         migrations.AddField(
             model_name='tool',
             name='created_by',
             field=models.ForeignKey(related_name='tool_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tool',
             name='desc',
             field=models.ForeignKey(verbose_name=b'Tool', to='yabi.ToolDesc', help_text=b'The tool definition'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tool',
             name='fs_backend',
             field=models.ForeignKey(related_name='fs_backends', verbose_name=b'FS Backend', to='yabi.Backend', help_text=b'The filesystem backend for this tool.'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='tool',
             name='groups',
-            field=models.ManyToManyField(to='yabi.ToolGroup', null=True, through='yabi.ToolGrouping', blank=True),
-            preserve_default=True,
+            field=models.ManyToManyField(to='yabi.ToolGroup', through='yabi.ToolGrouping', blank=True),
         ),
         migrations.AddField(
             model_name='tool',
             name='last_modified_by',
             field=models.ForeignKey(related_name='tool_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='parameterswitchuse',
             name='created_by',
             field=models.ForeignKey(related_name='parameterswitchuse_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='parameterswitchuse',
             name='last_modified_by',
             field=models.ForeignKey(related_name='parameterswitchuse_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='hostkey',
             name='created_by',
             field=models.ForeignKey(related_name='hostkey_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='hostkey',
             name='last_modified_by',
             field=models.ForeignKey(related_name='hostkey_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='filetype',
             name='created_by',
             field=models.ForeignKey(related_name='filetype_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='filetype',
             name='extensions',
-            field=models.ManyToManyField(to='yabi.FileExtension', null=True, blank=True),
-            preserve_default=True,
+            field=models.ManyToManyField(to='yabi.FileExtension', blank=True),
         ),
         migrations.AddField(
             model_name='filetype',
             name='last_modified_by',
             field=models.ForeignKey(related_name='filetype_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='fileextension',
             name='created_by',
             field=models.ForeignKey(related_name='fileextension_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='fileextension',
             name='last_modified_by',
             field=models.ForeignKey(related_name='fileextension_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='dynamicbackendconfiguration',
             name='created_by',
             field=models.ForeignKey(related_name='dynamicbackendconfiguration_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='dynamicbackendconfiguration',
             name='last_modified_by',
             field=models.ForeignKey(related_name='dynamicbackendconfiguration_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='credential',
             name='created_by',
             field=models.ForeignKey(related_name='credential_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='credential',
             name='last_modified_by',
             field=models.ForeignKey(related_name='credential_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='credential',
             name='user',
             field=models.ForeignKey(help_text=b'Yabi username.', to='yabi.User'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='backendcredential',
             name='created_by',
             field=models.ForeignKey(related_name='backendcredential_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='backendcredential',
             name='credential',
             field=models.ForeignKey(to='yabi.Credential'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='backendcredential',
             name='last_modified_by',
             field=models.ForeignKey(related_name='backendcredential_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='backend',
             name='created_by',
             field=models.ForeignKey(related_name='backend_creators', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='backend',
             name='dynamic_backend_configuration',
             field=models.ForeignKey(blank=True, to='yabi.DynamicBackendConfiguration', help_text=b'The configuration used to create the Dynamic Backend.Set on Dynamic Backends only!', null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='backend',
             name='last_modified_by',
             field=models.ForeignKey(related_name='backend_modifiers', on_delete=django.db.models.deletion.SET_NULL, editable=False, to=settings.AUTH_USER_MODEL, null=True),
-            preserve_default=True,
         ),
         migrations.CreateModel(
             name='LDAPBackendUserProfile',

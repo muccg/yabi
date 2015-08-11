@@ -22,9 +22,6 @@ class Migration(migrations.Migration):
                 ('hostname', models.CharField(max_length=512, blank=True)),
                 ('destroyed_on', models.DateTimeField(null=True, blank=True)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Job',
@@ -49,8 +46,6 @@ class Migration(migrations.Migration):
                 ('preferred_stagein_method', models.CharField(max_length=5, choices=[(b'copy', b'remote copy'), (b'lcopy', b'local copy'), (b'link', b'symbolic link')])),
                 ('preferred_stageout_method', models.CharField(max_length=5, choices=[(b'copy', b'remote copy'), (b'lcopy', b'local copy'), (b'link', b'symbolic link')])),
             ],
-            options={
-            },
             bases=(models.Model, yabi.yabiengine.models.Editable, yabi.yabiengine.models.Status),
         ),
         migrations.CreateModel(
@@ -62,9 +57,6 @@ class Migration(migrations.Migration):
                 ('instance', models.ForeignKey(to='yabiengine.DynamicBackendInstance')),
                 ('job', models.ForeignKey(to='yabiengine.Job')),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='SavedWorkflow',
@@ -89,8 +81,6 @@ class Migration(migrations.Migration):
                 ('order', models.IntegerField()),
                 ('method', models.CharField(max_length=5, choices=[(b'copy', b'remote copy'), (b'lcopy', b'local copy'), (b'link', b'symbolic link')])),
             ],
-            options={
-            },
             bases=(models.Model, yabi.yabiengine.models.Editable),
         ),
         migrations.CreateModel(
@@ -102,9 +92,6 @@ class Migration(migrations.Migration):
                 ('table_id', models.IntegerField(null=True)),
                 ('created_on', models.DateTimeField(auto_now=True, null=True)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Tag',
@@ -112,9 +99,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('value', models.CharField(max_length=255)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Task',
@@ -155,8 +139,6 @@ class Migration(migrations.Migration):
                 ('envvars_json', models.TextField(blank=True)),
                 ('job', models.ForeignKey(to='yabiengine.Job')),
             ],
-            options={
-            },
             bases=(models.Model, yabi.yabiengine.models.Editable, yabi.yabiengine.models.Status),
         ),
         migrations.CreateModel(
@@ -188,39 +170,31 @@ class Migration(migrations.Migration):
                 ('tag', models.ForeignKey(to='yabiengine.Tag')),
                 ('workflow', models.ForeignKey(to='yabiengine.Workflow')),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.AddField(
             model_name='stagein',
             name='task',
             field=models.ForeignKey(to='yabiengine.Task'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='job',
             name='dynamic_backends',
-            field=models.ManyToManyField(to='yabiengine.DynamicBackendInstance', null=True, through='yabiengine.JobDynamicBackend', blank=True),
-            preserve_default=True,
+            field=models.ManyToManyField(to='yabiengine.DynamicBackendInstance', through='yabiengine.JobDynamicBackend', blank=True),
         ),
         migrations.AddField(
             model_name='job',
             name='tool',
             field=models.ForeignKey(to='yabi.Tool', null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='job',
             name='workflow',
             field=models.ForeignKey(to='yabiengine.Workflow'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='dynamicbackendinstance',
             name='created_for_job',
             field=models.ForeignKey(to='yabiengine.Job'),
-            preserve_default=True,
         ),
         migrations.CreateModel(
             name='EngineJob',
