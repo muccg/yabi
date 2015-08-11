@@ -17,14 +17,6 @@ class Command(BaseCommand):
                     default='yabi',
                     help='Application name'),
 
-        make_option('-v', '--verbosity',
-                    action='store',
-                    dest='verbosity',
-                    default='4',
-                    type='choice',
-                    choices=map(str, range(5)),
-                    help='Verbosity level; 0=no output, 1=only dots, 2=only scenario names, 3=colorless output, 4=normal output (colorful)'),
-
         make_option('--with-xunit',
                     action='store_true',
                     dest='enable_xunit',
