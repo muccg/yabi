@@ -23,7 +23,6 @@
 from django.conf.urls import *
 from django.conf import settings
 from django.core import urlresolvers
-from django.contrib import admin as djangoadmin
 from django.views.generic.base import RedirectView
 
 import admin

@@ -23,7 +23,6 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # -*- coding: utf-8 -*-
 
-from django.core.exceptions import ObjectDoesNotExist
 from ccg_django_utils.http import HttpResponseUnauthorized
 
 import logging

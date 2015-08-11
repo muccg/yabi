@@ -215,7 +215,7 @@ def password(request):
     if request.method != "POST":
         return JsonMessageResponseNotAllowed(["POST"])
 
-    profile_class = ModelBackendUserProfile 
+    profile_class = ModelBackendUserProfile
     if settings.AUTH_TYPE == 'ldap':
         profile_class = LDAPBackendUserProfile
 
