@@ -29,9 +29,9 @@ class LDAPBackend(ModelBackend):
             logger.info("LDAP user '%s' doesn't exist" % username)
             return None
 
-        if not (ldaputils.is_user_member_of_yabi_group(user.dn) or
-                ldaputils.is_user_member_of_yabi_admin_group(user.dn)):
-            logger.info("LDAP user '%s' not member of Yabi LDAP group '%s'" % user.dn)
+        if not (ldaputils.is_user_in_yabi_group(user) or
+                ldaputils.is_user_in_yabi_admin_group(user)):
+            logger.info("LDAP user '%s' not member of Yabi LDAP group '%s' or Yabi Admin LDAP group '%s'", user.dn, settings.AUTH_LDAP_YABI_GROUP_DN, settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN)
             return None
 
         try:

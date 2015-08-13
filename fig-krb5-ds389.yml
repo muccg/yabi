@@ -41,6 +41,7 @@ web:
     - AUTH_LDAP_USER_BASE=ou=People,dc=dockerdomain
     - AUTH_LDAP_YABI_GROUP_DN=cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain
     - AUTH_LDAP_YABI_ADMIN_GROUP_DN=cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain
+    - AUTH_LDAP_MEMBER_OF_ATTR=postalAddress
     - AUTH_ENABLE_DB_FALLBACK=false
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1

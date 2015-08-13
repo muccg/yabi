@@ -206,11 +206,7 @@ def ldap_users(request):
     if request.method == 'POST':
         register_users(request)
 
-    def to_LDAPUser(search_result):
-        dn, data_dict = search_result
-        return ldaputils.LDAPUser(dn, data_dict)
-
-    ldap_yabi_users = map(to_LDAPUser, ldaputils.get_all_yabi_users().items())
+    ldap_yabi_users = ldaputils.get_all_yabi_users()
 
     db_user_names = [user.name for user in User.objects.all()]
 

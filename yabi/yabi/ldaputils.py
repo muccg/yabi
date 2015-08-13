@@ -51,10 +51,26 @@ class LDAPUser(object):
         self.email = _first_attr_value(user_data, settings.AUTH_LDAP_EMAIL_ATTR)
         self.first_name = _first_attr_value(user_data, settings.AUTH_LDAP_FIRSTNAME_ATTR)
         self.last_name = _first_attr_value(user_data, settings.AUTH_LDAP_LASTNAME_ATTR)
+        self.member_of = []
+        if settings.AUTH_LDAP_MEMBER_OF_ATTR:
+            groups = user_data.get(settings.AUTH_LDAP_MEMBER_OF_ATTR)
+            if groups is not None and len(groups) > 0:
+                self.member_of = groups
 
     @property
     def full_name(self):
         return ' '.join([self.first_name, self.last_name])
+
+    def is_member_of(self, groupdn):
+        """Returns True if the user contains memberOf reference to the group passed in.
+
+        This takes into account only groups listed on the User object.
+        For user membership defined on group objects another search has to be done on Groups.
+        """
+        for group in self.member_of:
+            if are_dns_equal(groupdn, group):
+                return True
+        return False
 
 
 class LDAPUserDoesNotExist(ObjectDoesNotExist):
@@ -68,22 +84,28 @@ class LDAPUserDoesNotExist(ObjectDoesNotExist):
 
 def get_all_yabi_users():
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    all_users = ldapclient.search(settings.AUTH_LDAP_USER_BASE, settings.AUTH_LDAP_USER_FILTER)
 
-    yabi_user_dns = get_yabi_userdns().union(get_yabi_admin_userdns())
+    def result_to_LDAPUser(result):
+        dn, data = result
+        return LDAPUser(dn, data)
 
-    def is_yabi_user(res):
-        dn, data = res
-        return dn in yabi_user_dns
+    all_users = map(result_to_LDAPUser, ldapclient.search(settings.AUTH_LDAP_USER_BASE, settings.AUTH_LDAP_USER_FILTER))
+
+    yabi_user_dns = _get_yabi_userdns().union(_get_yabi_admin_userdns())
+
+    def is_yabi_user(user):
+        return (user.dn in yabi_user_dns or
+                user.is_member_of(settings.AUTH_LDAP_YABI_GROUP_DN) or
+                user.is_member_of(settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN))
 
     yabi_users = filter(is_yabi_user, all_users)
 
-    return dict(yabi_users)
+    return yabi_users
 
 
-def get_userdns_in_group(groupdn):
+def _get_userdns_in_group(groupdn):
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    MEMBER_ATTR = settings.AUTH_LDAP_MEMBERATTR
+    MEMBER_ATTR = settings.AUTH_LDAP_MEMBER_ATTR
     try:
         result = ldapclient.search(groupdn, '%s=*' % MEMBER_ATTR, [MEMBER_ATTR])
     except ldap.NO_SUCH_OBJECT:
@@ -99,8 +121,12 @@ def get_userdns_in_group(groupdn):
     return set(data_dict.get(MEMBER_ATTR, []))
 
 
-get_yabi_userdns = partial(get_userdns_in_group, settings.AUTH_LDAP_YABI_GROUP_DN)
-get_yabi_admin_userdns = partial(get_userdns_in_group, settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN)
+# These aren't public because they just get the users defined in the LDAP groups
+# The other part of the picture are users that define groups on the user object.
+# The get_all_yabi_users() above, and the is_user_in_group() + related functions
+# below takes into account both possibilites so are safe to use.
+_get_yabi_userdns = partial(_get_userdns_in_group, settings.AUTH_LDAP_YABI_GROUP_DN)
+_get_yabi_admin_userdns = partial(_get_userdns_in_group, settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN)
 
 
 def get_user(username):
@@ -120,7 +146,7 @@ def update_yabi_user(django_user, ldap_user):
     django_user.first_name = ldap_user.first_name
     django_user.last_name = ldap_user.last_name
 
-    django_user.is_superuser = is_user_member_of_yabi_admin_group(ldap_user.dn)
+    django_user.is_superuser = is_user_in_yabi_admin_group(ldap_user)
     django_user.is_staff = django_user.is_superuser
     django_user.save()
 
@@ -143,9 +169,11 @@ def can_bind_as(userdn, password):
         ldapclient.unbind()
 
 
-def is_user_member_of_group(groupdn, userdn):
+def is_user_in_group(groupdn, user):
+    if user.is_member_of(groupdn):
+        return True
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBERATTR, userdn)
+    groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBER_ATTR, user.dn)
     try:
         result = ldapclient.search(groupdn, groupfilter, ['cn'])
     except ldap.NO_SUCH_OBJECT:
@@ -154,10 +182,10 @@ def is_user_member_of_group(groupdn, userdn):
     return len(result) == 1
 
 
-is_user_member_of_yabi_group = partial(is_user_member_of_group,
-                                       settings.AUTH_LDAP_YABI_GROUP_DN)
-is_user_member_of_yabi_admin_group = partial(is_user_member_of_group,
-                                             settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN)
+is_user_in_yabi_group = partial(is_user_in_group,
+                                settings.AUTH_LDAP_YABI_GROUP_DN)
+is_user_in_yabi_admin_group = partial(is_user_in_group,
+                                      settings.AUTH_LDAP_YABI_ADMIN_GROUP_DN)
 
 
 # TODO is this general enough?
@@ -188,6 +216,10 @@ def set_ldap_password(username, current_password, new_password, bind_userdn=None
         logger.critical("Unable to change password on ldap server.")
         logger.critical(e)
         return False
+
+
+def are_dns_equal(dn, other_dn):
+    return ldap.dn.str2dn(dn.lower()) == ldap.dn.str2dn(other_dn.lower())
 
 
 def _first_attr_value(d, attr, default=''):

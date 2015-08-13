@@ -285,7 +285,10 @@ AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_yabi_admin_group_dn", "")
 # LDAP settings you might want to set:
 AUTH_LDAP_SYNC_USER_ON_LOGIN = env.get("auth_ldap_sync_user_on_login", False)
 AUTH_LDAP_USER_FILTER = env.get("auth_ldap_user_filter", "(objectclass=person)")
-AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", "uniqueMember")
+# This is the attribute of a Group that contains Users in the group
+AUTH_LDAP_MEMBER_ATTR = env.get("auth_ldap_member_attr", "uniqueMember")
+# This is the attribute of a User that contains Groups a user is member of
+AUTH_LDAP_MEMBER_OF_ATTR = env.get("auth_ldap_member_of_attr", "memberOf")
 AUTH_LDAP_USERNAME_ATTR = env.get("auth_ldap_username_attr", "uid")
 AUTH_LDAP_EMAIL_ATTR = env.get("auth_ldap_email_attr", "mail")
 AUTH_LDAP_LASTNAME_ATTR = env.get("auth_ldap_lastname_attr", "sn")
