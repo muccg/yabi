@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
 # Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
 #
