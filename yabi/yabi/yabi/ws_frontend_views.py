@@ -1,26 +1,19 @@
-# -*- coding: utf-8 -*-
-# (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
-# All rights reserved.
+# Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
+# Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
 #
-# This product includes software developed at the Centre for Comparative Genomics
-# (http://ccg.murdoch.edu.au/).
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
-# YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
-# OR CORRECTION.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
-# OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import unicode_literals
 import json
 import mimetypes
@@ -38,7 +31,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadReque
 from django.http import HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabi.yabi.models import User, Credential, BackendCredential
-from yabi.yabi.models import ToolGrouping, Tool, Backend
+from yabi.yabi.models import ToolGrouping, Tool, ToolDesc, Backend
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
@@ -48,7 +41,7 @@ from yabi.backend.celerytasks import process_workflow, request_workflow_abort
 from yabi.yabiengine.enginemodels import EngineWorkflow
 from yabi.yabiengine.models import Workflow, WorkflowTag, SavedWorkflow
 from yabi.responses import *
-from yabi.decorators import authentication_required, profile_required
+from yabi.decorators import authentication_required
 from yabi.utils import json_error_response, json_response
 from yabi.backend import backend
 from yabi.backend.exceptions import FileNotFoundError
@@ -60,7 +53,23 @@ DATE_FORMAT = '%Y-%m-%d'
 
 
 @authentication_required
+def tooldesc(request, tooldesc_id):
+    try:
+        tool = ToolDesc.objects.get(pk=tooldesc_id)
+    except ObjectDoesNotExist:
+        return JsonMessageResponseNotFound("Object not found")
+
+    response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
+
+    return response
+
+
+@authentication_required
 def tool(request, toolid):
+    admin_access = False
+    if request.GET.get('admin_access', 'false').lower() != 'false':
+        admin_access = True
+
     toolname_key = "%s" % toolid
     page = cache.get(toolname_key)
 
@@ -74,8 +83,9 @@ def tool(request, toolid):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-    if not tool.does_user_have_access_to(user):
-        return JsonMessageResponseForbidden("User does not have access to the tool")
+    if not (admin_access and request.user.is_superuser):
+        if not tool.does_user_have_access_to(user):
+            return JsonMessageResponseForbidden("User does not have access to the tool")
 
     response = HttpResponse(tool.json_pretty(), content_type="application/json; charset=UTF-8")
     cache.set(toolname_key, response, 30)
@@ -209,7 +219,8 @@ def copy(request):
     """
     yabiusername = request.user.username
 
-    src, dst = request.GET['src'], request.GET['dst']
+    params = request.POST if request.method == 'POST' else request.GET
+    src, dst = params['src'], params['dst']
 
     # check that src does not match dst
     srcpath, srcfile = src.rsplit('/', 1)
@@ -234,7 +245,8 @@ def rcopy(request):
     """
     yabiusername = request.user.username
 
-    src, dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
+    params = request.POST if request.method == 'POST' else request.GET
+    src, dst = unquote(params['src']), unquote(params['dst'])
 
     # check that src does not match dst
     srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
@@ -567,7 +579,7 @@ def get_workflow(request, workflow_id):
     response = workflow_to_response(workflow)
 
     return HttpResponse(json.dumps(response),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 
 def workflow_to_response(workflow, parse_json=True, retrieve_tags=True):
@@ -631,7 +643,7 @@ def workflow_datesearch(request):
         workflow_response["tags"] = tags.get(workflow.id, [])
         response.append(workflow_response)
 
-    return HttpResponse(json.dumps(response), mimetype='application/json')
+    return HttpResponse(json.dumps(response), content_type='application/json')
 
 
 @authentication_required
@@ -659,12 +671,11 @@ def workflow_change_tags(request, id=None):
 
 
 @authentication_required
-@profile_required
 def passchange(request):
     if request.method != "POST":
         return HttpResponseNotAllowed("Method must be POST")
 
-    profile = request.user.get_profile()
+    profile = request.user.user
     success, message = profile.passchange(request)
     if success:
         return HttpResponse(json.dumps(message))

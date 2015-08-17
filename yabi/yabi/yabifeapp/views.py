@@ -1,26 +1,18 @@
-# -*- coding: utf-8 -*-
-# (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
-# All rights reserved.
+# Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
+# Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
 #
-# This product includes software developed at the Centre for Comparative Genomics
-# (http://ccg.murdoch.edu.au/).
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
-# YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
-# OR CORRECTION.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
-# OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import os
@@ -33,10 +25,9 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 from django import forms
 from django.core.cache import cache
 from ccg_django_utils import webhelpers
-from yabi.yabi.models import Credential, User
+from yabi.yabi.models import Credential, User, ModelBackendUserProfile, LDAPBackendUserProfile
 from yabi.responses import *
 from yabi.preview import html
-from yabi.decorators import profile_required
 from yabi.crypto_utils import DecryptException
 from yabi.yabi.ws_frontend_views import ls, get
 from yabi.yabifeapp.utils import preview_key, logout, using_dev_settings  # NOQA
@@ -77,37 +68,32 @@ def render_page(template, request, response=None, **kwargs):
 
 
 @login_required
-@profile_required
 def files(request):
     return render_page("fe/files.html", request)
 
 
 @login_required
-@profile_required
 def design(request, id=None):
     return render_page("fe/design.html", request, reuseId=id)
 
 
 @login_required
-@profile_required
 def jobs(request):
     return render_page("fe/jobs.html", request)
 
 
 @login_required
-@profile_required
 @user_passes_test(lambda user: user.is_staff)
 def admin(request):
     return render_page("fe/admin.html", request)
 
 
 @login_required
-@profile_required
 def account(request):
-    if not request.user.get_profile().has_account_tab():
+    profile = request.user.user
+    if not profile.has_account_tab():
         return render_page("fe/errors/403.html", request, response=HttpResponseForbidden())
 
-    profile = request.user.get_profile()
     username = request.user.username
     return render_page("fe/account.html", request, profile=profile, username=username)
 
@@ -217,12 +203,15 @@ def wslogout(request):
 
 
 @login_required
-@profile_required
 def password(request):
     if request.method != "POST":
         return JsonMessageResponseNotAllowed(["POST"])
 
-    profile = request.user.get_profile()
+    profile_class = ModelBackendUserProfile
+    if settings.AUTH_TYPE == 'ldap':
+        profile_class = LDAPBackendUserProfile
+
+    profile = profile_class.objects.get(user=request.user)
     (valid, errormsg) = profile.change_password(request)
     if not valid:
         return JsonMessageResponseServerError(errormsg)

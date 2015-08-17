@@ -1,3 +1,19 @@
+# Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
+# Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 
 from optparse import make_option
@@ -16,14 +32,6 @@ class Command(BaseCommand):
                     dest='app_name',
                     default='yabi',
                     help='Application name'),
-
-        make_option('-v', '--verbosity',
-                    action='store',
-                    dest='verbosity',
-                    default='4',
-                    type='choice',
-                    choices=map(str, range(5)),
-                    help='Verbosity level; 0=no output, 1=only dots, 2=only scenario names, 3=colorless output, 4=normal output (colorful)'),
 
         make_option('--with-xunit',
                     action='store_true',

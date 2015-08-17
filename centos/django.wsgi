@@ -17,7 +17,7 @@ webapp_root = os.path.dirname(os.path.abspath(__file__))
 from ccg_django_utils.conf import setup_prod_env
 setup_prod_env("yabi")
 
-import django.core.handlers.wsgi
+from django.core.wsgi import get_wsgi_application
 
 # This is the WSGI application booter
 def application(environ, start):
@@ -28,4 +28,4 @@ def application(environ, start):
         os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
     if 'DJANGODEV' in environ:
        os.environ['DJANGODEV']=environ['DJANGODEV']
-    return django.core.handlers.wsgi.WSGIHandler()(environ,start)
+    return get_wsgi_application()(environ,start)

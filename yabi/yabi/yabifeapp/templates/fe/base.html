@@ -128,7 +128,7 @@
         <a href="{{ base_site_url}}/jobs" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
         <a href="{{ base_site_url}}/design" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
         <a href="{{ base_site_url}}/files" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
-        {% if request.user.get_profile.has_account_tab %}
+        {% if request.user.user.has_account_tab %}
         <a href="{{ base_site_url}}/account" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
        {% endif %}
 

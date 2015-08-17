@@ -1,8 +1,22 @@
-# -*- coding: utf-8 -*-
+# Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
+# Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import sys
-from django.utils import unittest as unittest
+import unittest
 from model_mommy import mommy
 from yabi.yabi.ws_frontend_views import munge_name
 from yabi.yabi.models import User, Backend, BackendCredential, Credential, Tool, ToolDesc, ToolSet, ToolGroup
@@ -126,6 +140,7 @@ class TestLsWithExtraBackendCredentials(DjangoTestClientTestCase):
     def setUpExtraBackendCredentials(self):
         # just use first preloaded Credential of USER
         credential = Credential.objects.filter(user__name=USER)[0]
+        self.credential_username = credential.username
 
         self.be = mommy.make('Backend', scheme='sftp', hostname='some.host.com', port=2222, path='/some/home/')
         self.dynbe = mommy.make('Backend', dynamic_backend=True)
@@ -154,7 +169,7 @@ class TestLsWithExtraBackendCredentials(DjangoTestClientTestCase):
         # The listing will have the preloaded BackendCredential and the only
         # BackendCredential we created with visible True and associated with a
         # non-dynamic backend
-        expected_homedir_uri = 'sftp://%s@some.host.com:2222/some/home/someusername' % USER
+        expected_homedir_uri = 'sftp://%s@some.host.com:2222/some/home/someusername' % self.credential_username
         self.assertIn(USER, listing, 'Should be keyed by username')
         self.assertEquals(1, len(listing), 'Should be only one entry')
         self.assertEquals([], listing[USER]['files'], 'Should have empty files array')

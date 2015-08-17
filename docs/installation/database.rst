@@ -24,11 +24,9 @@ For more details see :ref:`settings`.
 Initialise the Yabi database
 ----------------------------
 
-The Yabi codebase employs `South <http://south.aeracode.org/>`_ to manage schema and data migrations.
-To initialise the database::
+To initialise the database you will have to run the Django migrations in the Yabi project::
 
- # yabiadmin syncdb --noinput
- # yabiadmin migrate
+ # yabi migrate
 
 These will create the schema, insert setup data, and create initial users.
 

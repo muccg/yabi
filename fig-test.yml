@@ -15,7 +15,7 @@ s3test:
   image: muccg/fake-s3:latest
 
 dbtest:
-  image: postgres:9.3
+  image: postgres:9.4
   environment:
     - POSTGRES_USER=yabiapp
     - POSTGRES_PASSWORD=yabiapp

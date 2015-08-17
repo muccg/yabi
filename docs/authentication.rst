@@ -31,6 +31,9 @@ Members of the Yabi User group will have access to Yabi, members of the Yabi Adm
 After you've created these 2 groups, adding users to Yabi is as simple as adding your LDAP users to one of these groups.
 Yabi user accounts will be automatically created in the database when the user logs in the first time into Yabi. Additionally the user's name and email is also fetched from LDAP and set in the database.
 
+Group membership can be defined either on the user object or on the group object. The user objects can have their ``AUTH_LDAP_MEMBER_OF_ATTR`` attribute (typically *"memberOf"* or similar) to the DN of a group(s) they are member of. From the other end the group object can have their ``AUTH_LDAP_MEMBER_ATTR`` attribute (typically *"uniqueMember"*, or *"member"*) to the DN of the user(s) that are members of this group.
+As long as these settings are set correctly Yabi will check both ends to check for group membership, therefore you can have some users having their groups set on the user object, others on the group object etc.
+
 To set up LDAP authentication you will have to configure the following settings in your :ref:`settings`.
 
 Required settings:
@@ -56,7 +59,8 @@ Setting                         Description
 =============================  ===============
 AUTH_LDAP_SYNC_USER_ON_LOGIN    If ``True`` each time a user logs in fetch their details (name, email, is a Yabi Administrator) and set it in the database. Otherwise setting the database values from LDAP happens only the first time the user logs in. Default is ``True``.
 AUTH_LDAP_USER_FILTER           LDAP search filter used when searching for your users in AUTH_LDAP_USER_BASE. Default is *"(objectclass=person)"*.
-AUTH_LDAP_MEMBERATTR            LDAP group attribute used to add members to a group. Default is *"uniqueMember"*.
+AUTH_LDAP_MEMBER_ATTR           LDAP group attribute used to add members to a group. Default is *"uniqueMember"*.
+AUTH_LDAP_MEMBER_OF_ATTR        LDAP user attribute used to add members to a group. Default is *"memberOf"*.
 AUTH_LDAP_USERNAME_ATTR         LDAP user attribute for username. Default is *"uid"*.
 AUTH_LDAP_EMAIL_ATTR            LDAP user attribute for email. Default is *"mail"*.
 AUTH_LDAP_LASTNAME_ATTR         LDAP user attribute for last name. Default is *"sn"*.

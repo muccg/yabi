@@ -158,8 +158,7 @@ if [ "$1" = 'uwsgi' ]; then
     echo "UWSGI_OPTS is ${UWSGI_OPTS}"
 
     django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-collectstatic.log
-    django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-syncdb.log
-    django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
+    django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
     uwsgi ${UWSGI_OPTS} 2>&1 | tee /data/uwsgi.log
     exit $?
 fi
@@ -173,9 +172,8 @@ if [ "$1" = 'runserver' ]; then
     : ${RUNSERVER_OPTS="runserver_plus 0.0.0.0:${WEBPORT} --settings=${DJANGO_SETTINGS_MODULE}"}
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
-    django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-syncdb.log
-    django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-migrate.log
     django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-collectstatic.log
+    django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-migrate.log
     django-admin.py ${RUNSERVER_OPTS} 2>&1 | tee /data/runserver.log
     exit $?
 fi
@@ -185,7 +183,7 @@ if [ "$1" = 'runtests' ]; then
     echo "[Run] Starting tests"
 
     XUNIT_OPTS="--with-xunit --xunit-file=tests.xml"
-    NOSETESTS="nosetests -v --logging-clear-handlers ${XUNIT_OPTS}"
+    NOSETESTS="nosetests -v --logging-clear-handlers --with-setup-django ${XUNIT_OPTS}"
     IGNORES="-a !external_service"
 
     # Setting TEST_CASES in fig file allows you to choose tests
