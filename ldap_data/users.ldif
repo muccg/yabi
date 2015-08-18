@@ -29,6 +29,28 @@ postalcode: 6000
 mobile: 042 034567
 userPassword: demo
 
+dn: cn=demo2,ou=People,dc=dockerdomain
+cn: demo2
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+mail: demo2@dockerdomain
+givenname: Demo2
+sn: User
+ou: People
+uid: demo2
+street: 123 Down St.
+l: Perth
+st: WA
+postalcode: 6000
+mobile: 042 034567
+userPassword: demo2
+# Didn't feel like messing with schema redefinition so I'm using
+# postal address instead of memberOf or similar for dev
+# This attribute is settable from settings anyways
+postalAddress: cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain
+
 # not a Yabi user
 dn: cn=other,ou=People,dc=dockerdomain
 cn: other

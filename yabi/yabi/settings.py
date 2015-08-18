@@ -1,26 +1,18 @@
-# -*- coding: utf-8 -*-
-# (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
-# All rights reserved.
+# Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
+# Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
 #
-# This product includes software developed at the Centre for Comparative Genomics
-# (http://ccg.murdoch.edu.au/).
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
-# YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
-# OR CORRECTION.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
-# OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 from ccg_django_utils.webhelpers import url
@@ -65,7 +57,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.doc.XViewMiddleware',
+    'django.contrib.admindocs.middleware.XViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware'
 ]
 
@@ -82,7 +74,6 @@ INSTALLED_APPS = [
     'yabi.yabiengine',
     'kombu.transport.django',
     'django_extensions',
-    'south',
     'djamboloader',
     'django.contrib.admin',
     'djangosecure',
@@ -111,8 +102,8 @@ CSRF_COOKIE_SECURE = env.get("csrf_cookie_secure", PRODUCTION)
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
 #      https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 #      https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
-TIME_ZONE = 'Australia/Perth'
-LANGUAGE_CODE = 'en-us'
+TIME_ZONE = env.get("time_zone", "Australia/Perth")
+LANGUAGE_CODE = env.get("language_code", "en-us")
 USE_I18N = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#login-url
@@ -258,15 +249,14 @@ AUTH_TYPE = env.get("auth_type", "").lower()
 # Set to True if you would like to add the Database Authentication as a fallback.
 # This is useful to be able to log in even if there is some problem with your
 # LDAP, Kerberos etc. server.
+# AUTH_ENABLE_DB_FALLBACK = env.get("auth_enable_db_fallback", True)
 AUTH_ENABLE_DB_FALLBACK = env.get("auth_enable_db_fallback", True)
 
-AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 AUTHENTICATION_BACKENDS = []
 if AUTH_TYPE == 'ldap':
     AUTHENTICATION_BACKENDS = [
         'yabi.authbackends.ldap.LDAPBackend'
     ]
-    AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 elif AUTH_TYPE == 'kerberos+ldap':
     AUTHENTICATION_BACKENDS = [
         'yabi.authbackends.kerberosldap.KerberosLDAPBackend'
@@ -275,19 +265,22 @@ elif AUTH_TYPE == 'kerberos+ldap':
 if AUTHENTICATION_BACKENDS == [] or AUTH_ENABLE_DB_FALLBACK:
     AUTHENTICATION_BACKENDS.append('yabi.authbackends.CaseInsensitiveUsernameModelBackend')
 
-AUTH_KERBEROS_REALM = env.get('auth_kerberos_realm', 'DOCKERDOMAIN')
+AUTH_KERBEROS_REALM = env.get('auth_kerberos_realm', '')
 AUTH_KERBEROS_SERVICE = env.get('auth_kerberos_service', '')
 
 # LDAP details have to be set correctly if AUTH_TYPE is "ldap" or "kerberos+ldap"
 # LDAP settings you have to set for sure:
-AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", ["ldap://ldap.dockerdomain"])
-AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", "ou=People,dc=dockerdomain")
-AUTH_LDAP_YABI_GROUP_DN = env.get("auth_ldap_group_dn", "cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain")
-AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_admin_group_dn", "cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain")
+AUTH_LDAP_SERVER = env.getlist("auth_ldap_server", [])
+AUTH_LDAP_USER_BASE = env.get("auth_ldap_user_base", "")
+AUTH_LDAP_YABI_GROUP_DN = env.get("auth_ldap_yabi_group_dn", "")
+AUTH_LDAP_YABI_ADMIN_GROUP_DN = env.get("auth_ldap_yabi_admin_group_dn", "")
 # LDAP settings you might want to set:
 AUTH_LDAP_SYNC_USER_ON_LOGIN = env.get("auth_ldap_sync_user_on_login", False)
 AUTH_LDAP_USER_FILTER = env.get("auth_ldap_user_filter", "(objectclass=person)")
-AUTH_LDAP_MEMBERATTR = env.get("auth_ldap_memberattr", "uniqueMember")
+# This is the attribute of a Group that contains Users in the group
+AUTH_LDAP_MEMBER_ATTR = env.get("auth_ldap_member_attr", "uniqueMember")
+# This is the attribute of a User that contains Groups a user is member of
+AUTH_LDAP_MEMBER_OF_ATTR = env.get("auth_ldap_member_of_attr", "memberOf")
 AUTH_LDAP_USERNAME_ATTR = env.get("auth_ldap_username_attr", "uid")
 AUTH_LDAP_EMAIL_ATTR = env.get("auth_ldap_email_attr", "mail")
 AUTH_LDAP_LASTNAME_ATTR = env.get("auth_ldap_lastname_attr", "sn")
@@ -491,6 +484,10 @@ JAVASCRIPT_LIBRARIES = {
         "cache_for": THIRTY_DAYS,
     },
 }
+
+# We're not running tests through Django but the System Check Frameworks complains if
+# TEST_RUNNER isn't set
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # The logging settings here apply only to the Django WSGI process.
 # Celery is left to hijack the root logger. We add our custom handlers after

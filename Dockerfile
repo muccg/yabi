@@ -28,6 +28,7 @@ COPY krb5.conf /etc/krb5.conf
 WORKDIR /app
 COPY yabi/*requirements.txt /app/yabi/
 COPY yabish/*requirements.txt /app/yabish/
+COPY tests/SetupDjango-0.1.tar.gz /app/tests/
 RUN pip install -r yabish/requirements.txt
 RUN pip install -r yabi/requirements.txt
 

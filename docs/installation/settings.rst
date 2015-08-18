@@ -11,7 +11,7 @@ As Yabi uses the Django web application framework, much of its configuration is
 through the settings.py file. For most settings in this file you can consult
 the `Django documentation <https://docs.djangoproject.com/en/dev/ref/settings/>`_.
 
-Yabi supports the pattern advocated in the `Twelve-Factor app document <http://12factor.net/config/>`_.
+Yabi supports the pattern advocated in the `Twelve-Factor app document <http://12factor.net/config>`_.
 
 This means that most of the configuration you need to do can be done by setting
 simple variables in your ``/etc/yabi/yabi.conf`` file. For the full

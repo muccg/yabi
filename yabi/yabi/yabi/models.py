@@ -1,26 +1,18 @@
-# -*- coding: utf-8 -*-
-# (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
-# All rights reserved.
+# Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
+# Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
 #
-# This product includes software developed at the Centre for Comparative Genomics
-# (http://ccg.murdoch.edu.au/).
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
-# YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
-# OR CORRECTION.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
-# OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import traceback
@@ -77,7 +69,7 @@ class FileExtension(Base):
 class FileType(Base):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    extensions = models.ManyToManyField(FileExtension, null=True, blank=True)
+    extensions = models.ManyToManyField(FileExtension, blank=True)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.file_extensions_text())
@@ -100,7 +92,7 @@ class ToolDesc(Base):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
+    output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', blank=True)
     accepts_input = models.BooleanField(default=False)
 
     name.help_text = "Unique tool name."
@@ -193,7 +185,7 @@ class Tool(Base):
     submission = models.TextField(blank=True)
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
-    groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
+    groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', blank=True)
 
     desc.help_text = "The tool definition"
     path.help_text = "The path to the binary for this file. Will normally just be binary name."
@@ -540,7 +532,7 @@ class Credential(Base):
     cert = models.TextField(blank=True)
     key = models.TextField(blank=True)
     user = models.ForeignKey(User)
-    backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
+    backends = models.ManyToManyField('Backend', through='BackendCredential', blank=True)
     expires_on = models.DateTimeField(null=True)   # null mean never expire this
 
     username.help_text = "The username on the backend this credential is for."

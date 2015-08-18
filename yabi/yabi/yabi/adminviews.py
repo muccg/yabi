@@ -1,31 +1,22 @@
-# -*- coding: utf-8 -*-
-# (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
-# All rights reserved.
+# Yabi - a sophisticated online research environment for Grid, High Performance and Cloud computing.
+# Copyright (C) 2015  Centre for Comparative Genomics, Murdoch University.
 #
-# This product includes software developed at the Centre for Comparative Genomics
-# (http://ccg.murdoch.edu.au/).
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
-# YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
-# OR CORRECTION.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
-# OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# -*- coding: utf-8 -*-
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import json
 import logging
 import six
-from urllib import quote
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
@@ -116,7 +107,7 @@ def tool(request, tool_id):
         'title': 'Tool Details',
         'root_path': urlresolvers.reverse('admin:index'),
         'edit_url': urlresolvers.reverse('admin:yabi_tooldesc_change', args=(tool.id,)),
-        'json_url': webhelpers.url('/ws/tool/' + quote(tool.name)),
+        'json_url': webhelpers.url('/ws/tooldesc/%s' % tool.id),
         'tool_params': format_params(tool.toolparameter_set.order_by('id')),
     })
 
@@ -125,7 +116,7 @@ def tool(request, tool_id):
 def modify_backend_by_id(request, id):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(id=id)
-    for key, val in six.iteritems(request.REQUEST):
+    for key, val in six.iteritems(getattr(request, request.method)):
         logger.debug('{0}={1}'.format(key, val))
         setattr(be, key, None if val == "None" else val)
     be.save()
@@ -137,7 +128,7 @@ def modify_backend_by_id(request, id):
 def modify_backend_by_name(request, scheme, hostname):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(scheme=scheme, hostname=hostname)
-    for key, val in six.iteritems(request.REQUEST):
+    for key, val in six.iteritems(getattr(request, request.method)):
         logger.debug('{0}={1}'.format(key, val))
         setattr(be, key, None if val == "None" else val)
     be.save()
@@ -207,11 +198,7 @@ def ldap_users(request):
     if request.method == 'POST':
         register_users(request)
 
-    def to_LDAPUser(search_result):
-        dn, data_dict = search_result
-        return ldaputils.LDAPUser(dn, data_dict)
-
-    ldap_yabi_users = map(to_LDAPUser, ldaputils.get_all_yabi_users().items())
+    ldap_yabi_users = ldaputils.get_all_yabi_users()
 
     db_user_names = [user.name for user in User.objects.all()]
 
