@@ -206,7 +206,7 @@ yabi collectstatic --noinput > /dev/null
 # Remove root-owned logged files just created by collectstatic
 rm -rf /var/log/%{webappname}/*
 # Touch the wsgi file to get the app reloaded by mod_wsgi
-touch ${installdir}/django.wsgi
+touch %{installdir}/django.wsgi
 
 %preun admin
 if [ "$1" = "0" ]; then
