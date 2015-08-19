@@ -169,6 +169,9 @@ class ToolDesc(Base):
 
 
 class Tool(Base):
+    class Meta:
+        ordering = ('desc__name', 'backend__name')
+
     desc = models.ForeignKey(ToolDesc, verbose_name="Tool")
     path = models.CharField(max_length=512, blank=True)
     display_name = models.CharField(max_length=255, blank=True)
