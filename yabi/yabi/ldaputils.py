@@ -20,7 +20,7 @@ import ldap
 import hashlib
 import logging
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
@@ -128,10 +128,15 @@ def get_user(username):
     userfilter = "(%s=%s)" % (settings.AUTH_LDAP_USERNAME_ATTR, username)
 
     result = ldapclient.search(settings.AUTH_LDAP_USER_BASE, userfilter)
-    if result and len(result) == 1:
+    if len(result) == 0:
+        raise LDAPUserDoesNotExist
+    if len(result) == 1:
         return LDAPUser(*result[0])
     else:
-        raise LDAPUserDoesNotExist
+        msg = "Searched at base '%s' with userfilter '%s', returned %s " + \
+              "results instead of 0 or 1. Results were: \n%s"
+        msg = msg % (settings.AUTH_LDAP_USER_BASE, userfilter, len(result), result)
+        raise ImproperlyConfigured(msg)
 
 
 def update_yabi_user(django_user, ldap_user):
