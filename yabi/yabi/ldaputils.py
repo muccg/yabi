@@ -172,7 +172,12 @@ def is_user_in_group(groupdn, user):
     if user.is_member_of(groupdn):
         return True
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBER_ATTR, user.dn)
+
+    if settings.AUTH_LDAP_MEMBER_GROUP_ATTR == 'username':
+        groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBER_ATTR, user.username)
+    else:
+        groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBER_ATTR, user.dn)
+
     try:
         result = ldapclient.search(groupdn, groupfilter, ['cn'])
     except ldap.NO_SUCH_OBJECT:
