@@ -279,7 +279,9 @@ AUTH_LDAP_SYNC_USER_ON_LOGIN = env.get("auth_ldap_sync_user_on_login", False)
 AUTH_LDAP_USER_FILTER = env.get("auth_ldap_user_filter", "(objectclass=person)")
 # This is the attribute of a Group that contains Users in the group
 AUTH_LDAP_MEMBER_ATTR = env.get("auth_ldap_member_attr", "uniqueMember")
-AUTH_LDAP_MEMBER_GROUP_ATTR = env.get("auth_ldap_member_group_attr", "dn")
+# This is the attribute of a user that is stored in the group membership attribute.
+# Can be "dn" or "username"
+AUTH_LDAP_MEMBER_ATTR_HAS_USER_ATTR = env.get("auth_ldap_member_attr_has_user_attr", "dn")
 # This is the attribute of a User that contains Groups a user is member of
 AUTH_LDAP_MEMBER_OF_ATTR = env.get("auth_ldap_member_of_attr", "memberOf")
 AUTH_LDAP_USERNAME_ATTR = env.get("auth_ldap_username_attr", "uid")

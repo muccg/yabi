@@ -173,10 +173,12 @@ def is_user_in_group(groupdn, user):
         return True
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
 
-    if settings.AUTH_LDAP_MEMBER_GROUP_ATTR == 'username':
+    user_id = user.dn
+    if settings.AUTH_LDAP_MEMBER_ATTR_HAS_USER_ATTR == 'username':
+        user_id = user.username
         groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBER_ATTR, user.username)
-    else:
-        groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBER_ATTR, user.dn)
+
+    groupfilter = '(%s=%s)' % (settings.AUTH_LDAP_MEMBER_ATTR, user_id)
 
     try:
         result = ldapclient.search(groupdn, groupfilter, ['cn'])

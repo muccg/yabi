@@ -54,19 +54,20 @@ Optional settings:
 
 All these settings but ``AUTH_LDAP_SYNC_USER_ON_LOGIN`` are provided for cases when your LDAP config differs from the standard, therefore in most cases you wouldn't want to change them.
 
-=============================  ===============
-Setting                         Description
-=============================  ===============
-AUTH_LDAP_SYNC_USER_ON_LOGIN    If ``True`` each time a user logs in fetch their details (name, email, is a Yabi Administrator) and set it in the database. Otherwise setting the database values from LDAP happens only the first time the user logs in. Default is ``True``.
-AUTH_LDAP_USER_FILTER           LDAP search filter used when searching for your users in AUTH_LDAP_USER_BASE. Default is *"(objectclass=person)"*.
-AUTH_LDAP_MEMBER_ATTR           LDAP group attribute used to add members to a group. Default is *"uniqueMember"*.
-AUTH_LDAP_MEMBER_OF_ATTR        LDAP user attribute used to add members to a group. Default is *"memberOf"*.
-AUTH_LDAP_USERNAME_ATTR         LDAP user attribute for username. Default is *"uid"*.
-AUTH_LDAP_EMAIL_ATTR            LDAP user attribute for email. Default is *"mail"*.
-AUTH_LDAP_LASTNAME_ATTR         LDAP user attribute for last name. Default is *"sn"*.
-AUTH_LDAP_FIRSTNAME_ATTR        LDAP user attribute for first name. Default is *"givenName"*.
-AUTH_LDAP_REQUIRE_TLS_CERT      Require server to have a valid TLS certificate. Default is True.
-=============================  ===============
+====================================  ===============
+Setting                                Description
+====================================  ===============
+AUTH_LDAP_SYNC_USER_ON_LOGIN           If ``True`` each time a user logs in fetch their details (name, email, is a Yabi Administrator) and set it in the database. Otherwise setting the database values from LDAP happens only the first time the user logs in. Default is ``True``.
+AUTH_LDAP_USER_FILTER                  LDAP search filter used when searching for your users in AUTH_LDAP_USER_BASE. Default is *"(objectclass=person)"*.
+AUTH_LDAP_MEMBER_ATTR                  LDAP group attribute used to add members to a group. Default is *"uniqueMember"*.
+AUTH_LDAP_MEMBER_ATTR_HAS_USER_ATTR    The User object's attribute that is stored in the AUTH_LDAP_MEMBER_ATTR above. Can be *"username"* or *"dn"*. Default is *"dn"*.
+AUTH_LDAP_MEMBER_OF_ATTR               LDAP user attribute used to add members to a group. Default is *"memberOf"*.
+AUTH_LDAP_USERNAME_ATTR                LDAP user attribute for username. Default is *"uid"*.
+AUTH_LDAP_EMAIL_ATTR                   LDAP user attribute for email. Default is *"mail"*.
+AUTH_LDAP_LASTNAME_ATTR                LDAP user attribute for last name. Default is *"sn"*.
+AUTH_LDAP_FIRSTNAME_ATTR               LDAP user attribute for first name. Default is *"givenName"*.
+AUTH_LDAP_REQUIRE_TLS_CERT             Require server to have a valid TLS certificate. Default is True.
+====================================  ===============
 
 
 Kerberos and LDAP Authentication
