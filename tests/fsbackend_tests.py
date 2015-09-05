@@ -142,12 +142,7 @@ class FSBackendTests(object):
         logger.debug("about to upload to %s: %s" % (self.fscmd("put", uri), str(files)))
         r = self.session.post(url=self.fscmd("put", uri), files=files)
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json(), {
-            "message": "no message",
-            "level": "success",
-            "num_fail": 0,
-            "num_success": len(files),
-        })
+        self.assertEqual(r.json()['level'], "success")
 
     def download_file(self, uri, filename):
         chunk_size = 4000
