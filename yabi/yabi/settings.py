@@ -189,6 +189,8 @@ SECRET_KEY = env.get("secret_key", "changeme")
 AWS_ACCESS_KEY_ID = env.get("aws_access_key_id", "")
 AWS_SECRET_ACCESS_KEY = env.get("aws_secret_access_key", "")
 
+S3_MULTIPART_UPLOAD_MAX_RETRIES = env.get("s3_multipart_upload_max_retries", 10)
+
 # OpenStack Credentials used to provision Nova instances
 OPENSTACK_USER = env.get("openstack_user", "")
 OPENSTACK_PASSWORD = env.get("openstack_password", "")

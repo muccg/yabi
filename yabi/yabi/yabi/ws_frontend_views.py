@@ -36,6 +36,7 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
+from django.core.files.uploadhandler import FileUploadHandler
 from django.shortcuts import get_object_or_404
 from yabi.backend.celerytasks import process_workflow, request_workflow_abort
 from yabi.yabiengine.enginemodels import EngineWorkflow
@@ -359,36 +360,24 @@ def zget(request):
 
 @authentication_required
 def put(request):
-    """
-    Uploads a file to the supplied URI
-
-    NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
-    this function will not work as it calls temporary_file_path
-    """
     yabiusername = request.user.username
-
-    logger.debug("uri: %s" % request.GET['uri'])
     uri = request.GET['uri']
+    upload_handler = DirectBackendUploadHandler(username=yabiusername, uri=uri)
+    request.upload_handlers = [upload_handler]
 
-    num_success = 0
-    num_fail = 0
+    logger.debug("uri: %s", uri)
 
-    for key, f in request.FILES.items():
-        upload_handle, status_queue = backend.put_file(yabiusername, f.name, uri)
-        for chunk in f.chunks():
-            upload_handle.write(chunk)
-        upload_handle.close()
+    total = len(request.FILES.items())
+    succeeded, failed = upload_handler.succeeded, upload_handler.failed
 
-        if status_queue.get():
-            num_success += 1
-        else:
-            num_fail += 1
+    logger.info("Of a total of %s files to upload, %s succeeded and %s failed.", total, succeeded, failed)
+
+    if failed > 0:
+        return HttpResponseServerError("File upload failed")
 
     response = {
-        "level": "success" if num_fail == 0 else "failure",
-        "num_success": num_success,
-        "num_fail": num_fail,
-        "message": 'no message'
+        "level": "success",
+        "message": "%s total file(s) uploaded" % total
     }
 
     return HttpResponse(content=json.dumps(response))
@@ -798,3 +787,54 @@ def read_into_iterator(target_iterator):
         return itertools.chain(iter((first_elem,)), target_iterator)
     except StopIteration:
         return target_iterator
+
+
+class DirectBackendUploadHandler(FileUploadHandler):
+    """Upload files directly to a Backend with a FIFO without saving it in memory or the FS"""
+    def __init__(self, username, uri, *args, **kwargs):
+        FileUploadHandler.__init__(self, *args, **kwargs)
+        self.username = username
+        self.uri = uri
+        # Set on each invocation of new_file()
+        self.uploader = None
+        self.files = {}
+
+    @property
+    def succeeded(self):
+        return len(filter(lambda x: x is True, self.files.values()))
+
+    @property
+    def failed(self):
+        return len(filter(lambda x: x is False, self.files.values()))
+
+    def new_file(self, field_name, file_name, content_type, content_length, charset, content_type_extra):
+        logger.info('New file %s upload started.', file_name)
+        self.uploader = FileToFIFOUploader(self.username, file_name, self.uri)
+
+    def receive_data_chunk(self, raw_data, start):
+        return self.uploader.write_chunk(raw_data)
+
+    def file_complete(self, file_size):
+        succeeded = self.uploader.upload_complete()
+        self.files[self.uploader.file_name] = succeeded
+        # Here we should return an UploadedFile instance that will be saved
+        # in request.FILES, but at the time request.FILES could be used by the
+        # view, we already wrote the file's contents to the destination.
+        # To make that clear we return None here.
+        return None
+
+
+class FileToFIFOUploader(object):
+    def __init__(self, username, file_name, uri):
+        self.username = username
+        self.file_name = file_name
+        self.uri = uri
+        self.upload_handle, self.status_queue = backend.put_file(self.username, self.file_name, self.uri)
+
+    def write_chunk(self, chunk):
+        self.upload_handle.write(chunk)
+        return None
+
+    def upload_complete(self):
+        self.upload_handle.close()
+        return self.status_queue.get()

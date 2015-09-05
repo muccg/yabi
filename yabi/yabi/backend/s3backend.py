@@ -14,17 +14,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import boto
+from functools import partial
+from io import BytesIO
+from itertools import ifilter
+import logging
+import traceback
+
+from django.conf import settings
+
 from yabi.backend.fsbackend import FSBackend
 from yabi.backend.exceptions import RetryException, FileNotFoundError
 from yabi.backend.utils import partition
 from yabi.yabiengine.urihelper import uriparse
-import logging
-import traceback
-import boto
-from functools import partial
-from itertools import ifilter
-from io import BytesIO
-
 
 logger = logging.getLogger(__name__)
 
@@ -208,9 +210,23 @@ class S3Backend(FSBackend):
 
             bucket = self.connect_to_bucket(bucket_name)
 
+            PART_UPLOAD_RETRIES = settings.S3_MULTIPART_UPLOAD_MAX_RETRIES
+
             CHUNKSIZE = 5 * 1024 * 1024
             # 5MB is the minimum size of a part when doing multipart uploads
             # Therefore, multipart uploads will fail if your file is smaller than 5MB
+
+            def upload_part(multipart_upload, data, part_no, retry_count):
+                exception = None
+                for try_no in range(retry_count):
+                    try:
+                        logger.debug("Uploading part %s", part_no)
+                        multipart_upload.upload_part_from_file(BytesIO(data), part_no)
+                        return True
+                    except Exception as exc:
+                        logger.warning("Failed attempt %s (of %s) to upload part. Err: %s", try_no + 1, PART_UPLOAD_RETRIES, exc)
+                        exception = exc
+                raise exception
 
             data = src.read(CHUNKSIZE)
             if len(data) < CHUNKSIZE:
@@ -224,7 +240,7 @@ class S3Backend(FSBackend):
                 multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
                 part_no = 1
                 while len(data) > 0:
-                    multipart_upload.upload_part_from_file(BytesIO(data), part_no)
+                    upload_part(multipart_upload, data, part_no, retry_count=PART_UPLOAD_RETRIES)
                     data = src.read(CHUNKSIZE)
                     part_no += 1
 
