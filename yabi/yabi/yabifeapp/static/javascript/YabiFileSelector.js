@@ -191,6 +191,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
         this.upload.addEventListener('fail', function(e, message) {
           YAHOO.ccgyabi.widget.YabiMessage.fail(message);
+          self.updateBrowser(self.currentPath());
         });
 
         this.upload.addEventListener('remove', function(e, file) {

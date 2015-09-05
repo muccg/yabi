@@ -469,6 +469,9 @@ Y.UploaderHTML5 = Y.extend( UploaderHTML5, Y.Widget, {
                    this.queue = null;
                    this.fire("alluploadscomplete", event);
                 break;
+                case "file:uploaderror":
+                   this.fire("uploaderror", event);
+                break;
                 case "uploaderqueue:uploaderror":
                    this.fire("uploaderror", event);
                 break;

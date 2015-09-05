@@ -85,6 +85,8 @@ YUI.add('file-html5', function(Y) {
         * @protected
         */      
         _uploadEventHandler: function (event) {
+            var xhr = this.get("xhr");
+
             switch (event.type) {
                 case "progress":
                   /**
@@ -126,6 +128,31 @@ YUI.add('file-html5', function(Y) {
                    *          <dd>The data returned by the server.</dd>
                    *  </dl>
                    */
+                   if (xhr.status >= 200 && xhr.status <= 299) {
+                        this.fire("uploadcomplete", {originEvent: event,
+                                                     data: event.target.responseText});
+                        var xhrupload = xhr.upload,
+                            boundEventHandler = this.get("boundEventHandler");
+
+                        xhrupload.removeEventListener ("progress", boundEventHandler);
+                        xhrupload.removeEventListener ("error", boundEventHandler);
+                        xhrupload.removeEventListener ("abort", boundEventHandler);
+                        xhr.removeEventListener ("load", boundEventHandler);
+                        xhr.removeEventListener ("error", boundEventHandler);
+                        xhr.removeEventListener ("readystatechange", boundEventHandler);
+
+                        this._set("xhr", null);
+                   }
+                   else {
+                        this.fire("uploaderror", {originEvent: event,
+                                                  data: xhr.responseText,
+                                                  status: xhr.status,
+                                                  statusText: xhr.statusText,
+                                                  source: "http"});
+                   }
+                   break;
+
+/*
                     this.fire("uploadcomplete", {originEvent: event,
                                                  data: event.target.responseText});
                     var xhrupload = this.get("xhr").upload,
@@ -140,9 +167,8 @@ YUI.add('file-html5', function(Y) {
                     
                     this._set("xhr", null);                   
                    break;
-
+*/
                 case "error":
-                   var xhr = this.get("xhr");
                   /**
                    * Signals that this file's upload has encountered an error. 
                    *
@@ -180,7 +206,6 @@ YUI.add('file-html5', function(Y) {
                    break;
 
                 case "readystatechange":
-
                   /**
                    * Signals that XMLHttpRequest has fired a readystatechange event. 
                    *
@@ -209,7 +234,6 @@ YUI.add('file-html5', function(Y) {
         * @param fileFieldName {String} (optional) The name of the POST variable that should contain the uploaded file ('Filedata' by default)
         */
         startUpload: function(url, parameters, fileFieldName) {
-         
             this._set("bytesUploaded", 0);
 
                  this._set("xhr", new XMLHttpRequest());
