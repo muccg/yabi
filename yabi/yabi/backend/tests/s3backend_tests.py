@@ -17,8 +17,8 @@
 import os
 from functools import partial
 import unittest
-import boto.s3.key
-import boto.s3.prefix
+# import boto.s3.key
+# import boto.s3.prefix
 import logging
 from mockito import *
 
