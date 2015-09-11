@@ -144,7 +144,7 @@ class FSBackend(BaseBackend):
         dst_scheme, dst_parts = uriparse(dst_uri)
         # Making sure dst_uri is always a file not a dir
         if dst_parts.path.endswith("/"):  # Looks like a dir
-            dst_file_uri = "%s/%s" % (dst_uri, src_backend.basename(src_parts.path))
+            dst_file_uri = "%s/%s" % (dst_uri.rstrip('/'), src_backend.basename(src_parts.path))
             dst_scheme, dst_parts = uriparse(dst_uri)
         else:
             dst_file_uri = dst_uri
@@ -427,6 +427,14 @@ class FSBackend(BaseBackend):
         raise NotSupportedError()
 
     @staticmethod
+    def format_date(date):
+        return format_date(date)
+
+    @staticmethod
     def format_iso8601_date(iso8601_date):
         date = dateutil.parser.parse(iso8601_date)
-        return date.strftime("%a, %d %b %Y %H:%M:%S")
+        return format_date(date)
+
+
+def format_date(date):
+    return date.strftime("%a, %d %b %Y %H:%M:%S")

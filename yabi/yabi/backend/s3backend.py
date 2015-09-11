@@ -14,10 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import boto
+import boto3
+from botocore.exceptions import ClientError
 from functools import partial
 from io import BytesIO
-from itertools import ifilter
+import itertools
 import logging
 import traceback
 
@@ -25,13 +26,13 @@ from django.conf import settings
 
 from yabi.backend.fsbackend import FSBackend
 from yabi.backend.exceptions import RetryException, FileNotFoundError
-from yabi.backend.utils import partition
 from yabi.yabiengine.urihelper import uriparse
 
 logger = logging.getLogger(__name__)
 
 NEVER_A_SYMLINK = False
 DELIMITER = '/'
+PART_UPLOAD_RETRIES = settings.S3_MULTIPART_UPLOAD_MAX_RETRIES
 
 
 class S3Backend(FSBackend):
@@ -60,82 +61,74 @@ class S3Backend(FSBackend):
             self._bucket = self.connect_to_bucket(name)
         return self._bucket
 
-    @staticmethod
-    def is_item_matching_name(name, item):
-        """We want to eliminate key names starting with the same prefix,
-           but include keys at the next level (but not deeper) for dirs.
-           Ex: listing for 'a'
-               'a' included
-               'abc' ignored
-               'a/anything' included
-               'a/anything/deeper' ignored"""
-        name_and_delimiter = name + DELIMITER if not name.endswith(DELIMITER) else name
-
-        def no_more_delimiters(item):
-            item_name_end = item.name.rstrip(DELIMITER)[len(name_and_delimiter):]
-            return DELIMITER not in item_name_end
-
-        return (not name or item.name == name or
-                item.name.startswith(name_and_delimiter) and no_more_delimiters(item))
-
     def ls(self, uri):
         self.set_cred(uri)
         bucket_name, path = self.parse_s3_uri(uri)
 
-        def is_empty_key_for_dir(k):
-            return k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
-        is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
+        keys, prefixes = self.get_matching_keys_and_prefixes(bucket_name, path)
 
-        try:
-            bucket = self.bucket(bucket_name)
-            keys_and_prefixes = ifilter(
-                is_item_matching_name,
-                bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
-                                    delimiter=DELIMITER))
-
-            # Keys correspond to files, prefixes to directories
-            allkeys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
-            empty_dir_key, keys = partition(is_empty_key_for_dir, allkeys)
-
-            files = [(self.basename(k.name), k.size, self.format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
-            dirs = [(self.basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
-
-            # Called on a directory with URI not ending in DELIMITER
-            # We call ourself again correctly
-            if len(files) == 0 and len(dirs) == 1 and not uri.endswith(DELIMITER):
-                return self.ls(uri + DELIMITER)
-
-        except boto.exception.S3ResponseError as e:
-            logger.exception("Couldn't get listing from S3:")
-            # TODO doing the same as SFTPBackend, but is this what we want?
-            # This code is not executed by Celery tasks
-            raise RetryException(e, traceback.format_exc())
-
-        is_dir = len(list(empty_dir_key)) != 0
-        if len(files) == 0 and len(dirs) == 0 and not is_dir:
-            result = {}
+        if len(keys) == 1 and len(prefixes) == 0 and keys[0]['Key'].endswith(DELIMITER):
+            # A key ending in the delimiter is a key for an empty directory
+            files = []
+            dirs = []
         else:
-            result = {
-                path: {
-                    "files": files,
-                    "directories": dirs,
-                }}
+            files = [(self.basename(k['Key']), k['Size'], self.format_date(k['LastModified']), NEVER_A_SYMLINK) for k in keys]
+            dirs = [(self.basename(p['Prefix']), 0, None, NEVER_A_SYMLINK) for p in prefixes]
+
+        result = {
+            path: {
+                "files": files,
+                "directories": dirs,
+            }
+        }
 
         return result
 
     def rm(self, uri):
+        self.set_cred(uri)
         bucket_name, path = self.parse_s3_uri(uri)
 
         try:
             bucket = self.bucket(bucket_name)
-            all_keys = self.get_keys_recurse(bucket, path)
+            all_keys = self.get_keys_recurse(bucket_name, path)
 
-            multi_delete_result = bucket.delete_keys(all_keys)
-            if multi_delete_result.errors:
+            # Unfortunately, when passing in Unicode key names to the
+            # Boto bucket.delete_objects, it throws a UnicodeEncodeError when
+            # building the XML request. As a workaround, we split keys in 2 groups.
+            # A group that has only valid ASCII keys and the other that has Unicode
+            # keys (ie. would throw an UnicodeEncodeError on str conversion).
+            # The first group of keys will be deleted with one API call to
+            # bucket.delete_objects. The second group we iterate over and delete
+            # one-by-one. Those will be deleted with a DELETE HTTP call, so no
+            # XML 1.0 problems there.
+
+            ASCII_keys = []
+            Unicode_keys = []
+            for k in map(lambda k: k['Key'], all_keys):
+                try:
+                    ASCII_keys.append({'Key': str(k)})
+                except UnicodeEncodeError:
+                    Unicode_keys.append(k)
+
+            errors = []
+            # delete_objects accepts a maximum of 1000 keys so we chunk the keys
+            for keys in chunks(ASCII_keys, 1000):
+                logger.debug("Deleting keys: %s", keys)
+                multi_delete_result = bucket.delete_objects(Delete={'Objects': keys})
+                if 'Errors' in multi_delete_result:
+                    errors.extend(multi_delete_result['Errors']['Key'])
+
+            for key in Unicode_keys:
+                try:
+                    bucket.Object(key).delete()
+                except:
+                    errors.append(key)
+
+            if len(errors) > 0:
                 # Some keys couldn't be deleted
                 raise RuntimeError(
                     "The following keys couldn't be deleted when deleting uri %s: %s",
-                    uri, ", ".join(multi_delete_result.errors))
+                    uri, ", ".join(errors))
 
         except Exception as exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
@@ -143,20 +136,112 @@ class S3Backend(FSBackend):
 
     def mkdir(self, uri):
         self.set_cred(uri)
-        dir_uri = self.ensure_trailing_slash(uri)
+        dir_uri = ensure_trailing_slash(uri)
         self.rm(dir_uri)
         bucket_name, path = self.parse_s3_uri(dir_uri)
 
         try:
-            bucket = self.bucket()
-            key = bucket.new_key(path.lstrip(DELIMITER))
-            key.set_contents_from_string('')
+            bucket = self.bucket(bucket_name)
+            key = bucket.Object(path.lstrip(DELIMITER))
+            key.put(Body='')
 
         except Exception as exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())
 
+    def download_file(self, uri, dst):
+        try:
+            bucket_name, path = self.parse_s3_uri(uri)
+
+            bucket = self.connect_to_bucket(bucket_name)
+
+            CHUNKSIZE = 8 * 1024
+
+            try:
+                obj = bucket.Object(path.lstrip(DELIMITER)).get()
+            except ClientError as e:
+                code = e.response.get('Error', {}).get('Code')
+                if code == 'NoSuchKey':
+                    raise FileNotFoundError(uri)
+                raise
+
+            body = obj.get('Body')
+            for chunk in iter(lambda: body.read(CHUNKSIZE), b''):
+                dst.write(chunk)
+
+            return True
+        except FileNotFoundError:
+            logger.exception("Exception thrown while S3 downloading %s to %s", uri, dst)
+            raise
+        except:
+            logger.exception("Exception thrown while S3 downloading %s to %s", uri, dst)
+            return False
+
+    def upload_file(self, uri, src):
+        try:
+            bucket_name, path = self.parse_s3_uri(uri)
+            bucket = self.connect_to_bucket(bucket_name)
+
+            # 5MB is the minimum size of a part when doing multipart uploads
+            # Therefore, multipart uploads will fail if your file is smaller than 5MB
+            CHUNKSIZE = 5 * 1024 * 1024
+
+            reader = iter(lambda: src.read(CHUNKSIZE), b'')
+
+            first_data_chunk = reader.next()
+            if len(first_data_chunk) < CHUNKSIZE:
+                # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
+                key = bucket.Object(path.lstrip(DELIMITER))
+                key.put(Body=BytesIO(first_data_chunk))
+                return True
+            else:
+                # File is larger than CHUNKSIZE, do multipart upload
+
+                # Put back the first data chunk into the reader
+                reader = itertools.chain(iter([first_data_chunk]), reader)
+                return self.multipart_upload_file(bucket, path, reader)
+        except:
+            logger.exception("Exception while S3 uploading %s to %s", src, uri)
+            return False
+
     # Implementation
+
+    def upload_part(self, bucket, key, upload_id, data, part_no, retry_count):
+        client = bucket.meta.client
+
+        exception = None
+        for try_no in range(retry_count):
+            try:
+                logger.debug("Uploading part %s", part_no)
+                response = client.upload_part(Bucket=bucket.name,
+                                              Key=key, UploadId=upload_id,
+                                              PartNumber=part_no, Body=BytesIO(data))
+                return {'ETag': response['ETag'], 'PartNumber': part_no}
+            except Exception as exc:
+                logger.warning("Failed attempt %s (of %s) to upload part. Err: %s", try_no + 1, PART_UPLOAD_RETRIES, exc)
+                exception = exc
+
+        logger.error("Failed last attempt (%s) to upload part. Giving up! Err: %s", try_no + 1, PART_UPLOAD_RETRIES, exc)
+        raise exception
+
+    def multipart_upload_file(self, bucket, path, data_reader):
+        client = bucket.meta.client
+        key = path.lstrip(DELIMITER)
+
+        response = client.create_multipart_upload(Bucket=bucket.name, Key=key)
+        upload_id = response['UploadId']
+
+        try:
+            parts = []
+            for data in data_reader:
+                part = self.upload_part(bucket, key, upload_id, data, len(parts) + 1, retry_count=PART_UPLOAD_RETRIES)
+                parts.append(part)
+
+            client.complete_multipart_upload(Bucket=bucket.name, Key=key, UploadId=upload_id, MultipartUpload={'Parts': parts})
+            return True
+        except:
+            client.abort_multipart_upload(Bucket=bucket.name, Key=key, UploadId=upload_id)
+            raise
 
     def parse_s3_uri(self, uri):
         if uri.endswith(DELIMITER):
@@ -170,9 +255,13 @@ class S3Backend(FSBackend):
     def _get_connect_params(self, bucket_name):
         c = self.cred.credential.get_decrypted()
         params = {"aws_access_key_id": c.key, "aws_secret_access_key": c.password}
+        # TODO from docker containers the SSL verification fails
+        # find a better fix for this
+        if not settings.PRODUCTION:
+            params['verify'] = False
 
+        # TODO
         # Use different boto options for e2e tests against fakes3
-        from django.conf import settings
         if settings.DEBUG and bucket_name == "fakes3":
             logger.info("Changing boto connection params for fakes3")
             params.update(host="s3test", port=4569, is_secure=False,
@@ -181,93 +270,44 @@ class S3Backend(FSBackend):
         return params
 
     def connect_to_bucket(self, bucket_name):
-        connection = boto.connect_s3(**self._get_connect_params(bucket_name))
-        return connection.get_bucket(bucket_name)
-
-    def download_file(self, uri, dst):
+        # connection = boto.connect_s3(**self._get_connect_params(bucket_name))
+        # return connection.get_bucket(bucket_name)
+        s3 = boto3.resource('s3', **self._get_connect_params(bucket_name))
+        bucket = s3.Bucket(bucket_name)
         try:
-            bucket_name, path = self.parse_s3_uri(uri)
-
-            bucket = self.connect_to_bucket(bucket_name)
-            key = bucket.get_key(path.lstrip(DELIMITER))
-
-            if not key:
-                raise FileNotFoundError(uri)
-
-            key.get_contents_to_file(dst)
-
-            return True
-        except FileNotFoundError:
-            logger.exception("Exception thrown while S3 downloading %s to %s", uri, dst)
+            s3.meta.client.head_bucket(Bucket=bucket_name)
+        except ClientError as e:
+            error_code = int(e.response['Error']['Code'])
+            if error_code == 404:
+                raise Exception("Bucket '%s' doesn't exist" % bucket_name)
             raise
-        except:
-            logger.exception("Exception thrown while S3 downloading %s to %s", uri, dst)
-            return False
+        return bucket
 
-    def upload_file(self, uri, src):
-        try:
-            bucket_name, path = self.parse_s3_uri(uri)
+    def get_matching_keys_and_prefixes(self, bucket_name, path):
+        key_matches_path = partial(is_key_matching_name, path)
+        prefix_matches_path = partial(is_prefix_matching_name, path)
 
-            bucket = self.connect_to_bucket(bucket_name)
+        bucket = self.bucket(bucket_name)
+        paginator = bucket.meta.client.get_paginator('list_objects')
 
-            PART_UPLOAD_RETRIES = settings.S3_MULTIPART_UPLOAD_MAX_RETRIES
+        keys, prefixes = [], []
+        for page in paginator.paginate(Bucket=bucket.name, Prefix=path.lstrip(DELIMITER), Delimiter=DELIMITER):
+            keys += filter(key_matches_path, page.get('Contents', []))
+            prefixes += filter(prefix_matches_path, page.get('CommonPrefixes', []))
 
-            CHUNKSIZE = 5 * 1024 * 1024
-            # 5MB is the minimum size of a part when doing multipart uploads
-            # Therefore, multipart uploads will fail if your file is smaller than 5MB
+        # Called on a directory with URI not ending in DELIMITER
+        # We call ourself again correctly
+        if len(keys) == 0 and len(prefixes) == 1 and not path.endswith(DELIMITER):
+            return self.get_matching_keys_and_prefixes(bucket_name, path + DELIMITER)
 
-            def upload_part(multipart_upload, data, part_no, retry_count):
-                exception = None
-                for try_no in range(retry_count):
-                    try:
-                        logger.debug("Uploading part %s", part_no)
-                        multipart_upload.upload_part_from_file(BytesIO(data), part_no)
-                        return True
-                    except Exception as exc:
-                        logger.warning("Failed attempt %s (of %s) to upload part. Err: %s", try_no + 1, PART_UPLOAD_RETRIES, exc)
-                        exception = exc
-                raise exception
-
-            data = src.read(CHUNKSIZE)
-            if len(data) < CHUNKSIZE:
-                # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
-                key = bucket.new_key(path.lstrip(DELIMITER))
-                size = key.set_contents_from_file(BytesIO(data))
-                logger.debug("Set %s bytes to %s", size, key.name)
-            else:
-                # File is larger than CHUNKSIZE, there will be more parts so initiate
-                # the multipart_upload and upload in parts
-                multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
-                part_no = 1
-                while len(data) > 0:
-                    upload_part(multipart_upload, data, part_no, retry_count=PART_UPLOAD_RETRIES)
-                    data = src.read(CHUNKSIZE)
-                    part_no += 1
-
-                multipart_upload.complete_upload()
-            return True
-        except:
-            logger.exception("Exception thrown while S3 uploading %s to %s", src, uri)
-            return False
+        return keys, prefixes
 
     def get_keys_recurse(self, bucket, path):
-        result = []
-
-        is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
-
-        keys_and_prefixes = ifilter(
-            is_item_matching_name,
-            bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
-                                delimiter=DELIMITER))
-
-        # Keys correspond to files, prefixes to directories
-        keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
-
-        result.extend(keys)
+        keys, prefixes = self.get_matching_keys_and_prefixes(bucket, path)
         for p in prefixes:
-            result.extend(self.get_keys_recurse(bucket, p.name))
+            keys.extend(self.get_keys_recurse(bucket, p['Prefix']))
 
-        return result
+        return keys
 
     def _path_exists(self, uri):
         bucket = self.bucket()
@@ -276,13 +316,48 @@ class S3Backend(FSBackend):
 
     # URI and path helpers
 
-    @classmethod
-    def ensure_trailing_slash(cls, uri):
-        return uri if uri.endswith(DELIMITER) else uri + DELIMITER
-
     def basename(self, key_name):
         return FSBackend.basename(self, key_name.rstrip(DELIMITER))
 
     def parent_dir_uri(self, uri):
         uri = uri.rstrip(DELIMITER)
         return uri[:uri.rfind(DELIMITER)] + DELIMITER
+
+
+def ensure_trailing_slash(s):
+    return s if s.endswith(DELIMITER) else s + DELIMITER
+
+
+def is_key_matching_name(name, key):
+    return is_item_matching_name(name, key, item_name_attr='Key')
+
+
+def is_prefix_matching_name(name, prefix):
+    return is_item_matching_name(name, prefix, item_name_attr='Prefix')
+
+
+def is_item_matching_name(name, item, item_name_attr):
+    """We want to eliminate key names starting with the same prefix,
+       but include keys at the next level (but not deeper) for dirs.
+       Ex: listing for 'a'
+           'a' included
+           'abc' ignored
+           'a/anything' included
+           'a/anything/deeper' ignored"""
+    name = name.lstrip(DELIMITER)
+    item_name = item[item_name_attr]
+    if item_name.rstrip(DELIMITER) == name.rstrip(DELIMITER):
+        return True
+    name = ensure_trailing_slash(name)
+
+    if not item_name.startswith(name):
+        return False
+
+    item_name_end = item_name[len(name):].rstrip(DELIMITER)
+
+    return DELIMITER not in item_name_end
+
+
+def chunks(seq, chunk_size):
+    for x in xrange(0, len(seq), chunk_size):
+        yield seq[x:x + chunk_size]
