@@ -269,18 +269,19 @@ class S3Backend(FSBackend):
 
         return params
 
-    def connect_to_bucket(self, bucket_name):
-        # connection = boto.connect_s3(**self._get_connect_params(bucket_name))
-        # return connection.get_bucket(bucket_name)
+    def connect_to_bucket(self, bucket_name, verify=False):
         s3 = boto3.resource('s3', **self._get_connect_params(bucket_name))
         bucket = s3.Bucket(bucket_name)
-        try:
-            s3.meta.client.head_bucket(Bucket=bucket_name)
-        except ClientError as e:
-            error_code = int(e.response['Error']['Code'])
-            if error_code == 404:
-                raise Exception("Bucket '%s' doesn't exist" % bucket_name)
-            raise
+
+        if verify:
+            try:
+                s3.meta.client.head_bucket(Bucket=bucket_name)
+            except ClientError as e:
+                error_code = int(e.response['Error']['Code'])
+                if error_code == 404:
+                    raise Exception("Bucket '%s' doesn't exist" % bucket_name)
+                raise
+
         return bucket
 
     def get_matching_keys_and_prefixes(self, bucket_name, path):
@@ -294,7 +295,6 @@ class S3Backend(FSBackend):
         for page in paginator.paginate(Bucket=bucket.name, Prefix=path.lstrip(DELIMITER), Delimiter=DELIMITER):
             keys += filter(key_matches_path, page.get('Contents', []))
             prefixes += filter(prefix_matches_path, page.get('CommonPrefixes', []))
-
         # Called on a directory with URI not ending in DELIMITER
         # We call ourself again correctly
         if len(keys) == 0 and len(prefixes) == 1 and not path.endswith(DELIMITER):
