@@ -101,7 +101,9 @@ pip --version
 export PATH=$PATH:/usr/pgsql-9.4/bin
 
 # Install package into the prefix
-pip install -r runtime-requirements.txt
+# TODO - temporarily added --no-use-wheel below, because of jmespath package has a wrong wheel
+# See https://github.com/jmespath/jmespath.py/issues/90
+pip install --no-use-wheel -r runtime-requirements.txt
 pip install .
 
 # Fix up paths in virtualenv, enable use of global site-packages
