@@ -18,9 +18,10 @@ import os
 from django.conf.urls import *
 from django.conf import settings
 from django.http import HttpResponse
+from yabi.yabi.models import User
+
 import logging
 logger = logging.getLogger(__name__)
-from yabi.yabi.models import User
 
 
 def status_page(request):
