@@ -20,11 +20,15 @@ from django.conf import settings
 from django.http import HttpResponse
 import logging
 logger = logging.getLogger(__name__)
+from yabi.yabi.models import User
 
 
 def status_page(request):
     """Availability page to be called to see if yabi is running. Should return HttpResponse with status 200"""
     logger.info('')
+
+    # make a db connection
+    User.objects.count()
 
     # write a file
     with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'w') as f:

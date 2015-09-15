@@ -22,7 +22,6 @@ from django.views.generic.base import RedirectView
 import admin
 
 urlpatterns = patterns('yabi.yabifeapp.views',
-                       url(r'^status_page[/]*$', 'status_page', name='status_page'),
                        (r'^preview/metadata[/]*$', 'preview_metadata'),
                        (r'^preview[/]*$', 'preview'),
                        (r'^[/]*$', 'design'),
