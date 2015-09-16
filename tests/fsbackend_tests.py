@@ -128,7 +128,10 @@ class FSBackendTests(object):
     def getcmd(self, cmd, uri, isjson=True, expected_status=200):
         cmd_uri = self.fscmd(cmd, uri)
         logger.debug("GET %s" % cmd_uri)
-        r = self.session.get(cmd_uri)
+        if cmd in ("rm", "mkdir", "copy", "rcopy", "put"):
+            r = self.session.post(cmd_uri)
+        else:
+            r = self.session.get(cmd_uri)
         #logger.info("response to %s uri=%s is: %s" % (cmd, uri, r.text))
         self.assertEqual(r.status_code, expected_status)
         return r.json() if isjson else r.text

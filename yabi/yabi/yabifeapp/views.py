@@ -23,8 +23,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
 from django.core.cache import cache
+from django.template import RequestContext
 from ccg_django_utils import webhelpers
-from yabi.yabi.models import Credential, User, ModelBackendUserProfile, LDAPBackendUserProfile
+from yabi.yabi.models import Credential, ModelBackendUserProfile, LDAPBackendUserProfile
 from yabi.responses import *
 from yabi.preview import html
 from yabi.crypto_utils import DecryptException
@@ -56,12 +57,12 @@ def render_page(template, request, response=None, **kwargs):
         response.set_cookie("yabife-debug", "1", path=webhelpers.url("/"))
 
     # Actually render the template.
-    context = {
+    context = RequestContext(request, {
         "h": webhelpers,
-        "request": request,
+        "settings": settings,
         "debug": debug,
         "base_site_url": webhelpers.url("").rstrip("/")
-    }
+    })
     context.update(kwargs)
     return render_to_response(template, context)
 
@@ -103,13 +104,12 @@ def login(request):
     show_dev_warning = using_dev_settings()
 
     def render_form(form, error='Invalid login credentials'):
-        return render_to_response('fe/login.html', {
-            'request': request,
+        return render_to_response('fe/login.html', RequestContext(request, {
             'h': webhelpers,
             'base_site_url': webhelpers.url("").rstrip("/"),
             'form': form,
             'error': error,
-            'show_dev_warning': show_dev_warning})
+            'show_dev_warning': show_dev_warning}))
 
     if request.method == 'POST':
         form = LoginForm(request.POST)

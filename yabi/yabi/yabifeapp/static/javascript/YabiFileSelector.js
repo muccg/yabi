@@ -549,11 +549,13 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         };
 
         var cfg = {
+          method: 'POST',
           on: jsCallback,
           'arguments': {
             target: target
           }
         };
+        Yabi.util.setCSRFHeader(Y.io);
         Y.io(jsUrl, cfg);
       };
 
@@ -764,11 +766,13 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           }
         };
         var cfg = {
+          method: 'POST',
           on: jsCallback,
           'arguments': {
             target: this
           }
         };
+        Yabi.util.setCSRFHeader(Y.io);
         Y.io(jsUrl, cfg);
       };
 

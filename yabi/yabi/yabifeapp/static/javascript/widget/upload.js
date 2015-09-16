@@ -59,6 +59,7 @@ upload.prototype.addEventListeners = function() {
     if (self.uploadButton) {
         Y.one(self.uploadButton).on('click', function(e) {
           e.halt(true);
+          Yabi.util.setCSRFHeader(Y.io);
           self.upload();
         });
     }

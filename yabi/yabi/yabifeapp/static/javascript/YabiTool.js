@@ -124,6 +124,7 @@ YabiTool.prototype.setupFootNode = function() {
     yes.on("click", function(e) {
       ask(e);
 
+      Yabi.util.setCSRFHeader(Y.io);
       Y.io(appURL + "ws/workflows/delete_saved/", {
         method: 'POST',
         on: {

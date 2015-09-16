@@ -38,6 +38,8 @@ from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 from django.core.files.uploadhandler import FileUploadHandler
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from yabi.backend.celerytasks import process_workflow, request_workflow_abort
 from yabi.yabiengine.enginemodels import EngineWorkflow
 from yabi.yabiengine.models import Workflow, WorkflowTag, SavedWorkflow
@@ -214,13 +216,15 @@ def ls(request):
 
 
 @authentication_required
+@require_POST
 def copy(request):
     """
     This function will instantiate a copy on the backend for this user
     """
     yabiusername = request.user.username
 
-    params = request.POST if request.method == 'POST' else request.GET
+    params = request.GET.copy()  # Support both query params ...
+    params.update(request.POST)  # and POST body
     src, dst = params['src'], params['dst']
 
     # check that src does not match dst
@@ -240,13 +244,15 @@ def copy(request):
 
 
 @authentication_required
+@require_POST
 def rcopy(request):
     """
     This function will instantiate a rcopy on the backend for this user
     """
     yabiusername = request.user.username
 
-    params = request.POST if request.method == 'POST' else request.GET
+    params = request.GET.copy()   # Support both query params ...
+    params.update(request.POST)   # and POST body
     src, dst = unquote(params['src']), unquote(params['dst'])
 
     # check that src does not match dst
@@ -268,15 +274,20 @@ def rcopy(request):
 
 
 @authentication_required
+@require_POST
 def rm(request):
     yabiusername = request.user.username
-    logger.debug("yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
-    backend.rm_file(yabiusername, request.GET['uri'])
+
+    params = request.GET.copy()   # Support both query params ...
+    params.update(request.POST)   # and POST body
+
+    backend.rm_file(yabiusername, params['uri'])
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
 
 
 @authentication_required
+@require_POST
 def mkdir(request):
     backend.mkdir(request.user.username, request.GET['uri'])
     return HttpResponse("OK")
@@ -358,7 +369,11 @@ def zget(request):
     return response
 
 
+# We can't force the Flash uploader to set any headers, so we have to
+# disable CSRF for this view.
+@csrf_exempt
 @authentication_required
+@require_POST
 def put(request):
     yabiusername = request.user.username
     uri = request.GET['uri']
@@ -385,6 +400,7 @@ def put(request):
 
 @authentication_required
 @transaction.non_atomic_requests
+@require_POST
 def submit_workflow(request):
     try:
         yabiuser = User.objects.get(name=request.user.username)
@@ -454,6 +470,7 @@ def munge_name(workflow_set, workflow_name):
 
 
 @authentication_required
+@require_POST
 def save_workflow(request):
     try:
         workflow_dict = json.loads(request.POST["workflowjson"])
@@ -480,6 +497,7 @@ def save_workflow(request):
 
 
 @authentication_required
+@require_POST
 def delete_workflow(request):
     if "id" not in request.POST:
         return HttpResponseBadRequest("Need id param")
@@ -498,6 +516,7 @@ def delete_workflow(request):
 
 
 @authentication_required
+@require_POST
 def abort_workflow(request):
     if "id" not in request.POST:
         return HttpResponseBadRequest("Need id param")
@@ -517,6 +536,7 @@ def abort_workflow(request):
 
 
 @authentication_required
+@require_POST
 def delete_saved_workflow(request):
     if "id" not in request.POST:
         return HttpResponseBadRequest("Need id param")
@@ -532,6 +552,7 @@ def delete_saved_workflow(request):
 
 
 @authentication_required
+@require_POST
 def share_workflow(request):
     if "id" not in request.POST:
         return HttpResponseBadRequest("Need id param")
@@ -636,9 +657,8 @@ def workflow_datesearch(request):
 
 
 @authentication_required
+@require_POST
 def workflow_change_tags(request, id=None):
-    if request.method != 'POST':
-        return JsonMessageResponseNotAllowed(["POST"])
     id = int(id)
 
     yabiusername = request.user.username
@@ -660,9 +680,8 @@ def workflow_change_tags(request, id=None):
 
 
 @authentication_required
+@require_POST
 def passchange(request):
-    if request.method != "POST":
-        return HttpResponseNotAllowed("Method must be POST")
 
     profile = request.user.user
     success, message = profile.passchange(request)
@@ -729,10 +748,8 @@ def credential(request):
 
 
 @authentication_required
+@require_POST
 def save_credential(request, id):
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-
     try:
         credential = Credential.objects.get(id=id)
         yabiuser = User.objects.get(name=request.user.username)

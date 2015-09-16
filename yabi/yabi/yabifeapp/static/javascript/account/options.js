@@ -113,6 +113,7 @@ var YabiAccountPassword = function(options) {
               on: callback
             };
 
+            Yabi.util.setCSRFHeader(Y.io);
             var request = Y.io(appURL + 'account/password', cfg);
 
             self.disableForm();

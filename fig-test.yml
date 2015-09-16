@@ -36,6 +36,7 @@ webtest:
   command: runserver
   environment:
     - DJANGO_SETTINGS_MODULE=yabi.settings
+    - TESTING=True
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1

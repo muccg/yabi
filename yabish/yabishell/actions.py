@@ -64,12 +64,16 @@ class Action(object):
     def __init__(self, yabi, name=None):
         self.yabi = yabi
         self.name = name
+        self.method = 'GET'
         if self.name is None:
             self.name = self.__class__.__name__.lower()
 
     def process(self, args):
         params = self.map_args(args)
-        resp, json_response = self.yabi.get(self.url, params)
+        http_method = self.yabi.get
+        if self.method == 'POST':
+            http_method = self.yabi.post
+        resp, json_response = http_method(self.url, params)
         return self.process_response(self.decode_json(json_response))
 
     def decode_json(self, resp):
@@ -403,13 +407,14 @@ class Cp(Action, FileDownload):
             self.download_file(src, dst)
         else:
             params = {'src': src, 'dst': dst}
-            self.yabi.get(self.url, params)
+            self.yabi.post(self.url, params)
 
 
 class Rm(Action):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
         self.url = 'ws/fs/rm'
+        self.method = 'POST'
 
     def map_args(self, args):
         uri = args[0]

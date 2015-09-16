@@ -138,3 +138,8 @@ Yabi.util.humaniseBytes = function(bytes) {
 
   return humanSize;
 };
+
+Yabi.util.setCSRFHeader = function(io) {
+  var csrfToken = Y.Cookie.get(csrfCookieName);
+  io.header('X-CSRFToken', csrfToken);
+};

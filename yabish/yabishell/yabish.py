@@ -21,6 +21,7 @@ import json
 import os
 import sys
 import uuid
+import Cookie
 
 from urllib import quote
 from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
@@ -197,6 +198,7 @@ class Yabi(object):
         self.yabi_url = url
         self.workdir = os.path.expanduser('~/.yabish')
         self.cachedir = os.path.join(self.workdir, 'cache')
+        self.csrftokenfile = os.path.join(self.workdir, 'csrf_token')
         self.cookiesfile = os.path.join(self.workdir, 'cookies.txt')
         self.username = None
         self.backend = backend
@@ -211,6 +213,40 @@ class Yabi(object):
         if self._http is None:
             self._http = Http(workdir=self.workdir, base_url=self.yabi_url)
         return self._http
+
+    @property
+    def csrf_token(self):
+        token = None
+        if os.path.exists(self.csrftokenfile):
+            with open(self.csrftokenfile) as f:
+                token = f.read().strip()
+        if not token:
+            token = self.retrieve_csrf_token()
+            if token is not None:
+                with open(self.csrftokenfile, "w") as f:
+                    f.write(token)
+        return token
+
+    def retrieve_csrf_token(self):
+        url = self.yabi_url.rstrip('/') + '/login'
+        resp, contents = self.http.make_request(self._create_request('GET', url))
+        cookies = Cookie.SimpleCookie()
+        cookies.load(resp.get('set-cookie', ''))
+
+        csrf_cookie = None
+        for name, value in cookies.items():
+            # We do not know the exact name of the CSRF cookie on the
+            # client-side but we know it starts with 'csrf_yabi_'
+            if name.startswith('csrf_yabi'):
+                csrf_cookie = value
+                break
+        csrf_token = None
+        if csrf_cookie is not None:
+            csrf_token = csrf_cookie.value
+        return csrf_token
+
+    def reset_csrf_token(self):
+        os.unlink(self.csrftokenfile)
 
     def delete_dir(self, stageindir):
         rmdir = actions.Rm(self)
@@ -231,11 +267,17 @@ class Yabi(object):
             raise ValueError("Method should be GET or POST")
         if params is None:
             params = {}
-        act_as_ajax = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+        # Pretend we're making AJAX calls
+        headers = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
+        if method == 'POST':
+            if self.csrf_token is not None:
+                headers['X-CSRFToken'] = self.csrf_token
+
         if method == 'GET':
-            request = GetRequest(url, params, headers=act_as_ajax)
+            request = GetRequest(url, params, headers=headers)
         elif method == 'POST':
-            request = PostRequest(url, params, files=files, headers=act_as_ajax)
+            request = PostRequest(url, params, files=files, headers=headers)
 
         return request
 
@@ -251,6 +293,11 @@ class Yabi(object):
         except UnauthorizedError:
             if not self.login():
                 raise Exception("Invalid username/password")
+            resp, contents = self.http.make_request(request)
+        if int(resp.status) == 403:
+            # CSRF token error. Reset the token and try again.
+            self.reset_csrf_token()
+            request = self._create_request(method, url, params, files)
             resp, contents = self.http.make_request(request)
         if int(resp.status) >= 400:
             raise errors.CommunicationError(int(resp.status), url, contents)

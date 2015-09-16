@@ -121,7 +121,7 @@ YabiCredential.prototype.createForm = function() {
   this.container.id = null;
   this.form = this.container.querySelector('form');
 
-  var isOnRecord = function(value, container, setPlaceholder, 
+  var isOnRecord = function(value, container, setPlaceholder,
                             unsetPlaceholder) {
     var record = container.querySelector('.record');
     var input = container.querySelector('input, textarea');
@@ -317,6 +317,7 @@ YabiCredential.prototype.save = function() {
       on: callback
     };
 
+    Yabi.util.setCSRFHeader(Y.io);
     var request = Y.io(appURL + 'ws/account/credential/' +
         this.credential.id, cfg);
 

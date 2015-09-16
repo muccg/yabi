@@ -874,6 +874,7 @@ YUI().use(
           var name = name || oldName;
           this.name = name;
 
+          Yabi.util.setCSRFHeader(Y.io);
           Y.io(appURL + "ws/workflows/save/", {
             method: 'POST',
             on: {
@@ -907,6 +908,7 @@ YUI().use(
         var failureMsg = args.failureMsg || 'Failed to ' + args.operation;
         var successCallback = args.successCallback || function() {};
 
+        Yabi.util.setCSRFHeader(Y.io);
         Y.io(url, {
           method: 'POST',
           on: {
@@ -1114,6 +1116,7 @@ YUI().use(
             callback: postRelocate
           }
         };
+        Yabi.util.setCSRFHeader(Y.io);
         Y.io(jsUrl, cfg);
       };
 

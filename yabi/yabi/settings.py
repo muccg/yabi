@@ -28,6 +28,7 @@ FORCE_SCRIPT_NAME = env.get("force_script_name", "") or SCRIPT_NAME or None
 WEBAPP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PRODUCTION = env.get("production", False)
+TESTING = env.get("testing", False)
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
@@ -55,11 +56,19 @@ ATOMIC_REQUESTS = True
 MIDDLEWARE_CLASSES = [
     'djangosecure.middleware.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware'
 ]
+
+# We don't want to deal with CSRF during testing
+# The recommended way is to set special header in the HTTP requests to
+# disable CSRF, but we use a lot of different HTTP clients in our tests
+# so disabling on the server-side it is easier.
+if TESTING:
+    MIDDLEWARE_CLASSES.remove('django.middleware.csrf.CsrfViewMiddleware')
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = [

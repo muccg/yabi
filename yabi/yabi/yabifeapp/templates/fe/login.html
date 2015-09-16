@@ -68,6 +68,7 @@
         <!-- login area -->
         <div class="span3">
             <form class="well form-inline" enctype="multipart/form-data" method="post" action="{{base_site_url}}/login/?next={% if request.GET.next %}{{ request.GET.next }}{% else %}{{ base_site_url }}/{% endif %}">
+            {% csrf_token %}
             <fieldset
               {% if error %}
                  class="control-group error"
