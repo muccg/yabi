@@ -41,6 +41,7 @@ DEBUG = env.get("debug", not PRODUCTION)
 
 # django-secure
 SECURE_SSL_REDIRECT = env.get("secure_ssl_redirect", PRODUCTION)
+# We do clickjacking support using Django's middleware. See MIDDLEWARE_CLASSES
 SECURE_FRAME_DENY = False
 SECURE_CONTENT_TYPE_NOSNIFF = env.get("secure_content_type_nosniff", PRODUCTION)
 SECURE_BROWSER_XSS_FILTER = env.get("secure_browser_xss_filter", PRODUCTION)
@@ -57,6 +58,7 @@ MIDDLEWARE_CLASSES = [
     'djangosecure.middleware.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
