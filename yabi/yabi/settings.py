@@ -157,13 +157,27 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 # captcha image directory
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
-
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
-TEMPLATE_DEBUG = DEBUG
-
-# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
-TEMPLATE_LOADERS = ('django.template.loaders.filesystem.Loader',
-                    'django.template.loaders.app_directories.Loader')
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            # insert your TEMPLATE_DIRS here
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 # mako compiled templates directory
 MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, 'templates')
