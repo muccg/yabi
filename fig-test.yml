@@ -3,7 +3,7 @@ datatest:
   image: muccg/debian8-base:latest
   volumes:
     - .:/app
-    - data/tests:/data
+    - ./data/tests:/data
 
 sshtest:
   image: muccg/ssh:latest

@@ -2,7 +2,7 @@
 datarpmbuild:
   image: muccg/debian8-base:latest
   volumes:
-    - data/rpmbuild:/data
+    - ./data/rpmbuild:/data
     - .:/app
 
 rpmbuild:

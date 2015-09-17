@@ -3,7 +3,7 @@ dataselenium:
   image: muccg/debian8-base:latest
   volumes:
     - .:/app
-    - data/selenium:/data
+    - ./data/selenium:/data
 
 seleniumhub:
   image: selenium/hub

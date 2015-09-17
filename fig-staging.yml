@@ -2,7 +2,7 @@
 datastaging:
   image: muccg/debian8-base:latest
   volumes:
-    - data:/data
+    - ./data:/data
 
 sshstaging:
   image: muccg/ssh:latest
