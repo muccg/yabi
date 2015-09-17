@@ -176,7 +176,11 @@ make_virtualenv() {
         virtualenv ${VIRTUALENV}
     fi
     . ${VIRTUALENV}/bin/activate
-    pip install docker-compose
+    # docker-compose is hanging on "Attaching to" forever on Bambo instances
+    # The issue might be:
+    # https://github.com/docker/compose/issues/1961
+    # Until it is solved we use the previous stable version of docker-compose
+    pip install docker-compose==1.3.3
 }
 
 
