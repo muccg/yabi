@@ -4,8 +4,8 @@
 %define pyver 27
 %define pybasever 2.7
 
-%define version 9.7.0
-%define unmangled_version 9.7.0
+%define version 9.8.0
+%define unmangled_version 9.8.0
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabi
