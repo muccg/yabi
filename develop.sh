@@ -21,7 +21,7 @@ usage() {
     echo "Usage ./develop.sh (start|start_full|runtests|selenium)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
     echo "Usage ./develop.sh (ci_docker_staging|docker_staging_selenium|ci_rpm_staging|docker_rpm_staging_selenium)"
-    echo "Usage ./develop.sh (dockerbuild_unstable)"
+    echo "Usage ./develop.sh (dockerbuild|dockerbuild_unstable)"
     echo "Usage ./develop.sh (rpmbuild|rpm_publish)"
     echo ""
 }
@@ -61,6 +61,38 @@ rpmbuild() {
     make_virtualenv
 
     docker-compose --project-name yabi -f fig-rpmbuild.yml up
+}
+
+
+# docker build and push in CI
+dockerbuild() {
+    make_virtualenv
+
+    image="muccg/${PROJECT_NAME}"
+    gittag=`git describe --abbrev=0 --tags 2> /dev/null`
+    template="$(cat docker/Dockerfile.in)"
+
+    # log the Dockerfile
+    echo "########################################"
+    sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in
+    echo "########################################"
+
+    # attempt to warm up docker cache
+    docker pull ${image} || true
+
+    sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in | docker build --pull=true -t ${image} -
+    sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in | docker build -t ${image}:${DATE} -
+
+    if [ -z ${gittag+x} ]; then
+        echo "No git tag set"
+    else
+        echo "Git tag ${gittag}"
+        sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in | docker build -t ${image}:${gittag} -
+        docker push ${image}:${gittag}
+    fi
+
+    docker push ${image}
+    docker push ${image}:${DATE}
 }
 
 
@@ -199,6 +231,9 @@ start_full)
     ;;
 rpmbuild)
     rpmbuild
+    ;;
+dockerbuild)
+    dockerbuild
     ;;
 dockerbuild_unstable)
     dockerbuild_unstable
