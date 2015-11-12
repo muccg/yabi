@@ -116,6 +116,8 @@ YUI().use(
           target: wf
         }
       };
+
+      Yabi.util.setCSRFHeader(Y.io);
       jsTransaction = Y.io(baseURL, cfg);
     }
   };
