@@ -1,0 +1,69 @@
+# data only container pattern
+datadev:
+  extends:
+    file: docker-compose-common.yml
+    service: datadev
+
+ssh:
+  extends:
+    file: docker-compose-common.yml
+    service: ssh
+
+mq:
+  extends:
+    file: docker-compose-common.yml
+    service: mq
+
+db:
+  extends:
+    file: docker-compose-common.yml
+    service: db
+
+cache:
+  extends:
+    file: docker-compose-common.yml
+    service: cache
+
+nginx:
+  extends:
+    file: docker-compose-common.yml
+    service: nginx
+  links:
+    - uwsgi
+
+runserver:
+  extends:
+    file: docker-compose-common.yml
+    service: runserver
+  volumes_from:
+    - datadev
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+
+uwsgi:
+  extends:
+    file: docker-compose-common.yml
+    service: uwsgi
+  volumes_from:
+    - datadev
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+    - runserver:web
+
+celery:
+  extends:
+    file: docker-compose-common.yml
+    service: celery
+  volumes_from:
+    - datadev
+  links:
+    - db
+    - mq
+    - cache
+    - ssh

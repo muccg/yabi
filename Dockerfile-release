@@ -35,7 +35,7 @@ RUN echo $GIT_TAG \
 
 # install python deps
 RUN virtualenv /env
-RUN /env/bin/pip ${PIP_OPTS} install -r yabish/runtime-requirements.txt
+RUN /env/bin/pip ${PIP_OPTS} install -r yabish/requirements.txt
 RUN /env/bin/pip ${PIP_OPTS} install -e yabish
 RUN /env/bin/pip ${PIP_OPTS} install -r yabi/runtime-requirements.txt
 RUN /env/bin/pip ${PIP_OPTS} install -e yabi

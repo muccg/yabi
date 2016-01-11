@@ -1,44 +1,29 @@
 #
-FROM muccg/python-base:ubuntu14.04-2.7
-MAINTAINER https://bitbucket.org/ccgmurdoch/yabi/
+FROM muccg/yabi:docker1.9
+MAINTAINER https://github.com/muccg/yabi/
 
-ENV DEBIAN_FRONTEND noninteractive
+ARG PIP_OPTS="--no-cache-dir"
 
-# Project specific deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  libpcre3 \
-  libpcre3-dev \
-  libpq-dev \
-  libssl-dev \
-  libxml2-dev \
-  libxslt1-dev \
-  krb5-config \
-  krb5-user \
-  libkrb5-dev \
-  libssl-dev \
-  libsasl2-dev \
-  libldap2-dev \
-  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN env --unset=DEBIAN_FRONTEND
+USER root
 
 COPY krb5.conf /etc/krb5.conf
 
 # install python deps
-WORKDIR /app
 COPY yabi/*requirements.txt /app/yabi/
 COPY yabish/*requirements.txt /app/yabish/
-COPY tests/SetupDjango-0.1.tar.gz /app/tests/
-RUN pip install -r yabish/requirements.txt
-RUN pip install -r yabi/requirements.txt
+WORKDIR /app
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN /env/bin/pip freeze
+RUN /env/bin/pip ${PIP_OPTS} uninstall -y yabish
+RUN /env/bin/pip ${PIP_OPTS} uninstall -y yabi
+RUN /env/bin/pip ${PIP_OPTS} install --upgrade -r yabi/requirements.txt
+RUN /env/bin/pip ${PIP_OPTS} install --upgrade -r yabish/requirements.txt
 
-# Copy code and install the app itself
+# Copy code and install the app
 COPY . /app
-RUN pip install -e yabi
-RUN pip install -e yabish
+RUN chmod +x /app/docker-entrypoint.sh
+RUN /env/bin/pip ${PIP_OPTS} install -e yabi
+RUN /env/bin/pip ${PIP_OPTS} install -e yabish
 
 EXPOSE 8000 9000 9001 9100 9101
 VOLUME ["/app", "/data"]
@@ -49,5 +34,5 @@ ENV HOME /data
 WORKDIR /data
 
 # entrypoint shell script that by default starts runserver
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["runserver"]

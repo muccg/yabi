@@ -1,5 +1,5 @@
 # data only container pattern
-data:
+datadev:
   image: muccg/debian8-base:latest
   volumes:
     - .:/app
@@ -15,18 +15,26 @@ db:
     - POSTGRES_USER=yabiapp
     - POSTGRES_PASSWORD=yabiapp
   ports:
-    - ":5432"
+    - "5432"
 
 mq:
   image: rabbitmq:management
   ports:
-    - ":5672"
-    - ":15672"
+    - "5672"
+    - "15672"
 
 cache:
   image: memcached:1.4
 
-web:
+nginx:
+  image: muccg/nginx-uwsgi:1.9
+  ports:
+    - "8443:443"
+    - "8080:80"
+  volumes:
+    - ./data/nginx:/data
+
+runserver:
   build: .
   command: runserver
   environment:
@@ -36,18 +44,29 @@ web:
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
-  volumes_from:
-    - data
   ports:
     - "8000:8000"
-  links:
-    - db
-    - mq
-    - cache
-    - ssh
+
+uwsgi:
+  image: yabi_runserver
+  command: uwsgi
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_RUNSERVER=1
+    # note: important to wait for runserver in dev as both will attempt to syncdb etc
+  ports:
+    - "9000:9000"
+    - "9001:9001"
+    - "9100:9100"
+    - "9101:9101"
 
 celery:
-  image: yabi_web
+  image: yabi_runserver
   command: celery
   hostname: celery
   environment:
@@ -59,10 +78,3 @@ celery:
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
-  volumes_from:
-    - data
-  links:
-    - db
-    - mq
-    - cache
-    - ssh
