@@ -1,11 +1,16 @@
-#
+# 
 FROM muccg/python-base:ubuntu14.04-2.7
-MAINTAINER https://bitbucket.org/ccgmurdoch/yabi/
+MAINTAINER https://github.com/muccg/yabi/
+
+ARG GIT_TAG=next_release
+ARG PIP_OPTS="--no-cache-dir"
+
+ENV GITTAG $GIT_TAG
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Project specific deps
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
   libpcre3 \
   libpcre3-dev \
@@ -24,10 +29,16 @@ RUN apt-get update && apt-get install -y \
 RUN env --unset=DEBIAN_FRONTEND
 
 WORKDIR /app
-RUN git clone --depth=1 --branch=master https://bitbucket.org/ccgmurdoch/yabi.git .
+COPY .version /.version
+RUN echo $GIT_TAG \
+    && git clone --depth=1 --branch=$GITTAG https://github.com/muccg/yabi.git .
 
-WORKDIR /app/yabi
-RUN pip install --process-dependency-links .
+# install python deps
+RUN virtualenv /env
+RUN /env/bin/pip ${PIP_OPTS} install -r yabish/runtime-requirements.txt
+RUN /env/bin/pip ${PIP_OPTS} install -e yabish
+RUN /env/bin/pip ${PIP_OPTS} install -r yabi/runtime-requirements.txt
+RUN /env/bin/pip ${PIP_OPTS} install -e yabi
 
 EXPOSE 9100 9101
 VOLUME ["/data"]

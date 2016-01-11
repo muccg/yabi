@@ -16,6 +16,8 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
+: ${DOCKER_BUILD_OPTIONS:="--pull=true"}
+: ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
 
 usage() {
     echo ""
@@ -25,6 +27,7 @@ usage() {
     echo "Usage ./develop.sh (dockerbuild|dockerbuild_unstable)"
     echo "Usage ./develop.sh (rpmbuild|rpm_publish)"
     echo ""
+    exit 1
 }
 
 
@@ -32,7 +35,7 @@ usage() {
 ci_ssh_agent() {
     ssh-agent > /tmp/agent.env.sh
     . /tmp/agent.env.sh
-    ssh-add ~/.ssh/ccg-syd-staging-2014.pem
+    ssh-add ${CI_SSH_KEY}
 }
 
 
@@ -71,29 +74,38 @@ dockerbuild() {
 
     image="muccg/${PROJECT_NAME}"
     gittag=`git describe --abbrev=0 --tags 2> /dev/null`
-    template="$(cat docker/Dockerfile.in)"
+    gitbranch=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
 
-    # log the Dockerfile
-    echo "########################################"
-    sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in
-    echo "########################################"
-
-    # attempt to warm up docker cache
-    docker pull ${image} || true
-
-    sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in | docker build --pull=true -t ${image} -
-    sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in | docker build -t ${image}:${DATE} -
-
-    if [ -z ${gittag+x} ]; then
-        echo "No git tag set"
-    else
-        echo "Git tag ${gittag}"
-        sed -e "s/GITTAG/${gittag}/g" docker/Dockerfile.in | docker build -t ${image}:${gittag} -
-        docker push ${image}:${gittag}
+    # only use tags when on master (release) branch
+    if [ $gitbranch != "master" ]; then
+        echo "Ignoring tags, not on master branch"
+        gittag=$gitbranch
     fi
 
-    docker push ${image}
-    docker push ${image}:${DATE}
+    # if no git tag, then use branch name
+    if [ -z ${gittag+x} ]; then
+        echo "No git tag set, using branch name"
+        gittag=$gitbranch
+    fi
+
+    # create .version file for invalidating cache in Dockerfile
+    # we hit remote as the Dockerfile clones remote
+    git ls-remote https://bitbucket.org/ccgmurdoch/rdrf.git ${gittag} > .version
+
+    echo "############################################################# ${PROJECT_NAME} ${gittag}"
+
+    # attempt to warm up docker cache
+    docker pull ${image}:${gittag} || true
+
+    for tag in "${image}:${gittag}" "${image}:${gittag}-${DATE}"; do
+        echo "############################################################# ${PROJECT_NAME} ${tag}"
+        set -x
+        docker build ${DOCKER_BUILD_OPTIONS} --build-arg GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
+        #docker push ${tag}
+        set +x
+    done
+
+    rm -f .version || true
 }
 
 

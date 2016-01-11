@@ -5,6 +5,7 @@ syntax: glob
 *.pid
 *.fa
 *.swp
+.version
 
 yabiadmin/yabiadmin/build
 yabiadmin/yabiadmin/scratch
