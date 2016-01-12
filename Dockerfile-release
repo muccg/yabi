@@ -43,8 +43,6 @@ RUN /env/bin/pip ${PIP_OPTS} install -e yabi
 EXPOSE 9100 9101
 VOLUME ["/data"]
 
-RUN chmod +x /app/docker-entrypoint.sh
-
 # Drop privileges, set home for ccg-user
 USER ccg-user
 ENV HOME /data

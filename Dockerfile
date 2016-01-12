@@ -21,7 +21,6 @@ RUN /env/bin/pip ${PIP_OPTS} install --upgrade -r yabish/requirements.txt
 
 # Copy code and install the app
 COPY . /app
-RUN chmod +x /app/docker-entrypoint.sh
 RUN /env/bin/pip ${PIP_OPTS} install -e yabi
 RUN /env/bin/pip ${PIP_OPTS} install -e yabish
 

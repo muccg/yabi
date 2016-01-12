@@ -29,8 +29,8 @@ function wait_for_services {
     if [[ "$WAIT_FOR_CACHE" ]] ; then
         dockerwait $CACHESERVER $CACHEPORT
     fi
-    if [[ "$WAIT_FOR_WEB" ]] ; then
-        dockerwait $WEBSERVER $WEBPORT
+    if [[ "$WAIT_FOR_RUNSERVER" ]] ; then
+        dockerwait $RUNSERVER $RUNSERVERPORT
     fi
     if [[ "$WAIT_FOR_SSH" ]] ; then
         dockerwait $SSHSERVER $SSHPORT
@@ -48,12 +48,14 @@ function wait_for_services {
 
 
 function defaults {
+    : ${ENV_PATH:="/env/bin"}
+
     : ${QUEUESERVER:="mq"}
     : ${QUEUEPORT:="5672"}
     : ${DBSERVER:="db"}
     : ${DBPORT:="5432"}
-    : ${WEBSERVER="web"}
-    : ${WEBPORT="8000"}
+    : ${RUNSERVER="web"}
+    : ${RUNSERVERPORT="8000"}
     : ${CACHESERVER="cache"}
     : ${CACHEPORT="11211"}
     : ${SSHSERVER="ssh"}
@@ -68,6 +70,9 @@ function defaults {
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}
     : ${DBPASS="${DBUSER}"}
+
+    . ${ENV_PATH}/activate
+
     export DBSERVER DBPORT DBUSER DBNAME DBPASS
 }
 
@@ -146,8 +151,7 @@ if [ "$1" = 'celery' ]; then
         exit $?
     fi
 
-    celery worker ${CELERY_OPTS} 2>&1 | tee /data/celery.log
-    exit $?
+    exec celery worker ${CELERY_OPTS}
 fi
 
 # uwsgi entrypoint
@@ -159,8 +163,7 @@ if [ "$1" = 'uwsgi' ]; then
 
     django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-collectstatic.log
     django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
-    uwsgi ${UWSGI_OPTS} 2>&1 | tee /data/uwsgi.log
-    exit $?
+    exec uwsgi --die-on-term --ini ${UWSGI_OPTS}
 fi
 
 # runserver entrypoint
@@ -169,13 +172,12 @@ if [ "$1" = 'runserver' ]; then
 
     celery_defaults
 
-    : ${RUNSERVER_OPTS="runserver_plus 0.0.0.0:${WEBPORT} --settings=${DJANGO_SETTINGS_MODULE}"}
+    : ${RUNSERVER_OPTS="runserver_plus 0.0.0.0:${RUNSERVERPORT} --settings=${DJANGO_SETTINGS_MODULE}"}
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
     django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-collectstatic.log
     django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-migrate.log
-    django-admin.py ${RUNSERVER_OPTS} 2>&1 | tee /data/runserver.log
-    exit $?
+    exec django-admin.py ${RUNSERVER_OPTS}
 fi
 
 # runtests entrypoint
@@ -190,9 +192,7 @@ if [ "$1" = 'runtests' ]; then
     : ${TEST_CASES="/app/tests /app/yabi/yabi"}
 
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
-    ${NOSETESTS} ${IGNORES} ${TEST_CASES} 2>&1 | tee /data/nosetests.log
-
-    exit $?
+    exec ${NOSETESTS} ${IGNORES} ${TEST_CASES}
 fi
 
 # lettuce entrypoint
@@ -202,8 +202,7 @@ if [ "$1" = 'lettuce' ]; then
     # Hack to make sure the selenium stack is running before we hit it
     sleep 10
 
-    django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml 2>&1 | tee /data/lettuce.log
-    exit $?
+    exec django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml
 fi
 
 echo "[RUN]: Builtin command not provided [lettuce|runtests|runserver|celery|uwsgi]"
