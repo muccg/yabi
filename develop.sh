@@ -64,7 +64,10 @@ rpmbuild() {
 
     make_virtualenv
 
-    docker-compose --project-name yabi -f fig-rpmbuild.yml up
+    set -x
+    docker-compose ${DOCKER_COMPOSE_OPTIONS} --project-name ${PROJECT_NAME} -f docker-compose-rpmbuild.yml up
+    set +x
+
 }
 
 

@@ -1,9 +1,9 @@
 # data only container pattern
 datarpmbuild:
-  image: muccg/debian8-base:latest
+  image: muccg/debian8-base
   volumes:
-    - ./data/rpmbuild:/data
     - .:/app
+    - ./data/rpmbuild:/data
 
 rpmbuild:
   image: muccg/rpmbuild:centos6
