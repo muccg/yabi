@@ -5,6 +5,15 @@ datadev:
     - .:/app
     - ./data/dev:/data
 
+datatest:
+  image: muccg/debian8-base
+  volumes:
+    - .:/app
+    - ./data/tests:/data
+
+s3:
+  image: muccg/fake-s3:latest
+
 ssh:
   image: muccg/ssh
   hostname: ssh

@@ -45,11 +45,11 @@ start() {
 
     make_virtualenv
 
-    figfile="fig.yml"
-    if [ "$1" = "full" ]; then
-      figfile="fig-full.yml"
-    fi
-    docker-compose --project-name yabi -f $figfile up
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} up
+    set +x
+
 }
 
 start_full() {
@@ -120,10 +120,20 @@ runtests() {
 
     make_virtualenv
 
-    # clean up containers from past runs
-    ( docker-compose --project-name yabi -f fig-test.yml rm --force || exit 0 )
-    docker-compose --project-name yabi -f fig-test.yml build --no-cache
-    docker-compose --project-name yabi -f fig-test.yml up
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml rm --force
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml up -d
+
+    set +e
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml run --rm testhost
+    rval=$?
+    set -e
+
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml stop
+    set +x
+
+    return $rval
 }
 
 
@@ -221,11 +231,9 @@ make_virtualenv() {
         virtualenv ${VIRTUALENV}
     fi
     . ${VIRTUALENV}/bin/activate
-    # docker-compose is hanging on "Attaching to" forever on Bambo instances
-    # The issue might be:
-    # https://github.com/docker/compose/issues/1961
-    # Until it is solved we use the previous stable version of docker-compose
-    pip install docker-compose==1.3.3
+
+    pip install 'docker-compose<=1.6' --upgrade || true
+    docker-compose --version
 }
 
 

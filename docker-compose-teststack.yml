@@ -1,0 +1,60 @@
+# teststack used by unit tests
+datatest:
+  extends:
+    file: docker-compose-common.yml
+    service: datatest
+
+s3test:
+  extends:
+    file: docker-compose-common.yml
+    service: s3
+
+sshtest:
+  extends:
+    file: docker-compose-common.yml
+    service: ssh
+  volumes_from:
+    - datatest
+
+mqtest:
+  extends:
+    file: docker-compose-common.yml
+    service: mq
+
+dbtest:
+  extends:
+    file: docker-compose-common.yml
+    service: db
+
+cachetest:
+  extends:
+    file: docker-compose-common.yml
+    service: cache
+
+runservertest:
+  extends:
+    file: docker-compose-common.yml
+    service: runserver
+  environment:
+    - TESTING=1
+  volumes_from:
+    - datatest
+  links:
+    - dbtest:db
+    - mqtest:mq
+    - cachetest:cache
+    - sshtest:ssh
+    - s3test:s3
+
+celerytest:
+  extends:
+    file: docker-compose-common.yml
+    service: celery
+  volumes_from:
+    - datatest
+  links:
+    - dbtest:db
+    - mqtest:mq
+    - cachetest:cache
+    - sshtest:ssh
+    - s3test:s3
