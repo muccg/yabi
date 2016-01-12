@@ -21,7 +21,7 @@ AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (start|start_full|runtests|selenium)"
+    echo "Usage ./develop.sh (start|start_full|runtests|lettuce)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
     echo "Usage ./develop.sh (ci_docker_staging|docker_staging_selenium|ci_rpm_staging|docker_rpm_staging_selenium)"
     echo "Usage ./develop.sh (dockerbuild|dockerbuild_unstable)"
@@ -174,15 +174,41 @@ ci_rpm_staging() {
 }
 
 
-selenium() {
+_selenium_stack_up() {
     mkdir -p data/selenium
     chmod o+rwx data/selenium
 
     make_virtualenv
 
-    ( docker-compose --project-name yabi -f fig-selenium.yml rm --force || exit 0 )
-    docker-compose --project-name yabi -f fig-selenium.yml build
-    docker-compose --project-name yabi -f fig-selenium.yml up
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml rm --force
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml up -d
+    set +x
+}
+
+
+_selenium_stack_down() {
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml stop
+    set +x
+}
+
+
+lettuce() {
+    _selenium_stack_up
+
+    set -x
+    set +e
+    docker ps
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml run --rm lettucehost
+    rval=$?
+    set -e
+    set +x
+
+    _selenium_stack_down
+
+    exit $rval
 }
 
 
@@ -286,8 +312,8 @@ docker_staging_selenium)
 docker_rpm_staging_selenium)
     docker_rpm_staging_selenium
     ;;
-selenium)
-    selenium
+lettuce)
+    lettuce
     ;;
 *)
     usage

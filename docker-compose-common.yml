@@ -87,8 +87,8 @@ uwsgi:
     - WAIT_FOR_DB=1
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
-    - WAIT_FOR_RUNSERVER=1
     # note: important to wait for runserver in dev as both will attempt to syncdb etc
+    - WAIT_FOR_RUNSERVER=1
   ports:
     - "9000:9000"
     - "9001:9001"

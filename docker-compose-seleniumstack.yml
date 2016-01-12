@@ -1,0 +1,77 @@
+#
+dataselenium:
+  image: muccg/debian8-base:latest
+  volumes:
+    - .:/app
+    - ./data/selenium:/data
+
+seleniumhub:
+  image: selenium/hub
+  ports:
+    - "4444"
+
+chrome:
+  image: selenium/node-chrome
+  links:
+  - seleniumhub:hub
+  - runserverselenium:web
+
+firefox:
+  image: selenium/node-firefox
+  links:
+  - seleniumhub:hub
+  - runserverselenium:web
+
+s3selenium:
+  extends:
+    file: docker-compose-common.yml
+    service: s3
+
+sshselenium:
+  extends:
+    file: docker-compose-common.yml
+    service: ssh
+
+mqselenium:
+  extends:
+    file: docker-compose-common.yml
+    service: mq
+
+dbselenium:
+  extends:
+    file: docker-compose-common.yml
+    service: db
+
+cacheselenium:
+  extends:
+    file: docker-compose-common.yml
+    service: cache
+
+runserverselenium:
+  extends:
+    file: docker-compose-common.yml
+    service: runserver
+  volumes_from:
+    - dataselenium
+  ports:
+    - "8000"
+  links:
+    - dbselenium:db
+    - cacheselenium:cache
+    - mqselenium:mq
+    - sshselenium:ssh
+    - s3selenium:s3
+
+# runs the lettuce tests against the stack above
+lettucehost:
+  image: yabi_runserverselenium
+  command: lettuce
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - DBUSER=yabiapp
+    - WAIT_FOR_WEB=1
+  volumes_from:
+    - dataselenium
+  links:
+    - runserverselenium:web
+    - seleniumhub:hub

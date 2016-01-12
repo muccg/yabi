@@ -1,0 +1,19 @@
+#
+dataselenium:
+  extends:
+    file: docker-compose-seleniumstack.yml
+    service: dataselenium
+
+# runs the lettuce tests against docker-compose-seleniumstack.yml
+lettucehost:
+  image: yabi_runserverselenium
+  command: lettuce
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - DBUSER=yabiapp
+    - WAIT_FOR_WEB=1
+  volumes_from:
+    - dataselenium
+  external_links:
+    - yabi_runserverselenium_1:web
+    - yabi_seleniumhub_1:hub
