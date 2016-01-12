@@ -1,0 +1,73 @@
+# data only container pattern
+datastaging:
+  image: muccg/debian8-base:latest
+  volumes:
+    - ./data:/data
+
+s3staging:
+  extends:
+    file: docker-compose-common.yml
+    service: s3
+
+sshstaging:
+  extends:
+    file: docker-compose-common.yml
+    service: ssh
+
+mqstaging:
+  extends:
+    file: docker-compose-common.yml
+    service: mq
+
+dbstaging:
+  extends:
+    file: docker-compose-common.yml
+    service: db
+
+cachestaging:
+  extends:
+    file: docker-compose-common.yml
+    service: cache
+
+uwsgistaging:
+  image: muccg/yabi:next_release
+  command: uwsgi
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+  volumes_from:
+    - datastaging
+  links:
+    - dbstaging:db
+    - mqstaging:mq
+    - cachestaging:cache
+    - sshstaging:ssh
+    - s3staging:s3
+  ports:
+    - "9200:9100"
+    - "9201:9101"
+
+celerystaging:
+  image: muccg/yabi:next_release
+  hostname: celerystaging
+  command: celery
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - CELERY_APP=yabi.backend.celerytasks
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - datastaging
+  links:
+    - dbstaging:db
+    - mqstaging:mq
+    - cachestaging:cache
+    - sshstaging:ssh
+    - s3staging:s3

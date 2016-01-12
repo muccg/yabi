@@ -4,6 +4,11 @@ datadev:
     file: docker-compose-common.yml
     service: datadev
 
+s3:
+  extends:
+    file: docker-compose-common.yml
+    service: s3
+
 ssh:
   extends:
     file: docker-compose-common.yml

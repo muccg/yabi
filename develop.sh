@@ -148,18 +148,21 @@ rpm_publish() {
 
 # build a docker image and start stack on staging using docker-compose
 ci_docker_staging() {
-    ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/docker/unstable'
-    ccg ${AWS_STAGING_INSTANCE} drun:'mkdir -p yabi/data'
-    ccg ${AWS_STAGING_INSTANCE} drun:'chmod o+w yabi/data'
-    ccg ${AWS_STAGING_INSTANCE} putfile:fig-staging.yml,yabi/fig-staging.yml
-    ccg ${AWS_STAGING_INSTANCE} putfile:docker/unstable/Dockerfile,yabi/docker/unstable/Dockerfile
+    ssh ubuntu@staging.ccgapps.com.au << EOF
+      mkdir -p ${PROJECT_NAME}/data
+      chmod o+w ${PROJECT_NAME}/data
+EOF
 
-    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml stop'
-    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml kill'
-    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml rm --force -v'
-    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml build --no-cache webstaging'
-    ccg ${AWS_STAGING_INSTANCE} drun:'cd yabi && fig -f fig-staging.yml up -d'
-    ccg ${AWS_STAGING_INSTANCE} drun:'docker-clean || true'
+    scp docker-compose-*.yml ubuntu@staging.ccgapps.com.au:${PROJECT_NAME}/
+
+    # TODO This doesn't actually do a whole lot, some tests should be run against the staging stack
+    ssh ubuntu@staging.ccgapps.com.au << EOF
+      cd ${PROJECT_NAME}
+      docker-compose -f docker-compose-staging.yml stop
+      docker-compose -f docker-compose-staging.yml kill
+      docker-compose -f docker-compose-staging.yml rm --force -v
+      docker-compose -f docker-compose-staging.yml up -d
+EOF
 }
 
 
