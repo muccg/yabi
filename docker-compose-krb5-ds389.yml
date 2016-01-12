@@ -1,0 +1,94 @@
+# data only container pattern
+datadev:
+  extends:
+    file: docker-compose-common.yml
+    service: datadev
+
+ssh:
+  extends:
+    file: docker-compose-common.yml
+    service: ssh
+
+mq:
+  extends:
+    file: docker-compose-common.yml
+    service: mq
+
+db:
+  extends:
+    file: docker-compose-common.yml
+    service: db
+
+cache:
+  extends:
+    file: docker-compose-common.yml
+    service: cache
+
+krb5:
+  extends:
+    file: docker-compose-common.yml
+    service: krb5
+
+ldap:
+  extends:
+    file: docker-compose-common.yml
+    service: ldap
+
+nginx:
+  extends:
+    file: docker-compose-common.yml
+    service: nginx
+  links:
+    - uwsgi
+
+runserver:
+  extends:
+    file: docker-compose-common.yml
+    service: runserver
+  environment:
+    # - AUTH_TYP9yyE=ldap
+    - AUTH_TYPE=kerberos+ldap
+    - AUTH_KERBEROS_REALM=DOCKERDOMAIN
+    - AUTH_LDAP_SERVER=ldap://ldap
+    - AUTH_LDAP_USER_BASE=ou=People,dc=dockerdomain
+    - AUTH_LDAP_YABI_GROUP_DN=cn=Yabi,ou=Web Groups,ou=Groups,dc=dockerdomain
+    - AUTH_LDAP_YABI_ADMIN_GROUP_DN=cn=Yabi Admin,ou=Web Groups,ou=Groups,dc=dockerdomain
+    - AUTH_LDAP_MEMBER_OF_ATTR=postalAddress
+    - AUTH_ENABLE_DB_FALLBACK=false
+    - WAIT_FOR_KERBEROS=1
+    - WAIT_FOR_LDAP=1
+  volumes_from:
+    - datadev
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+    - krb5
+    - krb5:kerberos.dockerdomain
+    - ldap
+
+uwsgi:
+  extends:
+    file: docker-compose-common.yml
+    service: uwsgi
+  volumes_from:
+    - datadev
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+    - runserver:web
+
+celery:
+  extends:
+    file: docker-compose-common.yml
+    service: celery
+  volumes_from:
+    - datadev
+  links:
+    - db
+    - mq
+    - cache
+    - ssh

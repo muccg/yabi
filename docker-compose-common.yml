@@ -35,6 +35,27 @@ mq:
 cache:
   image: memcached:1.4
 
+krb5:
+  image: muccg/kerberos
+  hostname: kerberos
+  domainname: dockerdomain
+  command: supervisord
+  ports:
+    - "9001"
+    - "88"
+    - "749"
+    - "464"
+
+ldap:
+  image: muccg/ds389
+  hostname: ldap
+  domainname: dockerdomain
+  command: supervisord
+  ports:
+    - "9001"
+    - "389"
+    - "9830"
+
 nginx:
   image: muccg/nginx-uwsgi:1.9
   ports:
