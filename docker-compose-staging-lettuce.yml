@@ -4,15 +4,14 @@ dataselenium:
     file: docker-compose-common.yml
     service: dataselenium
 
-lettucehost:
-  image: yabi_runserverselenium
+# runs the lettuce tests against staging
+staginglettucehost:
+  build: .
   command: lettuce
   environment:
     - DJANGO_SETTINGS_MODULE=yabi.settings
-    - DBUSER=yabiapp
-    - WAIT_FOR_RUNSERVER=1
+    - YABIURL=https://staging.ccgapps.com.au/yabidocker/
   volumes_from:
     - dataselenium
   external_links:
-    - yabi_runservertest_1:web
     - yabi_seleniumhub_1:hub

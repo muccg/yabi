@@ -54,6 +54,7 @@ function defaults {
     : ${QUEUEPORT:="5672"}
     : ${DBSERVER:="db"}
     : ${DBPORT:="5432"}
+    : ${DOCKER_HOST:=$(/sbin/ip route|awk '/default/ { print $3 }')}
     : ${RUNSERVER="web"}
     : ${RUNSERVERPORT="8000"}
     : ${CACHESERVER="cache"}
@@ -66,6 +67,7 @@ function defaults {
     : ${KERBEROSPORT="88"}
     : ${LDAPSERVER="ldap"}
     : ${LDAPPORT="389"}
+    : ${YABIURL="http://$DOCKER_HOST:$RUNSERVERPORT/"}
 
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}
@@ -73,7 +75,7 @@ function defaults {
 
     . ${ENV_PATH}/activate
 
-    export DBSERVER DBPORT DBUSER DBNAME DBPASS
+    export DBSERVER DBPORT DBUSER DBNAME DBPASS DOCKER_HOST YABIURL
 }
 
 
@@ -199,6 +201,7 @@ fi
 if [ "$1" = 'lettuce' ]; then
     echo "[Run] Starting lettuce"
 
+    echo "YABIURL is ${YABIURL}"
     exec django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml
 fi
 

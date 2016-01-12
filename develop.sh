@@ -23,8 +23,8 @@ usage() {
     echo ""
     echo "Usage ./develop.sh (start|start_full|runtests|lettuce)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
-    echo "Usage ./develop.sh (ci_docker_staging|docker_staging_selenium|ci_rpm_staging|docker_rpm_staging_selenium)"
-    echo "Usage ./develop.sh (dockerbuild|dockerbuild_unstable)"
+    echo "Usage ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_selenium)"
+    echo "Usage ./develop.sh (dockerbuild)"
     echo "Usage ./develop.sh (rpmbuild|rpm_publish)"
     echo ""
     exit 1
@@ -112,12 +112,7 @@ dockerbuild() {
 }
 
 
-dockerbuild_unstable() {
-    docker build -t muccg/yabi:unstable docker/unstable
-}
-
-
-runtests() {
+_test_stack_up() {
     mkdir -p data/tests
     chmod o+rwx data/tests
 
@@ -127,14 +122,26 @@ runtests() {
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml rm --force
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml up -d
+    set +x
+}
+
+
+_test_stack_down() {
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml stop
+    set +x
+}
+
+
+runtests() {
+    _test_stack_up
 
     set +e
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml run --rm testhost
     rval=$?
     set -e
 
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml stop
-    set +x
+    _test_stack_down
 
     return $rval
 }
@@ -181,27 +188,42 @@ _selenium_stack_up() {
     make_virtualenv
 
     set -x
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml rm --force
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml up -d
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-selenium.yml up -d
     set +x
 }
 
 
 _selenium_stack_down() {
     set -x
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-seleniumstack.yml stop
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-selenium.yml stop
     set +x
 }
 
 
 lettuce() {
     _selenium_stack_up
+    _test_stack_up
 
     set -x
     set +e
-    docker ps
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml run --rm lettucehost
+    rval=$?
+    set -e
+    set +x
+
+    _test_stack_down
+    _selenium_stack_down
+
+    exit $rval
+}
+
+
+docker_staging_lettuce() {
+    _selenium_stack_up
+
+    set -x
+    set +e
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml run --rm staginglettucehost
     rval=$?
     set -e
     set +x
@@ -209,18 +231,6 @@ lettuce() {
     _selenium_stack_down
 
     exit $rval
-}
-
-
-docker_staging_selenium() {
-    mkdir -p data/selenium
-    chmod o+rwx data/selenium
-
-    make_virtualenv
-
-    ( docker-compose --project-name yabi -f fig-staging-selenium.yml rm --force || exit 0 )
-    docker-compose --project-name yabi -f fig-staging-selenium.yml build
-    docker-compose --project-name yabi -f fig-staging-selenium.yml up
 }
 
 
@@ -288,9 +298,6 @@ rpmbuild)
 dockerbuild)
     dockerbuild
     ;;
-dockerbuild_unstable)
-    dockerbuild_unstable
-    ;;
 rpm_publish)
     ci_ssh_agent
     rpm_publish
@@ -306,8 +313,8 @@ ci_rpm_staging)
     ci_ssh_agent
     ci_rpm_staging
     ;;
-docker_staging_selenium)
-    docker_staging_selenium
+docker_staging_lettuce)
+    docker_staging_lettuce
     ;;
 docker_rpm_staging_selenium)
     docker_rpm_staging_selenium
