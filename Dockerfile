@@ -1,5 +1,5 @@
 #
-FROM muccg/yabi:docker1.9
+FROM muccg/yabi:next_release
 MAINTAINER https://github.com/muccg/yabi/
 
 ARG PIP_OPTS="--no-cache-dir"
