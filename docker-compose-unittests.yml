@@ -4,7 +4,7 @@ datatest:
     file: docker-compose-common.yml
     service: datatest
 
-# runs the tests against docker-compose-teststack.yml
+# runs the tests against docker-compose-teststack.yml (See external links)
 testhost:
   image: yabi_runservertest
   command: runtests

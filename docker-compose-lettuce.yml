@@ -4,8 +4,9 @@ dataselenium:
     file: docker-compose-common.yml
     service: dataselenium
 
+# run lettuce tests via selenium hub on test stack (see external_links)
 lettucehost:
-  image: yabi_runserverselenium
+  image: yabi_runservertest
   command: lettuce
   environment:
     - DJANGO_SETTINGS_MODULE=yabi.settings

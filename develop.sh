@@ -137,7 +137,9 @@ runtests() {
     _test_stack_up
 
     set +e
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml run --rm testhost
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml rm --force
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml up -d
     rval=$?
     set -e
 
@@ -206,7 +208,9 @@ lettuce() {
 
     set -x
     set +e
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml run --rm lettucehost
+    ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml rm --force || exit 0 )
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml build
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml up
     rval=$?
     set -e
     set +x
