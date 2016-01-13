@@ -17,8 +17,7 @@ AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
 : ${DOCKER_BUILD_OPTIONS:="--pull=true"}
-# TODO
-#: ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
+: ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
 
 usage() {
     echo ""
@@ -106,8 +105,7 @@ dockerbuild() {
         echo "############################################################# ${PROJECT_NAME} ${tag}"
         set -x
         docker build ${DOCKER_BUILD_OPTIONS} --build-arg GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
-	# TODO
-        #docker push ${tag}
+        docker push ${tag}
         set +x
     done
 
