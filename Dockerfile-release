@@ -30,6 +30,7 @@ RUN env --unset=DEBIAN_FRONTEND
 
 WORKDIR /app
 COPY .version /.version
+RUN cat /.version
 RUN echo $GIT_TAG \
     && git clone --depth=1 --branch=$GITTAG https://github.com/muccg/yabi.git .
 
