@@ -17,7 +17,8 @@ AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
 : ${DOCKER_BUILD_OPTIONS:="--pull=true"}
-: ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
+# TODO
+#: ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
 
 usage() {
     echo ""
@@ -93,7 +94,8 @@ dockerbuild() {
 
     # create .version file for invalidating cache in Dockerfile
     # we hit remote as the Dockerfile clones remote
-    git ls-remote https://bitbucket.org/ccgmurdoch/rdrf.git ${gittag} > .version
+    git ls-remote https://github.com/muccg/yabi.git ${gittag} > .version
+    cat .version
 
     echo "############################################################# ${PROJECT_NAME} ${gittag}"
 
@@ -104,6 +106,7 @@ dockerbuild() {
         echo "############################################################# ${PROJECT_NAME} ${tag}"
         set -x
         docker build ${DOCKER_BUILD_OPTIONS} --build-arg GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
+	# TODO
         #docker push ${tag}
         set +x
     done
@@ -139,7 +142,7 @@ runtests() {
     set +e
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml rm --force
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml up -d
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml up
     rval=$?
     set -e
 
