@@ -18,7 +18,7 @@ function dockerwait {
 
 
 # wait for services to become available
-# this prevents race conditions using fig
+# this prevents race conditions using docker-compose
 function wait_for_services {
     if [[ "$WAIT_FOR_QUEUE" ]] ; then
         dockerwait $QUEUESERVER $QUEUEPORT
@@ -190,7 +190,7 @@ if [ "$1" = 'runtests' ]; then
     NOSETESTS="nosetests -v --logging-clear-handlers --with-setup-django ${XUNIT_OPTS}"
     IGNORES="-a !external_service"
 
-    # Setting TEST_CASES in fig file allows you to choose tests
+    # Setting TEST_CASES in docker-compose file allows you to choose tests
     : ${TEST_CASES="/app/tests /app/yabi/yabi"}
 
     echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}

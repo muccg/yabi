@@ -23,7 +23,7 @@ usage() {
     echo ""
     echo "Usage ./develop.sh (start|start_full|runtests|lettuce)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
-    echo "Usage ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_selenium)"
+    echo "Usage ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_lettuce)"
     echo "Usage ./develop.sh (dockerbuild)"
     echo "Usage ./develop.sh (rpmbuild|rpm_publish)"
     echo ""
@@ -228,7 +228,9 @@ docker_staging_lettuce() {
 
     set -x
     set +e
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml run --rm staginglettucehost
+    ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml rm --force || exit 0 )
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml build
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml up
     rval=$?
     set -e
     set +x
@@ -239,15 +241,21 @@ docker_staging_lettuce() {
 }
 
 
-docker_rpm_staging_selenium() {
-    mkdir -p data/selenium
-    chmod o+rwx data/selenium
+docker_rpm_staging_lettuce() {
+    _selenium_stack_up
 
-    make_virtualenv
+    set -x
+    set +e
+    ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml rm --force || exit 0 )
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml build
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml up
+    rval=$?
+    set -e
+    set +x
 
-    ( docker-compose --project-name yabi -f fig-staging-rpm-selenium.yml rm --force || exit 0 )
-    docker-compose --project-name yabi -f fig-staging-rpm-selenium.yml build
-    docker-compose --project-name yabi -f fig-staging-rpm-selenium.yml up
+    _selenium_stack_down
+
+    exit $rval
 }
 
 
@@ -321,8 +329,8 @@ ci_rpm_staging)
 docker_staging_lettuce)
     docker_staging_lettuce
     ;;
-docker_rpm_staging_selenium)
-    docker_rpm_staging_selenium
+docker_rpm_staging_lettuce)
+    docker_rpm_staging_lettuce
     ;;
 lettuce)
     lettuce
