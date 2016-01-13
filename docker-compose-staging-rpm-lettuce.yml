@@ -1,0 +1,17 @@
+#
+dataselenium:
+  extends:
+    file: docker-compose-common.yml
+    service: dataselenium
+
+# runs the lettuce tests against staging
+staginglettucehost:
+  build: .
+  command: lettuce
+  environment:
+    - DJANGO_SETTINGS_MODULE=yabi.settings
+    - YABIURL=https://staging.ccgapps.com.au/yabirpm/
+  volumes_from:
+    - dataselenium
+  external_links:
+    - yabi_seleniumhub_1:hub
