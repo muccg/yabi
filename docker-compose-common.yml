@@ -84,7 +84,7 @@ runserver:
     - "8000:8000"
 
 uwsgi:
-  image: yabi_runserver
+  build: .
   command: uwsgi
   environment:
     - DJANGO_SETTINGS_MODULE=yabi.settings
@@ -102,7 +102,7 @@ uwsgi:
     - "9101:9101"
 
 celery:
-  image: yabi_runserver
+  build: .
   command: celery
   hostname: celery
   environment:
