@@ -25,7 +25,7 @@ def our_goto(step, relative_url):
     NB. This allows tests to run in different contexts ( locally, staging.)
     We delegate to the library supplied version of the step with the same pattern after fixing the path
     """
-    absolute_url = world.site_url + relative_url
+    absolute_url = "%s/%s" % (world.site_url.rstrip('/'), relative_url.lstrip('/'))
     lettuce_webdriver.webdriver.goto(step, absolute_url)
 
 
