@@ -29,6 +29,13 @@ cache:
     file: docker-compose-common.yml
     service: cache
 
+nginx:
+  extends:
+    file: docker-compose-common.yml
+    service: nginx
+  links:
+    - uwsgi
+
 runserver:
   extends:
     file: docker-compose-common.yml
@@ -40,6 +47,19 @@ runserver:
     - mq
     - cache
     - ssh
+
+uwsgi:
+  extends:
+    file: docker-compose-common.yml
+    service: uwsgi
+  volumes_from:
+    - datadev
+  links:
+    - db
+    - mq
+    - cache
+    - ssh
+    - runserver:web
 
 celery:
   extends:
