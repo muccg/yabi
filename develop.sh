@@ -22,6 +22,7 @@ AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 usage() {
     echo ""
     echo "Usage ./develop.sh (start|start_full|runtests|lettuce)"
+    echo "Usage ./develop.sh (build)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
     echo "Usage ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_lettuce)"
     echo "Usage ./develop.sh (dockerbuild)"
@@ -45,10 +46,16 @@ start() {
 
     make_virtualenv
 
-    set -x
-    docker-compose --project-name ${PROJECT_NAME} build ${DOCKER_COMPOSE_BUILD_OPTIONS}
-    docker-compose --project-name ${PROJECT_NAME} up
-    set +x
+    if [ "full" = "$1" ]; then
+        set -x
+        docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+        docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml up
+        set +x
+    else
+        set -x
+        docker-compose --project-name ${PROJECT_NAME} up
+        set +x
+    fi
 
 }
 
@@ -56,6 +63,13 @@ start_full() {
     start full
 }
 
+build() {
+    make_virtualenv
+
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    set +x
+}
 
 # build RPMs
 rpmbuild() {
@@ -281,13 +295,18 @@ jslint() {
 
 make_virtualenv() {
     # check requirements
-    which virtualenv > /dev/null
+    if ! which virtualenv > /dev/null; then
+      echo "virtualenv is required by develop.sh but it isn't installed."
+      exit 1
+    fi
     if [ ! -e ${VIRTUALENV} ]; then
         virtualenv ${VIRTUALENV}
     fi
     . ${VIRTUALENV}/bin/activate
 
-    pip install 'docker-compose<=1.6' --upgrade || true
+    if ! which docker-compose > /dev/null; then
+      pip install 'docker-compose<1.6' --upgrade || true
+    fi
     docker-compose --version
 }
 
@@ -304,6 +323,9 @@ start)
     ;;
 start_full)
     start_full
+    ;;
+build)
+    build
     ;;
 rpmbuild)
     rpmbuild
