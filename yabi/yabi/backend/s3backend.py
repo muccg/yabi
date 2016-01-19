@@ -188,7 +188,12 @@ class S3Backend(FSBackend):
 
             reader = iter(lambda: src.read(CHUNKSIZE), b'')
 
-            first_data_chunk = reader.next()
+            first_data_chunk = b''
+            try:
+                first_data_chunk = reader.next()
+            except StopIteration:
+                pass
+
             if len(first_data_chunk) < CHUNKSIZE:
                 # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
                 key = bucket.Object(path.lstrip(DELIMITER))
