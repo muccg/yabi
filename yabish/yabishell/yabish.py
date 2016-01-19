@@ -272,6 +272,7 @@ class Yabi(object):
 
         if method == 'POST':
             if self.csrf_token is not None:
+                headers['Referer'] = self.yabi_url
                 headers['X-CSRFToken'] = self.csrf_token
 
         if method == 'GET':
