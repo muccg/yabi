@@ -70,7 +70,7 @@ class S3Backend(FSBackend):
 
         def empty_key_for_dir(key):
             name = key['Key']
-            return key['Size'] == 0 and name == path.lstrip(DELIMITER) and name.endswith(DELIMITER)
+            return key['Size'] == 0 and self.basename(name) == self.basename(path) and name.endswith(DELIMITER)
 
         if len(keys) == 1 and len(prefixes) == 0 and keys[0]['Key'].endswith(DELIMITER):
             # A key ending in the delimiter is a key for an empty directory
