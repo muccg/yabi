@@ -25,7 +25,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabi',
-    version='9.8.3',
+    version='9.8.4',
     description='Yabi',
     long_description='Yabi web interface',
     author='Centre for Comparative Genomics',
