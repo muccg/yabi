@@ -193,7 +193,6 @@ class S3Backend(FSBackend):
 
             reader = iter(lambda: src.read(CHUNKSIZE), b'')
 
-
             first_data_chunk = b''
             try:
                 first_data_chunk = reader.next()
