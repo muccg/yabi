@@ -67,12 +67,16 @@ class S3Backend(FSBackend):
 
         keys, prefixes = self.get_matching_keys_and_prefixes(bucket_name, path)
 
+        def empty_key_for_dir(key):
+            name = key['Key']
+            return key['Size'] == 0 and name == path.lstrip(DELIMITER) and name.endswith(DELIMITER)
+
         if len(keys) == 1 and len(prefixes) == 0 and keys[0]['Key'].endswith(DELIMITER):
             # A key ending in the delimiter is a key for an empty directory
             files = []
             dirs = []
         else:
-            files = [(self.basename(k['Key']), k['Size'], self.format_date(k['LastModified']), NEVER_A_SYMLINK) for k in keys]
+            files = [(self.basename(k['Key']), k['Size'], self.format_date(k['LastModified']), NEVER_A_SYMLINK) for k in keys if not empty_key_for_dir(k)]
             dirs = [(self.basename(p['Prefix']), 0, None, NEVER_A_SYMLINK) for p in prefixes]
 
         result = {
