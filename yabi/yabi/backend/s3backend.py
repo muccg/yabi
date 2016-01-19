@@ -20,6 +20,7 @@ from functools import partial
 from io import BytesIO
 import itertools
 import logging
+import urllib
 import traceback
 
 from django.conf import settings
@@ -192,6 +193,7 @@ class S3Backend(FSBackend):
 
             reader = iter(lambda: src.read(CHUNKSIZE), b'')
 
+
             first_data_chunk = b''
             try:
                 first_data_chunk = reader.next()
@@ -300,10 +302,13 @@ class S3Backend(FSBackend):
         bucket = self.bucket(bucket_name)
         paginator = bucket.meta.client.get_paginator('list_objects')
 
+        decode = urllib.unquote_plus
+
         keys, prefixes = [], []
         for page in paginator.paginate(Bucket=bucket.name, Prefix=path.lstrip(DELIMITER), Delimiter=DELIMITER):
             keys += filter(key_matches_path, page.get('Contents', []))
-            prefixes += filter(prefix_matches_path, page.get('CommonPrefixes', []))
+            decoded_prefixes = map(lambda x: merge_dicts(x, {'Prefix': decode(x['Prefix'])}), page.get('CommonPrefixes', []))
+            prefixes += filter(prefix_matches_path, decoded_prefixes)
         # Called on a directory with URI not ending in DELIMITER
         # We call ourself again correctly
         if len(keys) == 0 and len(prefixes) == 1 and not path.endswith(DELIMITER):
@@ -370,3 +375,10 @@ def is_item_matching_name(name, item, item_name_attr):
 def chunks(seq, chunk_size):
     for x in xrange(0, len(seq), chunk_size):
         yield seq[x:x + chunk_size]
+
+
+def merge_dicts(x, y):
+    '''Given two dicts, merge them into a new dict as a shallow copy.'''
+    z = x.copy()
+    z.update(y)
+    return z
