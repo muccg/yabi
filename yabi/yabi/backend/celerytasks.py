@@ -433,7 +433,8 @@ def retry_on_error(original_function):
         except Exception as exc:
             task_logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
             mark_task_as_retrying(task_id)
-            countdown = backoff(request.retries)
+            task = Task.objects.get(pk=task_id)
+            countdown = backoff(task.retry_count)
             retry_celery_task(exc, countdown)
 
         if task_id is not None and is_task_retrying(task_id):
