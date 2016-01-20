@@ -419,7 +419,6 @@ def retry_on_error(original_function):
     @wraps(original_function)
     def decorated_function(task_id, *args, **kwargs):
         task_logger = create_task_logger(logger, task_id)
-        request = get_current_celery_task().request
         original_function_name = original_function.__name__
 
         retry_celery_task = partial(retry_current_celery_task, original_function_name, task_id)
