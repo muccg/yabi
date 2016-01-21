@@ -1,2 +1,2 @@
 six==1.8
-https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz
+https://github.com/muccg/yaphc/archive/RELEASE_0_1_5.tar.gz
