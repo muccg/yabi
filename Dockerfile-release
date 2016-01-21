@@ -1,5 +1,5 @@
 # 
-FROM muccg/python-base:ubuntu14.04-2.7
+FROM muccg/python-base:ubuntu15.10-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
 ARG GIT_TAG=next_release
