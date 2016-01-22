@@ -85,6 +85,15 @@ rpmbuild() {
 }
 
 
+ci_docker_login() {
+    if [ -n "$bamboo_DOCKER_USERNAME" ] && [ -n "$bamboo_DOCKER_EMAIL" ] && [ -n "$bamboo_DOCKER_PASSWORD" ]; then
+        docker login  -e "${bamboo_DOCKER_EMAIL}" -u ${bamboo_DOCKER_USERNAME} --password="${bamboo_DOCKER_PASSWORD}"
+    else
+        echo "Docker vars not set, not logging in to docker registry"
+    fi
+}
+
+
 # docker build and push in CI
 dockerbuild() {
     make_virtualenv
@@ -331,6 +340,7 @@ rpmbuild)
     rpmbuild
     ;;
 dockerbuild)
+    ci_docker_login
     dockerbuild
     ;;
 rpm_publish)
