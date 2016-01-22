@@ -4,25 +4,29 @@ MAINTAINER https://github.com/muccg/yabi/
 
 ARG PIP_OPTS="--no-cache-dir"
 
+ENV DEPLOYMENT dev
+ENV PRODUCTION 0
+ENV DEBUG 1
+
 USER root
+WORKDIR /app
 
 COPY krb5.conf /etc/krb5.conf
 
 # install python deps
 COPY yabi/*requirements.txt /app/yabi/
 COPY yabish/*requirements.txt /app/yabish/
-WORKDIR /app
 
-RUN /env/bin/pip freeze
-RUN /env/bin/pip ${PIP_OPTS} uninstall -y yabish
-RUN /env/bin/pip ${PIP_OPTS} uninstall -y yabi
-RUN /env/bin/pip ${PIP_OPTS} install --upgrade -r yabi/requirements.txt
-RUN /env/bin/pip ${PIP_OPTS} install --upgrade -r yabish/requirements.txt
+RUN pip freeze
+RUN pip ${PIP_OPTS} uninstall -y yabish
+RUN pip ${PIP_OPTS} uninstall -y yabi
+RUN pip ${PIP_OPTS} install --upgrade -r yabi/requirements.txt
+RUN pip ${PIP_OPTS} install --upgrade -r yabish/requirements.txt
 
 # Copy code and install the app
 COPY . /app
-RUN /env/bin/pip ${PIP_OPTS} install -e yabi
-RUN /env/bin/pip ${PIP_OPTS} install -e yabish
+RUN pip ${PIP_OPTS} install -e yabi
+RUN pip ${PIP_OPTS} install -e yabish
 
 EXPOSE 8000 9000 9001 9100 9101
 VOLUME ["/app", "/data"]

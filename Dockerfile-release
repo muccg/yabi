@@ -5,7 +5,17 @@ MAINTAINER https://github.com/muccg/yabi/
 ARG GIT_TAG=next_release
 ARG PIP_OPTS="--no-cache-dir"
 
+ENV VIRTUAL_ENV /env
+ENV PATH $VIRTUAL_ENV/bin:$PATH
 ENV GITTAG $GIT_TAG
+ENV DEPLOYMENT prod
+ENV PRODUCTION 1
+ENV DEBUG 0
+ENV STATIC_ROOT /data/static
+ENV WRITABLE_DIRECTORY /data/scratch
+ENV MEDIA_ROOT /data/static/media
+ENV LOG_DIRECTORY /data/log
+ENV DJANGO_SETTINGS_MODULE yabi.settings
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -36,10 +46,10 @@ RUN echo $GIT_TAG \
 
 # install python deps
 RUN virtualenv /env
-RUN /env/bin/pip ${PIP_OPTS} install -r yabish/requirements.txt
-RUN /env/bin/pip ${PIP_OPTS} install -e yabish
-RUN /env/bin/pip ${PIP_OPTS} install -r yabi/runtime-requirements.txt
-RUN /env/bin/pip ${PIP_OPTS} install -e yabi
+RUN pip ${PIP_OPTS} install -r yabish/requirements.txt
+RUN pip ${PIP_OPTS} install -e yabish
+RUN pip ${PIP_OPTS} install -r yabi/runtime-requirements.txt
+RUN pip ${PIP_OPTS} install -e yabi
 
 EXPOSE 9100 9101
 VOLUME ["/data"]

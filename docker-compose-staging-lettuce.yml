@@ -9,7 +9,6 @@ staginglettucehost:
   build: .
   command: lettuce
   environment:
-    - DJANGO_SETTINGS_MODULE=yabi.settings
     - YABIURL=https://staging.ccgapps.com.au/yabidocker/
   volumes_from:
     - dataselenium

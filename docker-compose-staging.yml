@@ -33,7 +33,6 @@ uwsgistaging:
   image: muccg/yabi:next_release
   command: uwsgi
   environment:
-    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
@@ -56,7 +55,6 @@ celerystaging:
   hostname: celerystaging
   command: celery
   environment:
-    - DJANGO_SETTINGS_MODULE=yabi.settings
     - CELERY_APP=yabi.backend.celerytasks
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1

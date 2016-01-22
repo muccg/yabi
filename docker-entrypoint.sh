@@ -48,8 +48,6 @@ function wait_for_services {
 
 
 function defaults {
-    : ${ENV_PATH:="/env/bin"}
-
     : ${QUEUESERVER:="mq"}
     : ${QUEUEPORT:="5672"}
     : ${DBSERVER:="db"}
@@ -59,6 +57,7 @@ function defaults {
     : ${RUNSERVERPORT="8000"}
     : ${CACHESERVER="cache"}
     : ${CACHEPORT="11211"}
+    : ${MEMCACHE="${CACHESERVER}:${CACHEPORT}"}
     : ${SSHSERVER="ssh"}
     : ${SSHPORT="22"}
     : ${S3SERVER="s3"}
@@ -72,8 +71,6 @@ function defaults {
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}
     : ${DBPASS="${DBUSER}"}
-
-    . ${ENV_PATH}/activate
 
     export DBSERVER DBPORT DBUSER DBNAME DBPASS DOCKER_HOST YABIURL
 }
@@ -111,16 +108,6 @@ function celery_defaults {
 
 
 function django_defaults {
-    : ${DEPLOYMENT="dev"}
-    : ${PRODUCTION=0}
-    : ${DEBUG=1}
-    : ${MEMCACHE="${CACHESERVER}:${CACHEPORT}"}
-    : ${WRITABLE_DIRECTORY="/data/scratch"}
-    : ${STATIC_ROOT="/data/static"}
-    : ${MEDIA_ROOT="/data/static/media"}
-    : ${LOG_DIRECTORY="/data/log"}
-    : ${DJANGO_SETTINGS_MODULE="django.settings"}
-
     echo "DEPLOYMENT is ${DEPLOYMENT}"
     echo "PRODUCTION is ${PRODUCTION}"
     echo "DEBUG is ${DEBUG}"
@@ -130,8 +117,6 @@ function django_defaults {
     echo "MEDIA_ROOT is ${MEDIA_ROOT}"
     echo "LOG_DIRECTORY is ${LOG_DIRECTORY}"
     echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
-    
-    export DEPLOYMENT PRODUCTION DEBUG DBSERVER MEMCACHE WRITABLE_DIRECTORY STATIC_ROOT MEDIA_ROOT LOG_DIRECTORY DJANGO_SETTINGS_MODULE
 }
 
 

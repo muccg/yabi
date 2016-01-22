@@ -9,7 +9,6 @@ testhost:
   image: yabi_runservertest
   command: runtests
   environment:
-    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
     - WAIT_FOR_RUNSERVER=1
     - WAIT_FOR_QUEUE=1

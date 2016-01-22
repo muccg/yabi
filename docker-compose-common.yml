@@ -74,7 +74,6 @@ runserver:
   build: .
   command: runserver
   environment:
-    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
@@ -87,7 +86,6 @@ uwsgi:
   build: .
   command: uwsgi
   environment:
-    - DJANGO_SETTINGS_MODULE=yabi.settings
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
     - WAIT_FOR_DB=1
@@ -106,7 +104,6 @@ celery:
   command: celery
   hostname: celery
   environment:
-    - DJANGO_SETTINGS_MODULE=yabi.settings
     - CELERY_APP=yabi.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DBUSER=yabiapp
