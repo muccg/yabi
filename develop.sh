@@ -87,7 +87,6 @@ rpmbuild() {
 
 # docker build and push in CI
 dockerbuild() {
-    set -x
     make_virtualenv
 
     image="muccg/${PROJECT_NAME}"
