@@ -1,5 +1,5 @@
 # 
-FROM muccg/python-base:ubuntu15.10-2.7
+FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
 ARG GIT_TAG=next_release
@@ -21,6 +21,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Project specific deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
   git \
   libpcre3 \
   libpcre3-dev \
