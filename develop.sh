@@ -73,20 +73,25 @@ buildtarball() {
 
     gitversion
 
-    # TODO a build with a push
+    # TODO a build without a push
 
     set -x
-    docker run --rm -t ${DOCKER_IMAGE}:${gittag} tarball
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml up
     set +x
 }
 
 
 starttarball() {
-    mkdir -p data/build
-    chmod o+rwx data/build
+    mkdir -p data/release
+    chmod o+rwx data/release
+
+    gitversion
+
+    # TODO a build passsing docker file as a param
 
     set -x
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker build ${DOCKER_BUILD_OPTIONS} --build-arg ARG_GIT_TAG=${gittag} -t ${DOCKER_IMAGE}:tarballrelease -f Dockerfile-tarball-release .
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml rm --force
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml up
     set +x
 }
@@ -152,7 +157,6 @@ ci_docker_login() {
 dockerbuild() {
     make_virtualenv
 
-
     gitversion
 
     # attempt to warm up docker cache
@@ -161,7 +165,7 @@ dockerbuild() {
     for tag in "${DOCKER_IMAGE}:${gittag}" "${DOCKER_IMAGE}:${gittag}-${DATE}"; do
         echo "############################################################# ${PROJECT_NAME} ${tag}"
         set -x
-        docker build ${DOCKER_BUILD_OPTIONS} --build-arg GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
+        docker build ${DOCKER_BUILD_OPTIONS} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
         #docker push ${tag}
         set +x
     done
