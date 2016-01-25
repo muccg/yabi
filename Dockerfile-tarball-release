@@ -2,9 +2,11 @@
 FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
+ARG ARG_GIT_TAG
+
 ENV VIRTUAL_ENV /env
 ENV PATH $VIRTUAL_ENV/bin:$PATH
-ENV GIT_TAG next_release
+ENV GIT_TAG $ARG_GIT_TAG
 ENV DEPLOYMENT prod
 ENV PRODUCTION 1
 ENV DEBUG 0
@@ -27,7 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN env --unset=DEBIAN_FRONTEND
 
-ADD build/yabi-$GIT_TAG.tar.gz 
+ADD build/yabi-$GIT_TAG.tar.gz /
 
 EXPOSE 9100 9101
 VOLUME ["/data"]
