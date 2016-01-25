@@ -2,11 +2,9 @@
 FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
-ARG GIT_TAG=ahunter-1
-
 ENV VIRTUAL_ENV /env
 ENV PATH $VIRTUAL_ENV/bin:$PATH
-ENV GITTAG $GIT_TAG
+ENV GIT_TAG next_release
 ENV DEPLOYMENT prod
 ENV PRODUCTION 1
 ENV DEBUG 0
