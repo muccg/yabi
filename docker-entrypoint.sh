@@ -134,7 +134,7 @@ if [ "$1" = 'tarball' ]; then
 
     DEPS="/env /app/uwsgi /app/docker-entrypoint.sh /app/yabi"
     cd /data
-    exec tar -cpvzf yabi-${GITTAG}.tar.gz ${DEPS}
+    exec tar -cpvzf yabi-${GIT_TAG}.tar.gz ${DEPS}
 fi
 
 # celery entrypoint
