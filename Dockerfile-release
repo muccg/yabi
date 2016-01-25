@@ -2,12 +2,11 @@
 FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
-ARG GIT_TAG=next_release
 ARG PIP_OPTS="--no-cache-dir"
 
 ENV VIRTUAL_ENV /env
 ENV PATH $VIRTUAL_ENV/bin:$PATH
-ENV GITTAG $GIT_TAG
+ENV GIT_TAG next_release
 ENV DEPLOYMENT prod
 ENV PRODUCTION 1
 ENV DEBUG 0
@@ -43,7 +42,7 @@ WORKDIR /app
 COPY .version /.version
 RUN cat /.version
 RUN echo $GIT_TAG \
-    && git clone --depth=1 --branch=$GITTAG https://github.com/muccg/yabi.git .
+    && git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
 
 # install python deps
 RUN virtualenv /env
