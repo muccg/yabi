@@ -41,13 +41,40 @@ ci_ssh_agent() {
 }
 
 
+gitversion() {
+    gittag=`git describe --abbrev=0 --tags 2> /dev/null`
+    gitbranch=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
+
+    # only use tags when on master (release) branch
+    if [ $gitbranch != "master" ]; then
+        echo "Ignoring tags, not on master branch"
+        gittag=$gitbranch
+    fi
+
+    # if no git tag, then use branch name
+    if [ -z ${gittag+x} ]; then
+        echo "No git tag set, using branch name"
+        gittag=$gitbranch
+    fi
+
+    # create .version file for invalidating cache in Dockerfile
+    # we hit remote as the Dockerfile clones remote
+    git ls-remote https://github.com/muccg/yabi.git ${gittag} > .version
+    cat .version
+
+    echo "############################################################# ${PROJECT_NAME} ${gittag}"
+}
+
+
 buildtarball() {
     mkdir -p build
     chmod o+rwx build
 
+    gitversion
+
     set -x
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml up
+    GIT_TAG=$gittag docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    GIT_TAG=$gittag docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml up
     set +x
 }
 
@@ -124,27 +151,8 @@ dockerbuild() {
     make_virtualenv
 
     image="muccg/${PROJECT_NAME}"
-    gittag=`git describe --abbrev=0 --tags 2> /dev/null`
-    gitbranch=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
 
-    # only use tags when on master (release) branch
-    if [ $gitbranch != "master" ]; then
-        echo "Ignoring tags, not on master branch"
-        gittag=$gitbranch
-    fi
-
-    # if no git tag, then use branch name
-    if [ -z ${gittag+x} ]; then
-        echo "No git tag set, using branch name"
-        gittag=$gitbranch
-    fi
-
-    # create .version file for invalidating cache in Dockerfile
-    # we hit remote as the Dockerfile clones remote
-    git ls-remote https://github.com/muccg/yabi.git ${gittag} > .version
-    cat .version
-
-    echo "############################################################# ${PROJECT_NAME} ${gittag}"
+    gitversion
 
     # attempt to warm up docker cache
     docker pull ${image}:${gittag} || true
@@ -152,7 +160,7 @@ dockerbuild() {
     for tag in "${image}:${gittag}" "${image}:${gittag}-${DATE}"; do
         echo "############################################################# ${PROJECT_NAME} ${tag}"
         set -x
-        docker build ${DOCKER_BUILD_OPTIONS} --build-arg GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
+        docker build ${DOCKER_BUILD_OPTIONS} -e GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
         docker push ${tag}
         set +x
     done
