@@ -5,10 +5,7 @@ builddata:
     - ./build/:/data
 
 tarball:
-  build: .
-  dockerfile: Dockerfile-release
+  image: muccg/yabi:$GIT_TAG
   command: tarball
   volumes_from:
     - builddata
-  environment:
-    - GIT_TAG=$GIT_TAG
