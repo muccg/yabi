@@ -18,11 +18,13 @@ AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
 : ${DOCKER_BUILD_OPTIONS:="--pull=true"}
 : ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
+: ${DOCKER_IMAGE="muccg/${PROJECT_NAME}"}
 
 usage() {
     echo ""
     echo "Usage ./develop.sh (start|start_full|runtests|lettuce)"
     echo "Usage ./develop.sh (build)"
+    echo "Usage ./develop.sh (buildtarball|starttarball)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
     echo "Usage ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_lettuce)"
     echo "Usage ./develop.sh (dockerbuild)"
@@ -38,6 +40,63 @@ ci_ssh_agent() {
     . /tmp/agent.env.sh
     ssh-add ${CI_SSH_KEY}
 }
+
+
+gitversion() {
+    gittag=`git describe --abbrev=0 --tags 2> /dev/null`
+    gitbranch=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
+
+    # only use tags when on master (release) branch
+    if [ $gitbranch != "master" ]; then
+        echo "Ignoring tags, not on master branch"
+        gittag=$gitbranch
+    fi
+
+    # if no git tag, then use branch name
+    if [ -z ${gittag+x} ]; then
+        echo "No git tag set, using branch name"
+        gittag=$gitbranch
+    fi
+
+    # create .version file for invalidating cache in Dockerfile
+    # we hit remote as the Dockerfile clones remote
+    git ls-remote https://github.com/muccg/yabi.git ${gittag} > .version
+    cat .version
+
+    echo "############################################################# ${PROJECT_NAME} ${gittag}"
+}
+
+
+buildtarball() {
+    mkdir -p build
+    chmod o+rwx build
+
+    gitversion
+
+    # TODO a build without a push
+
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml up
+    set +x
+}
+
+
+starttarball() {
+    mkdir -p data/release
+    chmod o+rwx data/release
+
+    gitversion
+
+    # TODO a build passsing docker file as a param
+
+    set -x
+    docker build ${DOCKER_BUILD_OPTIONS} --build-arg ARG_GIT_TAG=${gittag} -t ${DOCKER_IMAGE}:tarballrelease -f Dockerfile-tarball-release .
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml rm --force
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml up
+    set +x
+}
+
+
 
 
 start() {
@@ -98,37 +157,16 @@ ci_docker_login() {
 dockerbuild() {
     make_virtualenv
 
-    image="muccg/${PROJECT_NAME}"
-    gittag=`git describe --abbrev=0 --tags 2> /dev/null`
-    gitbranch=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
-
-    # only use tags when on master (release) branch
-    if [ $gitbranch != "master" ]; then
-        echo "Ignoring tags, not on master branch"
-        gittag=$gitbranch
-    fi
-
-    # if no git tag, then use branch name
-    if [ -z ${gittag+x} ]; then
-        echo "No git tag set, using branch name"
-        gittag=$gitbranch
-    fi
-
-    # create .version file for invalidating cache in Dockerfile
-    # we hit remote as the Dockerfile clones remote
-    git ls-remote https://github.com/muccg/yabi.git ${gittag} > .version
-    cat .version
-
-    echo "############################################################# ${PROJECT_NAME} ${gittag}"
+    gitversion
 
     # attempt to warm up docker cache
-    docker pull ${image}:${gittag} || true
+    docker pull ${DOCKER_IMAGE}:${gittag} || true
 
-    for tag in "${image}:${gittag}" "${image}:${gittag}-${DATE}"; do
+    for tag in "${DOCKER_IMAGE}:${gittag}" "${DOCKER_IMAGE}:${gittag}-${DATE}"; do
         echo "############################################################# ${PROJECT_NAME} ${tag}"
         set -x
-        docker build ${DOCKER_BUILD_OPTIONS} --build-arg GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
-        docker push ${tag}
+        docker build ${DOCKER_BUILD_OPTIONS} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
+        #docker push ${tag}
         set +x
     done
 
@@ -335,6 +373,12 @@ start_full)
     ;;
 build)
     build
+    ;;
+buildtarball)
+    buildtarball
+    ;;
+starttarball)
+    starttarball
     ;;
 rpmbuild)
     rpmbuild

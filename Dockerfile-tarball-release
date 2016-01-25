@@ -2,8 +2,7 @@
 FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
-ARG ARG_GIT_TAG=next_release
-ARG PIP_OPTS="--no-cache-dir"
+ARG ARG_GIT_TAG
 
 ENV VIRTUAL_ENV /env
 ENV PATH $VIRTUAL_ENV/bin:$PATH
@@ -17,40 +16,20 @@ ENV MEDIA_ROOT /data/static/media
 ENV LOG_DIRECTORY /data/log
 ENV DJANGO_SETTINGS_MODULE yabi.settings
 
-ENV DEBIAN_FRONTEND noninteractive
-
 # Project specific deps
+ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  build-essential \
-  git \
   libpcre3 \
-  libpcre3-dev \
-  libpq-dev \
-  libssl-dev \
-  libxml2-dev \
-  libxslt1-dev \
+  libpq5 \
+  libxml2 \
+  libxslt1.1 \
   krb5-config \
   krb5-user \
-  libkrb5-dev \
-  libssl-dev \
-  libsasl2-dev \
-  libldap2-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN env --unset=DEBIAN_FRONTEND
 
-WORKDIR /app
-COPY .version /.version
-RUN cat /.version
-RUN echo $GIT_TAG \
-    && git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
-
-# install python deps
-RUN virtualenv /env
-RUN pip ${PIP_OPTS} install -r yabish/requirements.txt
-RUN pip ${PIP_OPTS} install -e yabish
-RUN pip ${PIP_OPTS} install -r yabi/runtime-requirements.txt
-RUN pip ${PIP_OPTS} install -e yabi
+ADD build/yabi-$GIT_TAG.tar.gz /
 
 EXPOSE 9100 9101
 VOLUME ["/data"]
