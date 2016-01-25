@@ -2,7 +2,7 @@
 datarelease:
   image: muccg/debian8-base:latest
   volumes:
-    - ./data:/data
+    - ./data/release:/data
 
 s3release:
   extends:
@@ -29,9 +29,15 @@ cacherelease:
     file: docker-compose-common.yml
     service: cache
 
+nginx:
+  extends:
+    file: docker-compose-common.yml
+    service: nginx
+  links:
+    - uwsgirelease:uwsgi
+
 uwsgirelease:
-  build: .
-  dockerfile: Dockerfile-tarball-release
+  image: muccg/yabi:tarballrelease
   command: uwsgi
   environment:
     - DBUSER=yabiapp
@@ -47,13 +53,9 @@ uwsgirelease:
     - cacherelease:cache
     - sshrelease:ssh
     - s3release:s3
-  ports:
-    - "9200:9100"
-    - "9201:9101"
 
 celeryrelease:
-  build: .
-  dockerfile: Dockerfile-tarball-release
+  image: muccg/yabi:tarballrelease
   hostname: celeryrelease
   command: celery
   environment:
