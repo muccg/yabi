@@ -20,7 +20,9 @@ COPY yabish/*requirements.txt /app/yabish/
 RUN pip freeze
 RUN pip ${PIP_OPTS} uninstall -y yabish
 RUN pip ${PIP_OPTS} uninstall -y yabi
-RUN pip ${PIP_OPTS} install --upgrade -r yabi/requirements.txt
+RUN pip ${PIP_OPTS} install --upgrade -r yabi/test-requirements.txt
+RUN pip ${PIP_OPTS} install --upgrade -r yabi/dev-requirements.txt
+RUN pip ${PIP_OPTS} install --upgrade -r yabi/runtime-requirements.txt
 RUN pip ${PIP_OPTS} install --upgrade -r yabish/requirements.txt
 
 # Copy code and install the app
