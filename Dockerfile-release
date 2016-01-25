@@ -2,6 +2,7 @@
 FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
+ARG GIT_TAG=next_release
 ARG PIP_OPTS="--no-cache-dir"
 
 ENV VIRTUAL_ENV /env

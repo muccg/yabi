@@ -18,6 +18,7 @@ AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
 : ${DOCKER_BUILD_OPTIONS:="--pull=true"}
 : ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
+: ${DOCKER_IMAGE="muccg/${PROJECT_NAME}"}
 
 usage() {
     echo ""
@@ -72,9 +73,10 @@ buildtarball() {
 
     gitversion
 
+    # TODO a build with a push
+
     set -x
-    GIT_TAG=$gittag docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
-    GIT_TAG=$gittag docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml up
+    docker run --rm -t ${DOCKER_IMAGE}:${gittag} tarball
     set +x
 }
 
@@ -150,18 +152,17 @@ ci_docker_login() {
 dockerbuild() {
     make_virtualenv
 
-    image="muccg/${PROJECT_NAME}"
 
     gitversion
 
     # attempt to warm up docker cache
-    docker pull ${image}:${gittag} || true
+    docker pull ${DOCKER_IMAGE}:${gittag} || true
 
-    for tag in "${image}:${gittag}" "${image}:${gittag}-${DATE}"; do
+    for tag in "${DOCKER_IMAGE}:${gittag}" "${DOCKER_IMAGE}:${gittag}-${DATE}"; do
         echo "############################################################# ${PROJECT_NAME} ${tag}"
         set -x
-        docker build ${DOCKER_BUILD_OPTIONS} -e GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
-        docker push ${tag}
+        docker build ${DOCKER_BUILD_OPTIONS} --build-arg GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
+        #docker push ${tag}
         set +x
     done
 
