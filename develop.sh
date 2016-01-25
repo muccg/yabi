@@ -23,6 +23,7 @@ usage() {
     echo ""
     echo "Usage ./develop.sh (start|start_full|runtests|lettuce)"
     echo "Usage ./develop.sh (build)"
+    echo "Usage ./develop.sh (buildtarball|starttarball)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
     echo "Usage ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_lettuce)"
     echo "Usage ./develop.sh (dockerbuild)"
@@ -38,6 +39,30 @@ ci_ssh_agent() {
     . /tmp/agent.env.sh
     ssh-add ${CI_SSH_KEY}
 }
+
+
+buildtarball() {
+    mkdir -p build
+    chmod o+rwx build
+
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml up
+    set +x
+}
+
+
+starttarball() {
+    mkdir -p data/build
+    chmod o+rwx data/build
+
+    set -x
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml up
+    set +x
+}
+
+
 
 
 start() {
@@ -335,6 +360,12 @@ start_full)
     ;;
 build)
     build
+    ;;
+buildtarball)
+    buildtarball
+    ;;
+starttarball)
+    starttarball
     ;;
 rpmbuild)
     rpmbuild

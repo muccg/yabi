@@ -1,0 +1,12 @@
+# data only container pattern
+builddata:
+  image: muccg/debian8-base:latest
+  volumes:
+    - ./build/:/data
+
+tarball:
+  build: .
+  dockerfile: Dockerfile-release
+  command: tarball
+  volumes_from:
+    - builddata

@@ -1,0 +1,73 @@
+# data only container pattern
+datarelease:
+  image: muccg/debian8-base:latest
+  volumes:
+    - ./data:/data
+
+s3release:
+  extends:
+    file: docker-compose-common.yml
+    service: s3
+
+sshrelease:
+  extends:
+    file: docker-compose-common.yml
+    service: ssh
+
+mqrelease:
+  extends:
+    file: docker-compose-common.yml
+    service: mq
+
+dbrelease:
+  extends:
+    file: docker-compose-common.yml
+    service: db
+
+cacherelease:
+  extends:
+    file: docker-compose-common.yml
+    service: cache
+
+uwsgirelease:
+  build: .
+  dockerfile: Dockerfile-tarball-release
+  command: uwsgi
+  environment:
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+  volumes_from:
+    - datarelease
+  links:
+    - dbrelease:db
+    - mqrelease:mq
+    - cacherelease:cache
+    - sshrelease:ssh
+    - s3release:s3
+  ports:
+    - "9200:9100"
+    - "9201:9101"
+
+celeryrelease:
+  build: .
+  dockerfile: Dockerfile-tarball-release
+  hostname: celeryrelease
+  command: celery
+  environment:
+    - CELERY_APP=yabi.backend.celerytasks
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - datarelease
+  links:
+    - dbrelease:db
+    - mqrelease:mq
+    - cacherelease:cache
+    - sshrelease:ssh
+    - s3release:s3

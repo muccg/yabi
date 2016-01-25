@@ -1,0 +1,43 @@
+# 
+FROM muccg/python-base:debian8-2.7
+MAINTAINER https://github.com/muccg/yabi/
+
+ARG GIT_TAG=ahunter-1
+
+ENV VIRTUAL_ENV /env
+ENV PATH $VIRTUAL_ENV/bin:$PATH
+ENV GITTAG $GIT_TAG
+ENV DEPLOYMENT prod
+ENV PRODUCTION 1
+ENV DEBUG 0
+ENV STATIC_ROOT /data/static
+ENV WRITABLE_DIRECTORY /data/scratch
+ENV MEDIA_ROOT /data/static/media
+ENV LOG_DIRECTORY /data/log
+ENV DJANGO_SETTINGS_MODULE yabi.settings
+
+# Project specific deps
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libpcre3 \
+  libpq5 \
+  libxml2 \
+  libxslt1.1 \
+  krb5-config \
+  krb5-user \
+  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN env --unset=DEBIAN_FRONTEND
+
+ADD build/yabi-$GIT_TAG.tar.gz 
+
+EXPOSE 9100 9101
+VOLUME ["/data"]
+
+# Drop privileges, set home for ccg-user
+USER ccg-user
+ENV HOME /data
+WORKDIR /data
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["uwsgi"]
