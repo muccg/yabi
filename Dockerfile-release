@@ -2,12 +2,12 @@
 FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
-ARG GIT_TAG=next_release
+ARG ARG_GIT_TAG=next_release
 ARG PIP_OPTS="--no-cache-dir"
 
 ENV VIRTUAL_ENV /env
 ENV PATH $VIRTUAL_ENV/bin:$PATH
-ENV GIT_TAG next_release
+ENV GIT_TAG $ARG_GIT_TAG
 ENV DEPLOYMENT prod
 ENV PRODUCTION 1
 ENV DEBUG 0
