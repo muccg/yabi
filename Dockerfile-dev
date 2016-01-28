@@ -1,5 +1,5 @@
 #
-FROM muccg/yabi:next_release
+FROM muccg/yabi-build
 MAINTAINER https://github.com/muccg/yabi/
 
 ARG PIP_OPTS="--no-cache-dir"

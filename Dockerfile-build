@@ -1,0 +1,50 @@
+#
+FROM muccg/yabi-base
+MAINTAINER https://github.com/muccg/yabi/
+
+ARG ARG_GIT_TAG=next_release
+ARG PIP_OPTS="--no-cache-dir"
+
+ENV GIT_TAG $ARG_GIT_TAG
+
+# Project specific deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  git \
+  libpcre3-dev \
+  libpq-dev \
+  libssl-dev \
+  libxml2-dev \
+  libxslt1-dev \
+  libkrb5-dev \
+  libssl-dev \
+  libsasl2-dev \
+  libldap2-dev \
+  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN env --unset=DEBIAN_FRONTEND
+
+WORKDIR /app
+COPY .version /.version
+RUN cat /.version
+RUN echo $GIT_TAG \
+    && git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
+
+RUN pip freeze
+RUN virtualenv /env
+RUN pip ${PIP_OPTS} install --upgrade -r yabi/runtime-requirements.txt
+RUN pip ${PIP_OPTS} install -e yabi
+RUN pip ${PIP_OPTS} install --upgrade -r yabish/requirements.txt
+RUN pip ${PIP_OPTS} install -e yabish
+
+EXPOSE 9100 9101
+VOLUME ["/data"]
+
+# Allow celery to run as root for dev
+USER ccg-user
+ENV HOME /data
+WORKDIR /data
+
+# entrypoint shell script that by default starts runserver
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["tarball"]

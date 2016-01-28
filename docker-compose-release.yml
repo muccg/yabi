@@ -37,7 +37,7 @@ nginx:
     - uwsgirelease:uwsgi
 
 uwsgirelease:
-  image: muccg/yabi:tarballrelease
+  image: muccg/yabi:${GIT_TAG}
   command: uwsgi
   environment:
     - DBUSER=yabiapp
@@ -55,7 +55,7 @@ uwsgirelease:
     - s3release:s3
 
 celeryrelease:
-  image: muccg/yabi:tarballrelease
+  image: muccg/yabi:${GIT_TAG}
   hostname: celeryrelease
   command: celery
   environment:

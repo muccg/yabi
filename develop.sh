@@ -16,18 +16,20 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
-: ${DOCKER_BUILD_OPTIONS:="--pull=true"}
-: ${DOCKER_COMPOSE_BUILD_OPTIONS:="--pull"}
-: ${DOCKER_IMAGE="muccg/${PROJECT_NAME}"}
+: ${DOCKER_BUILD_PULL:="--pull=true"}
+: ${DOCKER_BUILD_PROXY:="--build-arg http_proxy"}
+: ${DOCKER_COMPOSE_BUILD_PULL:="--pull"}
+: ${DOCKER_USE_HUB:="1"}
+: ${DOCKER_IMAGE:="muccg/${PROJECT_NAME}"}
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (start|start_full|runtests|lettuce)"
-    echo "Usage ./develop.sh (build)"
-    echo "Usage ./develop.sh (buildtarball|starttarball)"
+    echo "Usage ./develop.sh (build|start|start_full|runtests|lettuce)"
+    echo "Usage ./develop.sh (baseimage|buildimage|devimage|releasetarball|releaseimage)"
+    echo "Usage ./develop.sh (start_release)"
     echo "Usage ./develop.sh (pythonlint|jslint)"
     echo "Usage ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_lettuce)"
-    echo "Usage ./develop.sh (dockerbuild)"
+    echo "Usage ./develop.sh (ci_dockerbuild)"
     echo "Usage ./develop.sh (rpmbuild|rpm_publish)"
     echo ""
     exit 1
@@ -42,6 +44,7 @@ ci_ssh_agent() {
 }
 
 
+# figure out what branch/tag we are on, write out .version file
 gitversion() {
     gittag=`git describe --abbrev=0 --tags 2> /dev/null`
     gitbranch=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
@@ -67,36 +70,56 @@ gitversion() {
 }
 
 
-buildtarball() {
+create_release_image() {
+    # assumes that base image and release tarball have been created
+    _dockerbuild Dockerfile-release ${DOCKER_IMAGE}
+}
+
+
+create_build_image() {
+    gitversion
+
+    set -x
+    docker build ${DOCKER_BUILD_PROXY} --build-arg ARG_GIT_TAG=${gittag} -t muccg/yabi-build -f Dockerfile-build .
+    set +x
+}
+
+
+create_base_image() {
+    set -x
+    docker build ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL} -t muccg/yabi-base -f Dockerfile-base .
+    set +x
+}
+
+
+create_release_tarball() {
     mkdir -p build
     chmod o+rwx build
 
-    gitversion
-
-    # TODO a build without a push
+    # don't use docker-compose to build as it doesn't support build args
+    create_build_image
 
     set -x
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball.yml up
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-build.yml up
     set +x
 }
 
 
-starttarball() {
+start_release() {
     mkdir -p data/release
     chmod o+rwx data/release
 
-    gitversion
+    create_base_image
+    create_build_image
+    create_release_tarball
+    create_release_image
 
-    # TODO a build passsing docker file as a param
-
+    # Now fire up release stack
     set -x
-    docker build ${DOCKER_BUILD_OPTIONS} --build-arg ARG_GIT_TAG=${gittag} -t ${DOCKER_IMAGE}:tarballrelease -f Dockerfile-tarball-release .
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml rm --force
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-tarball-release.yml up
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-release.yml rm --force
+    GIT_TAG=${gittag} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-release.yml up
     set +x
 }
-
-
 
 
 start() {
@@ -107,7 +130,7 @@ start() {
 
     if [ "full" = "$1" ]; then
         set -x
-        docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+        docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml build ${DOCKER_COMPOSE_BUILD_PULL}
         docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml up
         set +x
     else
@@ -118,17 +141,20 @@ start() {
 
 }
 
+
 start_full() {
     start full
 }
+
 
 build() {
     make_virtualenv
 
     set -x
-    docker-compose --project-name ${PROJECT_NAME} build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} build
     set +x
 }
+
 
 # build RPMs
 rpmbuild() {
@@ -144,7 +170,7 @@ rpmbuild() {
 }
 
 
-ci_docker_login() {
+_ci_docker_login() {
     if [ -n "$bamboo_DOCKER_USERNAME" ] && [ -n "$bamboo_DOCKER_EMAIL" ] && [ -n "$bamboo_DOCKER_PASSWORD" ]; then
         docker login  -e "${bamboo_DOCKER_EMAIL}" -u ${bamboo_DOCKER_USERNAME} --password="${bamboo_DOCKER_PASSWORD}"
     else
@@ -153,24 +179,38 @@ ci_docker_login() {
 }
 
 
-# docker build and push in CI
-dockerbuild() {
+_dockerbuild() {
     make_virtualenv
+
+    dockerfile=$1
+    dockerimage=$2
 
     gitversion
 
     # attempt to warm up docker cache
-    docker pull ${DOCKER_IMAGE}:${gittag} || true
+    if [ ${DOCKER_USE_HUB} = "1" ]; then
+        docker pull ${dockerimage}:${gittag} || true
+    fi
 
-    for tag in "${DOCKER_IMAGE}:${gittag}" "${DOCKER_IMAGE}:${gittag}-${DATE}"; do
+    for tag in "${dockerimage}:${gittag}" "${dockerimage}:${gittag}-${DATE}"; do
         echo "############################################################# ${PROJECT_NAME} ${tag}"
         set -x
-        docker build ${DOCKER_BUILD_OPTIONS} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f Dockerfile-release .
-        #docker push ${tag}
+        docker build ${DOCKER_BUILD_PROXY} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f ${dockerfile} .
+
+        if [ ${DOCKER_USE_HUB} = "1" ]; then
+            docker push ${tag}
+        fi
         set +x
     done
 
     rm -f .version || true
+}
+
+
+# docker build and push in CI
+ci_dockerbuild() {
+    _ci_docker_login
+    _dockerbuild Dockerfile-release ${DOCKER_IMAGE}
 }
 
 
@@ -182,7 +222,7 @@ _test_stack_up() {
 
     set -x
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml rm --force
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build ${DOCKER_COMPOSE_BUILD_PULL}
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml up -d
     set +x
 }
@@ -200,7 +240,7 @@ runtests() {
 
     set +e
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml rm --force
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build ${DOCKER_COMPOSE_BUILD_OPTIONS}
+    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build ${DOCKER_COMPOSE_BUILD_PULL}
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml up
     rval=$?
     set -e
@@ -374,18 +414,29 @@ start_full)
 build)
     build
     ;;
-buildtarball)
-    buildtarball
+releasetarball)
+    create_release_tarball
     ;;
-starttarball)
-    starttarball
+start_release)
+    start_release
     ;;
 rpmbuild)
     rpmbuild
     ;;
-dockerbuild)
-    ci_docker_login
-    dockerbuild
+baseimage)
+    create_base_image
+    ;;
+buildimage)
+    create_build_image
+    ;;
+releaseimage)
+    create_release_image
+    ;;
+devimage)
+    build
+    ;;
+ci_dockerbuild)
+    ci_dockerbuild
     ;;
 rpm_publish)
     ci_ssh_agent
