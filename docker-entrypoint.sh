@@ -130,8 +130,6 @@ wait_for_services
 # prepare a tarball of build
 if [ "$1" = 'tarball' ]; then
     echo "[Run] Preparing a tarball of build"
-    configure_base_href
-
     DEPS="/env /app/uwsgi /app/docker-entrypoint.sh /app/yabi"
     cd /data
     exec tar -cpzf yabi-${GIT_TAG}.tar.gz ${DEPS}
