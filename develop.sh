@@ -532,7 +532,7 @@ releaseimage)
     create_release_image
     ;;
 devimage)
-    build
+    build_dev
     ;;
 ci_dockerbuild)
     ci_dockerbuild
