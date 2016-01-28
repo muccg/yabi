@@ -377,7 +377,7 @@ _selenium_stack_up() {
     set -x
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-selenium.yml up -d
     set +x
-    successs 'selenium stack up'
+    success 'selenium stack up'
 }
 
 
@@ -386,7 +386,7 @@ _selenium_stack_down() {
     set -x
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-selenium.yml stop
     set +x
-    successs 'selenium stack down'
+    success 'selenium stack down'
 }
 
 
