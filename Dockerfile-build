@@ -40,11 +40,9 @@ RUN pip ${PIP_OPTS} install -e yabish
 EXPOSE 9100 9101
 VOLUME ["/data"]
 
-# Allow celery to run as root for dev
 USER ccg-user
 ENV HOME /data
 WORKDIR /data
 
-# entrypoint shell script that by default starts runserver
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["tarball"]
