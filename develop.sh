@@ -16,28 +16,36 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
-: ${DOCKER_BUILD_PULL:="--pull=true"}
 : ${DOCKER_BUILD_PROXY:="--build-arg http_proxy"}
-: ${DOCKER_COMPOSE_BUILD_PULL:="--pull"}
 : ${DOCKER_USE_HUB:="1"}
 : ${DOCKER_IMAGE:="muccg/${PROJECT_NAME}"}
 : ${SET_HTTP_PROXY:="1"}
+: ${DOCKER_NO_CACHE:="0"}
+: ${DOCKER_PULL:="1"}
 
+# Do not set these, they are vars used below
+CMD_ENV=''
+DOCKER_BUILD_OPTS=''
+DOCKER_COMPOSE_BUILD_OPTS=''
+
+# TODO:
+# Single env var to controlling pulling
+# single env var to control no-cache
 
 usage() {
     echo ""
     echo "Environment:"
-    echo " Pull during docker build       DOCKER_BUILD_PULL           ${DOCKER_BUILD_PULL} "
+    echo " Pull during build              DOCKER_PULL                 ${DOCKER_PULL} "
+    echo " No cache during build          DOCKER_NO_CACHE             ${DOCKER_NO_CACHE} "
     echo " Use proxy during builds        DOCKER_BUILD_PROXY          ${DOCKER_BUILD_PROXY}"
-    echo " docker-compose pulls           DOCKER_COMPOSE_BUILD_PULL   ${DOCKER_COMPOSE_BUILD_PULL}"
     echo " Push/pull from docker hub      DOCKER_USE_HUB              ${DOCKER_USE_HUB}"
     echo " Release docker image           DOCKER_IMAGE                ${DOCKER_IMAGE}"
     echo " Use a http proxy               SET_HTTP_PROXY              ${SET_HTTP_PROXY}"
     echo ""
     echo "Usage:"
-    echo " ./develop.sh (build|start|start_full|runtests|lettuce)"
+    echo " ./develop.sh (dev|dev_rebuild|dev_full|runtests|lettuce)"
     echo " ./develop.sh (baseimage|buildimage|devimage|releasetarball|releaseimage)"
-    echo " ./develop.sh (start_release)"
+    echo " ./develop.sh (start_release|start_release_rebuild)"
     echo " ./develop.sh (pythonlint|jslint)"
     echo " ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_lettuce)"
     echo " ./develop.sh (ci_dockerbuild)"
@@ -63,13 +71,36 @@ fail () {
 }
 
 
+_docker_options() {
+    if [ ${DOCKER_PULL} = "1" ]; then
+         DOCKER_BUILD_PULL="--pull=true"
+         DOCKER_COMPOSE_BUILD_PULL="--pull"
+    else
+         DOCKER_BUILD_PULL="--pull=false"
+         DOCKER_COMPOSE_BUILD_PULL=""
+    fi
+
+    if [ ${DOCKER_NO_CACHE} = "1" ]; then
+         DOCKER_BUILD_NOCACHE="--no-cache=true"
+         DOCKER_COMPOSE_BUILD_NOCACHE="--no-cache"
+    else
+         DOCKER_BUILD_NOCACHE="--no-cache=false"
+         DOCKER_COMPOSE_BUILD_NOCACHE=""
+    fi
+
+    DOCKER_BUILD_OPTS="${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL}"
+    DOCKER_COMPOSE_BUILD_OPTS="${DOCKER_COMPOSE_BUILD_OPTS} ${DOCKER_COMPOSE_BUILD_NOCACHE} ${DOCKER_COMPOSE_BUILD_PULL}"
+}
+
+
 _http_proxy() {
     info 'http proxy'
 
     if [ ${SET_HTTP_PROXY} = "1" ]; then
         local docker_route=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
         success "Docker ip $docker_route"
-        http_proxy="http://${docker_route}:3128"
+        local http_proxy="http://${docker_route}:3128"
+	CMD_ENV="${CMD_ENV} http_proxy='http://${docker_route}:3128'"
         success "Proxy $http_proxy"
     else
         info 'Not setting http_proxy'
@@ -123,6 +154,15 @@ _github_revision() {
 }
 
 
+create_dev_image() {
+    info 'create dev image'
+    set -x
+    # don't try and pull the base image
+    docker-compose --project-name ${PROJECT_NAME} build ${DOCKER_COMPOSE_BUILD_NOCACHE}
+    set +x
+}
+
+
 create_release_image() {
     info 'create release image'
     # assumes that base image and release tarball have been created
@@ -136,7 +176,8 @@ create_build_image() {
     _github_revision
 
     set -x
-    docker build ${DOCKER_BUILD_PROXY} --build-arg ARG_GIT_TAG=${gittag} -t muccg/${PROJECT_NAME}-build -f Dockerfile-build .
+    # don't try and pull the build image
+    ${CMD_ENV} docker build ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} --build-arg ARG_GIT_TAG=${gittag} -t muccg/${PROJECT_NAME}-build -f Dockerfile-build .
     set +x
     success "$(docker images | grep muccg/${PROJECT_NAME}-build | sed 's/  */ /g')"
 }
@@ -145,7 +186,7 @@ create_build_image() {
 create_base_image() {
     info 'create base image'
     set -x
-    docker build ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL} -t muccg/${PROJECT_NAME}-base -f Dockerfile-base .
+    ${CMD_ENV} docker build ${DOCKER_BUILD_OPTS} -t muccg/${PROJECT_NAME}-base -f Dockerfile-base .
     set +x
     success "$(docker images | grep muccg/${PROJECT_NAME}-base | sed 's/  */ /g')"
 }
@@ -156,11 +197,7 @@ create_release_tarball() {
     mkdir -p build
     chmod o+rwx build
 
-    # don't use docker-compose to build as it doesn't support build args
-    create_build_image
-
     set -x
-    #docker-compose --project-name ${PROJECT_NAME} -f docker-compose-build.yml up
     local volume=$(readlink -f ./build/)
     docker run --rm -v ${volume}:/data muccg/${PROJECT_NAME}-build tarball
     set +x
@@ -173,24 +210,9 @@ start_release() {
     mkdir -p data/release
     chmod o+rwx data/release
 
-    create_base_image
-    create_build_image
-    create_release_tarball
-    create_release_image
-
-    # Now fire up release stack
-    info 'starting release using docker-compose'
     set -x
     GIT_TAG=${gittag} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-release.yml rm --force
     GIT_TAG=${gittag} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-release.yml up
-    set +x
-}
-
-
-build_dev() {
-    info 'build dev'
-    set -x
-    docker-compose --project-name ${PROJECT_NAME} build
     set +x
 }
 
@@ -200,7 +222,7 @@ start_dev() {
     mkdir -p data/dev
     chmod o+rwx data/dev
     set -x
-    docker-compose --project-name ${PROJECT_NAME} up
+    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} up
     set +x
 }
 
@@ -210,8 +232,7 @@ start_dev_full() {
     mkdir -p data/dev
     chmod o+rwx data/dev
     set -x
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml build
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml up
+    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml up
     set +x
 }
 
@@ -223,7 +244,7 @@ rpm_build() {
     chmod o+rwx data/rpmbuild
     set -x
     docker-compose ${DOCKER_COMPOSE_OPTIONS} --project-name ${PROJECT_NAME} -f docker-compose-rpmbuild.yml pull
-    docker-compose ${DOCKER_COMPOSE_OPTIONS} --project-name ${PROJECT_NAME} -f docker-compose-rpmbuild.yml up
+    ${CMD_ENV} docker-compose ${DOCKER_COMPOSE_OPTIONS} --project-name ${PROJECT_NAME} -f docker-compose-rpmbuild.yml up
     set +x
     success "$(ls -lht data/rpmbuild/RPMS/x86_64/*shell* | head -1)"
     success "$(ls -lht data/rpmbuild/RPMS/x86_64/*admin* | head -1)"
@@ -264,7 +285,8 @@ _docker_release_build() {
     for tag in "${dockerimage}:${gittag}" "${dockerimage}:${gittag}-${DATE}"; do
         info "Building ${PROJECT_NAME} ${tag}"
         set -x
-        docker build ${DOCKER_BUILD_PROXY} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f ${dockerfile} .
+	# don't try and pull the base image
+        ${CMD_ENV} docker build ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_NOCACHE} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f ${dockerfile} .
 	success "built ${tag}"
 
         if [ ${DOCKER_USE_HUB} = "1" ]; then
@@ -298,7 +320,7 @@ _test_stack_up() {
 
     set -x
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml rm --force
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build
+    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build 
     success 'test stack built'
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml up -d
     set +x
@@ -321,7 +343,7 @@ run_unit_tests() {
 
     set +e
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml rm --force
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build
+    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml up
     rval=$?
     set -e
@@ -398,7 +420,7 @@ lettuce() {
     set -x
     set +e
     ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml rm --force || exit 0 )
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml build
+    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml build
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml up
     rval=$?
     set -e
@@ -417,7 +439,7 @@ docker_staging_lettuce() {
     set -x
     set +e
     ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml rm --force || exit 0 )
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml build
+    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml build
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml up
     rval=$?
     set -e
@@ -435,7 +457,7 @@ docker_rpm_staging_lettuce() {
     set -x
     set +e
     ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml rm --force || exit 0 )
-    docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml build
+    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml build
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml up
     rval=$?
     set -e
@@ -497,6 +519,8 @@ else
     info 'Not setting http_proxy'
 fi
 
+_docker_options
+
 case $ACTION in
 pythonlint)
     python_lint
@@ -504,19 +528,29 @@ pythonlint)
 jslint)
     js_lint
     ;;
-start)
+dev)
     start_dev
     ;;
-start_full)
-    start_dev_full
+dev_rebuild)
+    create_base_image
+    create_build_image
+    create_dev_image
+    start_dev
     ;;
-build)
-    build_dev
+dev_full)
+    start_dev_full
     ;;
 releasetarball)
     create_release_tarball
     ;;
 start_release)
+    start_release
+    ;;
+start_release_rebuild)
+    create_base_image
+    create_build_image
+    create_release_tarball
+    create_release_image
     start_release
     ;;
 rpmbuild)
@@ -532,7 +566,7 @@ releaseimage)
     create_release_image
     ;;
 devimage)
-    build_dev
+    create_dev_image
     ;;
 ci_dockerbuild)
     ci_dockerbuild
