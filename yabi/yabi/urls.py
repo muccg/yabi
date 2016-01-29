@@ -49,13 +49,10 @@ urlpatterns += patterns('yabi.yabi.views',
 # redirect / to /admin
 urlpatterns += patterns('',
                         ('^$', RedirectView.as_view(url=urlresolvers.reverse('admin:index'))))
-# pattern for serving statically
-# not needed by runserver, but it is by gunicorn
-# will be overridden by apache alias under WSGI
-if settings.DEBUG:
-    urlpatterns += patterns('',
-                            (r'^static/(?P<path>.*)$', 'django.views.static.serve',
-                                {'document_root': settings.STATIC_ROOT, 'show_indexes': True}))
+
+urlpatterns += patterns('',
+                        (r'^static/(?P<path>.*)$', 'django.views.static.serve',
+                        {'document_root': settings.STATIC_ROOT, 'show_indexes': True}))
 
 urlpatterns += patterns('',
                         (r'^favicon\.ico', RedirectView.as_view(url='/static/images/favicon.ico')))
