@@ -17,7 +17,7 @@ AWS_STAGING_INSTANCE='ccg_syd_nginx_staging'
 AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 
 : ${DOCKER_BUILD_PROXY:="--build-arg http_proxy"}
-: ${DOCKER_USE_HUB:="1"}
+: ${DOCKER_USE_HUB:="0"}
 : ${DOCKER_IMAGE:="muccg/${PROJECT_NAME}"}
 : ${SET_HTTP_PROXY:="1"}
 : ${DOCKER_NO_CACHE:="0"}
@@ -100,7 +100,7 @@ _http_proxy() {
         local docker_route=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
         success "Docker ip $docker_route"
         local http_proxy="http://${docker_route}:3128"
-	CMD_ENV="${CMD_ENV} http_proxy='http://${docker_route}:3128'"
+	CMD_ENV="export ${CMD_ENV} http_proxy='http://${docker_route}:3128'"
         success "Proxy $http_proxy"
     else
         info 'Not setting http_proxy'
@@ -177,7 +177,7 @@ create_build_image() {
 
     set -x
     # don't try and pull the build image
-    ${CMD_ENV} docker build ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} --build-arg ARG_GIT_TAG=${gittag} -t muccg/${PROJECT_NAME}-build -f Dockerfile-build .
+    (${CMD_ENV}; docker build ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} --build-arg ARG_GIT_TAG=${gittag} -t muccg/${PROJECT_NAME}-build -f Dockerfile-build .)
     set +x
     success "$(docker images | grep muccg/${PROJECT_NAME}-build | sed 's/  */ /g')"
 }
@@ -186,7 +186,7 @@ create_build_image() {
 create_base_image() {
     info 'create base image'
     set -x
-    ${CMD_ENV} docker build ${DOCKER_BUILD_OPTS} -t muccg/${PROJECT_NAME}-base -f Dockerfile-base .
+    (${CMD_ENV}; docker build ${DOCKER_BUILD_OPTS} -t muccg/${PROJECT_NAME}-base -f Dockerfile-base .)
     set +x
     success "$(docker images | grep muccg/${PROJECT_NAME}-base | sed 's/  */ /g')"
 }
@@ -222,7 +222,7 @@ start_dev() {
     mkdir -p data/dev
     chmod o+rwx data/dev
     set -x
-    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} up
+    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} up)
     set +x
 }
 
@@ -232,7 +232,7 @@ start_dev_full() {
     mkdir -p data/dev
     chmod o+rwx data/dev
     set -x
-    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml up
+    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-full.yml up)
     set +x
 }
 
@@ -244,7 +244,7 @@ rpm_build() {
     chmod o+rwx data/rpmbuild
     set -x
     docker-compose ${DOCKER_COMPOSE_OPTIONS} --project-name ${PROJECT_NAME} -f docker-compose-rpmbuild.yml pull
-    ${CMD_ENV} docker-compose ${DOCKER_COMPOSE_OPTIONS} --project-name ${PROJECT_NAME} -f docker-compose-rpmbuild.yml up
+    (${CMD_ENV}; docker-compose ${DOCKER_COMPOSE_OPTIONS} --project-name ${PROJECT_NAME} -f docker-compose-rpmbuild.yml up)
     set +x
     success "$(ls -lht data/rpmbuild/RPMS/x86_64/*shell* | head -1)"
     success "$(ls -lht data/rpmbuild/RPMS/x86_64/*admin* | head -1)"
@@ -286,7 +286,7 @@ _docker_release_build() {
         info "Building ${PROJECT_NAME} ${tag}"
         set -x
 	# don't try and pull the base image
-        ${CMD_ENV} docker build ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_NOCACHE} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f ${dockerfile} .
+	(${CMD_ENV}; docker build ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_NOCACHE} --build-arg ARG_GIT_TAG=${gittag} -t ${tag} -f ${dockerfile} .)
 	success "built ${tag}"
 
         if [ ${DOCKER_USE_HUB} = "1" ]; then
@@ -320,7 +320,7 @@ _test_stack_up() {
 
     set -x
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml rm --force
-    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build 
+    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build)
     success 'test stack built'
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml up -d
     set +x
@@ -343,7 +343,7 @@ run_unit_tests() {
 
     set +e
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml rm --force
-    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build
+    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build)
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml up
     rval=$?
     set -e
@@ -420,7 +420,7 @@ lettuce() {
     set -x
     set +e
     ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml rm --force || exit 0 )
-    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml build
+    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml build)
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-lettuce.yml up
     rval=$?
     set -e
@@ -439,7 +439,7 @@ docker_staging_lettuce() {
     set -x
     set +e
     ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml rm --force || exit 0 )
-    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml build
+    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml build)
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-lettuce.yml up
     rval=$?
     set -e
@@ -457,7 +457,7 @@ docker_rpm_staging_lettuce() {
     set -x
     set +e
     ( docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml rm --force || exit 0 )
-    ${CMD_ENV} docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml build
+    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml build)
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-staging-rpm-lettuce.yml up
     rval=$?
     set -e
