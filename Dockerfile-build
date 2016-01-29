@@ -40,7 +40,6 @@ RUN pip ${PIP_OPTS} install -e yabish
 EXPOSE 9100 9101
 VOLUME ["/data"]
 
-USER ccg-user
 ENV HOME /data
 WORKDIR /data
 
