@@ -28,9 +28,6 @@ CMD_ENV=''
 DOCKER_BUILD_OPTS=''
 DOCKER_COMPOSE_BUILD_OPTS=''
 
-# TODO:
-# Single env var to controlling pulling
-# single env var to control no-cache
 
 usage() {
     echo ""
