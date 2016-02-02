@@ -92,39 +92,12 @@ function celery_defaults {
     : ${DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"}
     : ${PROJECT_DIRECTORY="${CELERYD_CHDIR}"}
 
-    echo "CELERY_CONFIG_MODULE is ${CELERY_CONFIG_MODULE}"
-    echo "CELERYD_CHDIR is ${CELERYD_CHDIR}"
-    echo "CELERY_BROKER is ${CELERY_BROKER}"
-    echo "CELERY_APP is ${CELERY_APP}"
-    echo "CELERY_LOGLEVEL is ${CELERY_LOGLEVEL}"
-    echo "CELERY_OPTIMIZATION is ${CELERY_OPTIMIZATION}"
-    echo "CELERY_AUTORELOAD is ${CELERY_AUTORELOAD}"
-    echo "CELERY_OPTS is ${CELERY_OPTS}"
-    echo "DJANGO_PROJECT_DIR is ${DJANGO_PROJECT_DIR}"
-    echo "PROJECT_DIRECTORY is ${PROJECT_DIRECTORY}"
-
     export CELERY_CONFIG_MODULE CELERYD_CHDIR CELERY_BROKER CELERY_APP CELERY_LOGLEVEL CELERY_OPTIMIZATION CELERY_AUTORELOAD CELERY_OPTS DJANGO_PROJECT_DIR PROJECT_DIRECTORY
 }
 
 
-function django_defaults {
-    echo "DEPLOYMENT is ${DEPLOYMENT}"
-    echo "PRODUCTION is ${PRODUCTION}"
-    echo "DEBUG is ${DEBUG}"
-    echo "MEMCACHE is ${MEMCACHE}"
-    echo "WRITABLE_DIRECTORY is ${WRITABLE_DIRECTORY}"
-    echo "STATIC_ROOT is ${STATIC_ROOT}"
-    echo "MEDIA_ROOT is ${MEDIA_ROOT}"
-    echo "LOG_DIRECTORY is ${LOG_DIRECTORY}"
-    echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
-}
-
-
-echo "HOME is ${HOME}"
-echo "WHOAMI is `whoami`"
-
 defaults
-django_defaults
+export | grep -iv PASS
 wait_for_services
 
 # prepare a tarball of build
