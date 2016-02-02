@@ -20,12 +20,15 @@ AWS_RPM_INSTANCE='aws_syd_yabi_staging'
 : ${DOCKER_USE_HUB:="0"}
 : ${DOCKER_IMAGE:="muccg/${PROJECT_NAME}"}
 : ${SET_HTTP_PROXY:="1"}
+: ${SET_PIP_PROXY:="1"}
 : ${DOCKER_NO_CACHE:="0"}
 : ${DOCKER_PULL:="1"}
 
 # Do not set these, they are vars used below
 CMD_ENV=''
+DOCKER_ROUTE=''
 DOCKER_BUILD_OPTS=''
+DOCKER_RUN_OPTS='-e PIP_INDEX_URL -e PIP_TRUSTED_HOST'
 DOCKER_COMPOSE_BUILD_OPTS=''
 
 
@@ -38,6 +41,7 @@ usage() {
     echo " Push/pull from docker hub      DOCKER_USE_HUB              ${DOCKER_USE_HUB}"
     echo " Release docker image           DOCKER_IMAGE                ${DOCKER_IMAGE}"
     echo " Use a http proxy               SET_HTTP_PROXY              ${SET_HTTP_PROXY}"
+    echo " Use a pip proxy                SET_PIP_PROXY               ${SET_PIP_PROXY}"
     echo ""
     echo "Usage:"
     echo " ./develop.sh (dev|dev_rebuild|dev_full|runtests|lettuce)"
@@ -69,6 +73,12 @@ fail () {
 
 
 _docker_options() {
+    DOCKER_ROUTE=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+    success "Docker ip ${DOCKER_ROUTE}"
+
+    _http_proxy
+    _pip_proxy
+
     if [ ${DOCKER_PULL} = "1" ]; then
          DOCKER_BUILD_PULL="--pull=true"
          DOCKER_COMPOSE_BUILD_PULL="--pull"
@@ -85,8 +95,13 @@ _docker_options() {
          DOCKER_COMPOSE_BUILD_NOCACHE=""
     fi
 
-    DOCKER_BUILD_OPTS="${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL}"
+    DOCKER_BUILD_OPTS="${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL} ${DOCKER_BUILD_PIP_PROX}"
+
+    # compose does not expose all docker functionality, so we can't use compose to build in all cases
     DOCKER_COMPOSE_BUILD_OPTS="${DOCKER_COMPOSE_BUILD_OPTS} ${DOCKER_COMPOSE_BUILD_NOCACHE} ${DOCKER_COMPOSE_BUILD_PULL}"
+
+    # environemnt used by subshells
+    CMD_ENV="export ${CMD_ENV}"
 }
 
 
@@ -94,14 +109,32 @@ _http_proxy() {
     info 'http proxy'
 
     if [ ${SET_HTTP_PROXY} = "1" ]; then
-        local docker_route=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
-        success "Docker ip $docker_route"
-        local http_proxy="http://${docker_route}:3128"
-	CMD_ENV="export ${CMD_ENV} http_proxy='http://${docker_route}:3128'"
+        local http_proxy="http://${DOCKER_ROUTE}:3128"
+	CMD_ENV="${CMD_ENV} http_proxy='http://${DOCKER_ROUTE}:3128'"
         success "Proxy $http_proxy"
     else
         info 'Not setting http_proxy'
     fi
+}
+
+
+_pip_proxy() {
+    info 'pip proxy'
+
+    # pip defaults
+    PIP_INDEX_URL='https://pypi.python.org/simple'
+    PIP_TRUSTED_HOST='127.0.0.1'
+
+    if [ ${SET_PIP_PROXY} = "1" ]; then
+        # use a local devpi install
+	PIP_INDEX_URL="http://${DOCKER_ROUTE}:3141/root/pypi/+simple/"
+	PIP_TRUSTED_HOST="${DOCKER_ROUTE}"
+    fi
+
+    CMD_ENV="${CMD_ENV} PIP_INDEX_URL=${PIP_INDEX_URL} PIP_TRUSTED_HOST=${PIP_TRUSTED_HOST}"
+    DOCKER_BUILD_PIP_PROXY='--build-arg ARG_PIP_INDEX_URL='${PIP_INDEX_URL}' --build-arg PIP_TRUSTED_HOST='${PIP_TRUSTED_HOST}''
+
+    success "Pip index url ${PIP_INDEX_URL}"
 }
 
 
@@ -196,7 +229,7 @@ create_release_tarball() {
 
     set -x
     local volume=$(readlink -f ./build/)
-    docker run --rm -v ${volume}:/data muccg/${PROJECT_NAME}-build tarball
+    (${CMD_ENV}; docker run ${DOCKER_RUN_OPTS} --rm -v ${volume}:/data muccg/${PROJECT_NAME}-build tarball)
     set +x
     success "$(ls -lh build/*)"
 }
@@ -509,12 +542,6 @@ make_virtualenv() {
 echo ''
 info "$0 $@"
 make_virtualenv
-
-if [ ${SET_HTTP_PROXY} = "1" ]; then
-    _http_proxy
-else
-    info 'Not setting http_proxy'
-fi
 
 _docker_options
 

@@ -130,6 +130,18 @@ wait_for_services
 # prepare a tarball of build
 if [ "$1" = 'tarball' ]; then
     echo "[Run] Preparing a tarball of build"
+
+    # install python deps
+    cd /app
+    set -x
+    pip_install="pip ${PIP_OPTS} --trusted-host ${PIP_TRUSTED_HOST} install -i ${PIP_INDEX_URL} --upgrade"
+    $pip_install --upgrade -r yabi/runtime-requirements.txt
+    $pip_install -e yabi
+    $pip_install --upgrade -r yabish/requirements.txt
+    $pip_install -e yabish
+    set +x
+    
+    # create release tarball
     DEPS="/env /app/uwsgi /app/docker-entrypoint.sh /app/yabi"
     cd /data
     exec tar -cpzf yabi-${GIT_TAG}.tar.gz ${DEPS}

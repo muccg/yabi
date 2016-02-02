@@ -3,9 +3,11 @@ FROM muccg/yabi-base
 MAINTAINER https://github.com/muccg/yabi/
 
 ARG ARG_GIT_TAG=next_release
-ARG PIP_OPTS="--no-cache-dir"
 
 ENV GIT_TAG $ARG_GIT_TAG
+ENV PIP_OPTS="--no-cache-dir"
+ENV PIP_INDEX_URL="https://pypi.python.org/simple"
+ENV PIP_TRUSTED_HOST="127.0.0.1"
 
 # Project specific deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -24,20 +26,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN env --unset=DEBIAN_FRONTEND
 
+RUN pip freeze
+RUN virtualenv $VIRTUAL_ENV
+
 WORKDIR /app
 COPY .version /.version
 RUN cat /.version
 RUN echo $GIT_TAG \
     && git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
 
-RUN pip freeze
-RUN virtualenv /env
-RUN pip ${PIP_OPTS} install --upgrade -r yabi/runtime-requirements.txt
-RUN pip ${PIP_OPTS} install -e yabi
-RUN pip ${PIP_OPTS} install --upgrade -r yabish/requirements.txt
-RUN pip ${PIP_OPTS} install -e yabish
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
-EXPOSE 9100 9101
 VOLUME ["/data"]
 
 ENV HOME /data
