@@ -619,6 +619,9 @@ docker_rpm_staging_lettuce)
     docker_rpm_staging_lettuce
     ;;
 lettuce)
+    create_base_image
+    create_build_image
+    create_dev_image
     lettuce
     ;;
 *)
