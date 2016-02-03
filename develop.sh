@@ -352,8 +352,6 @@ _test_stack_up() {
 
     set -x
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml rm --force
-    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml build)
-    success 'test stack built'
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-teststack.yml up -d
     set +x
     success 'test stack up'
@@ -375,7 +373,6 @@ run_unit_tests() {
 
     set +e
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml rm --force
-    (${CMD_ENV}; docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml build)
     docker-compose --project-name ${PROJECT_NAME} -f docker-compose-unittests.yml up
     rval=$?
     set -e
@@ -602,6 +599,9 @@ rpm_publish)
     rpm_publish
     ;;
 runtests)
+    create_base_image
+    create_build_image
+    create_dev_image
     run_unit_tests
     ;;
 ci_docker_staging)
