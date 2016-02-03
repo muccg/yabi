@@ -145,7 +145,7 @@ if [ "$1" = 'uwsgi' ]; then
     echo "[Run] running migrations"
     django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
     
-    echo "[Run] Starting runserver"
+    echo "[Run] Starting uwsgi"
     exec uwsgi --die-on-term --ini ${UWSGI_OPTS}
 fi
 
