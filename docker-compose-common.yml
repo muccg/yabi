@@ -71,8 +71,7 @@ nginx:
     - ./data/nginx:/data
 
 runserver:
-  build: .
-  dockerfile: Dockerfile-dev
+  image: muccg/yabi-dev
   command: runserver
   environment:
     - DBUSER=yabiapp
@@ -84,8 +83,7 @@ runserver:
     - "8000:8000"
 
 uwsgi:
-  build: .
-  dockerfile: Dockerfile-dev
+  image: muccg/yabi-dev
   command: uwsgi
   environment:
     - DBUSER=yabiapp
@@ -102,8 +100,7 @@ uwsgi:
     - "9101:9101"
 
 celery:
-  build: .
-  dockerfile: Dockerfile-dev
+  image: muccg/yabi-dev
   command: celery
   hostname: celery
   environment:

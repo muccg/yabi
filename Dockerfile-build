@@ -26,16 +26,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN env --unset=DEBIAN_FRONTEND
 
-RUN pip freeze
-RUN virtualenv $VIRTUAL_ENV
-
 WORKDIR /app
 COPY .version /.version
 RUN cat /.version
 RUN echo $GIT_TAG \
     && git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
-
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
 VOLUME ["/data"]
 

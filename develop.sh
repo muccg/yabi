@@ -52,6 +52,9 @@ usage() {
     echo " ./develop.sh (ci_dockerbuild)"
     echo " ./develop.sh (rpmbuild|rpm_publish)"
     echo ""
+    echo "Example, start dev with no proxy and rebuild everything:"
+    echo "SET_PIP_PROXY=0 SET_HTTP_PROXY=0 ./develop.sh dev_rebuild"
+    echo ""
     exit 1
 }
 
@@ -95,7 +98,7 @@ _docker_options() {
          DOCKER_COMPOSE_BUILD_NOCACHE=""
     fi
 
-    DOCKER_BUILD_OPTS="${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL} ${DOCKER_BUILD_PIP_PROX}"
+    DOCKER_BUILD_OPTS="${DOCKER_BUILD_OPTS} ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL} ${DOCKER_BUILD_PIP_PROXY}"
 
     # compose does not expose all docker functionality, so we can't use compose to build in all cases
     DOCKER_COMPOSE_BUILD_OPTS="${DOCKER_COMPOSE_BUILD_OPTS} ${DOCKER_COMPOSE_BUILD_NOCACHE} ${DOCKER_COMPOSE_BUILD_PULL}"
@@ -110,7 +113,7 @@ _http_proxy() {
 
     if [ ${SET_HTTP_PROXY} = "1" ]; then
         local http_proxy="http://${DOCKER_ROUTE}:3128"
-	CMD_ENV="${CMD_ENV} http_proxy='http://${DOCKER_ROUTE}:3128'"
+	CMD_ENV="${CMD_ENV} http_proxy=http://${DOCKER_ROUTE}:3128"
         success "Proxy $http_proxy"
     else
         info 'Not setting http_proxy'
@@ -131,8 +134,8 @@ _pip_proxy() {
 	PIP_TRUSTED_HOST="${DOCKER_ROUTE}"
     fi
 
-    CMD_ENV="${CMD_ENV} PIP_INDEX_URL=${PIP_INDEX_URL} PIP_TRUSTED_HOST=${PIP_TRUSTED_HOST}"
-    DOCKER_BUILD_PIP_PROXY='--build-arg ARG_PIP_INDEX_URL='${PIP_INDEX_URL}' --build-arg PIP_TRUSTED_HOST='${PIP_TRUSTED_HOST}''
+    CMD_ENV="${CMD_ENV} NO_PROXY=${DOCKER_ROUTE} no_proxy=${DOCKER_ROUTE} PIP_INDEX_URL=${PIP_INDEX_URL} PIP_TRUSTED_HOST=${PIP_TRUSTED_HOST}"
+    DOCKER_BUILD_PIP_PROXY='--build-arg ARG_PIP_INDEX_URL='${PIP_INDEX_URL}' --build-arg ARG_PIP_TRUSTED_HOST='${PIP_TRUSTED_HOST}''
 
     success "Pip index url ${PIP_INDEX_URL}"
 }
@@ -187,8 +190,7 @@ _github_revision() {
 create_dev_image() {
     info 'create dev image'
     set -x
-    # don't try and pull the base image
-    docker-compose --project-name ${PROJECT_NAME} build ${DOCKER_COMPOSE_BUILD_NOCACHE}
+    (${CMD_ENV}; docker build ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PIP_PROXY} -t muccg/${PROJECT_NAME}-dev -f Dockerfile-dev .)
     set +x
 }
 
@@ -216,7 +218,7 @@ create_build_image() {
 create_base_image() {
     info 'create base image'
     set -x
-    (${CMD_ENV}; docker build ${DOCKER_BUILD_OPTS} -t muccg/${PROJECT_NAME}-base -f Dockerfile-base .)
+    (${CMD_ENV}; docker build ${DOCKER_BUILD_NOCACHE} ${DOCKER_BUILD_PROXY} ${DOCKER_BUILD_PULL} -t muccg/${PROJECT_NAME}-base -f Dockerfile-base .)
     set +x
     success "$(docker images | grep muccg/${PROJECT_NAME}-base | sed 's/  */ /g')"
 }
