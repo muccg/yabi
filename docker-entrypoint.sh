@@ -162,7 +162,7 @@ if [ "$1" = 'runserver' ]; then
     echo "[Run] running migrations"
     django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-migrate.log
     
-    echo "[Run] Starting runserver"
+    echo "[Run] Starting runserver ${RUNSERVER_OPTS}"
     exec django-admin.py ${RUNSERVER_OPTS}
 fi
 
