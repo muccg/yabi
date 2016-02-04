@@ -104,13 +104,17 @@ wait_for_services
 if [ "$1" = 'tarball' ]; then
     echo "[Run] Preparing a tarball of build"
 
-    # install python deps
     cd /app
+    rm -rf /app/*
+    echo $GIT_TAG
     set -x
+    git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
+
+    # install python deps
     # Note: Environment vars are used to control the bahviour of pip (use local devpi for instance)
-    pip install --upgrade -r yabi/runtime-requirements.txt
+    pip install ${PIP_OPTS} --upgrade -r yabi/runtime-requirements.txt
     pip install -e yabi
-    pip install --upgrade -r yabish/requirements.txt
+    pip install ${PIP_OPTS} --upgrade -r yabish/requirements.txt
     pip install -e yabish
     set +x
     

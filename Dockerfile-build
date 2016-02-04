@@ -26,11 +26,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN env --unset=DEBIAN_FRONTEND
 
-WORKDIR /app
 COPY .version /.version
 RUN cat /.version
-RUN echo $GIT_TAG \
-    && git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
+ADD https://raw.githubusercontent.com/muccg/yabi/${GIT_TAG}/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 VOLUME ["/data"]
 
