@@ -125,7 +125,7 @@ def using_dev_settings():
     using_dev_settings = False
 
     # these should be true in production
-    for s in ['SSL_ENABLED', 'SESSION_COOKIE_SECURE', 'SESSION_COOKIE_HTTPONLY', ]:
+    for s in ['SESSION_COOKIE_SECURE', 'SESSION_COOKIE_HTTPONLY', ]:
         if getattr(settings, s) is False:
             using_dev_settings = True
             break
