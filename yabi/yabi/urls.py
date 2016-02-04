@@ -52,7 +52,7 @@ urlpatterns += patterns('',
 
 urlpatterns += patterns('',
                         (r'^static/(?P<path>.*)$', 'django.views.static.serve',
-                        {'document_root': settings.STATIC_ROOT, 'show_indexes': True}))
+                            {'document_root': settings.STATIC_ROOT, 'show_indexes': True}))
 
 urlpatterns += patterns('',
                         (r'^favicon\.ico', RedirectView.as_view(url='/static/images/favicon.ico')))
