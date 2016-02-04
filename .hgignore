@@ -26,3 +26,4 @@ tmp/
 log/
 yabi_data_dir/
 data/
+build/

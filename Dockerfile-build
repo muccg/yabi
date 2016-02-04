@@ -1,0 +1,41 @@
+#
+FROM muccg/yabi-base
+MAINTAINER https://github.com/muccg/yabi/
+
+ARG ARG_GIT_TAG=next_release
+
+ENV GIT_TAG $ARG_GIT_TAG
+ENV PIP_OPTS="--no-cache-dir"
+ENV PIP_INDEX_URL="https://pypi.python.org/simple"
+ENV PIP_TRUSTED_HOST="127.0.0.1"
+
+# Project specific deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  git \
+  libpcre3-dev \
+  libpq-dev \
+  libssl-dev \
+  libxml2-dev \
+  libxslt1-dev \
+  libkrb5-dev \
+  libssl-dev \
+  libsasl2-dev \
+  libldap2-dev \
+  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN env --unset=DEBIAN_FRONTEND
+
+WORKDIR /app
+COPY .version /.version
+RUN cat /.version
+RUN echo $GIT_TAG \
+    && git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
+
+VOLUME ["/data"]
+
+ENV HOME /data
+WORKDIR /data
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["tarball"]

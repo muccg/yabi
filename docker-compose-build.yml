@@ -1,0 +1,11 @@
+# data only container pattern
+builddata:
+  image: muccg/debian8-base:latest
+  volumes:
+    - ./build/:/data
+
+tarball:
+  image: muccg/yabi-build
+  command: tarball
+  volumes_from:
+    - builddata

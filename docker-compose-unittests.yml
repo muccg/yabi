@@ -6,7 +6,7 @@ datatest:
 
 # runs the tests against docker-compose-teststack.yml (See external links)
 testhost:
-  image: yabi_runservertest
+  image: muccg/yabi-dev
   command: runtests
   environment:
     - DBUSER=yabiapp

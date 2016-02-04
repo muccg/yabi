@@ -6,7 +6,7 @@ dataselenium:
 
 # run lettuce tests via selenium hub on test stack (see external_links)
 lettucehost:
-  image: yabi_runservertest
+  image: muccg/yabi-dev
   command: lettuce
   environment:
     - DBUSER=yabiapp

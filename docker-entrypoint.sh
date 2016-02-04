@@ -52,7 +52,7 @@ function defaults {
     : ${QUEUEPORT:="5672"}
     : ${DBSERVER:="db"}
     : ${DBPORT:="5432"}
-    : ${DOCKER_HOST:=$(/sbin/ip route|awk '/default/ { print $3 }')}
+    : ${DOCKER_ROUTE:=$(/sbin/ip route|awk '/default/ { print $3 }')}
     : ${RUNSERVER="web"}
     : ${RUNSERVERPORT="8000"}
     : ${CACHESERVER="cache"}
@@ -66,13 +66,13 @@ function defaults {
     : ${KERBEROSPORT="88"}
     : ${LDAPSERVER="ldap"}
     : ${LDAPPORT="389"}
-    : ${YABIURL="http://$DOCKER_HOST:$RUNSERVERPORT/"}
+    : ${YABIURL="http://$DOCKER_ROUTE:$RUNSERVERPORT/"}
 
     : ${DBUSER="webapp"}
     : ${DBNAME="${DBUSER}"}
     : ${DBPASS="${DBUSER}"}
 
-    export DBSERVER DBPORT DBUSER DBNAME DBPASS DOCKER_HOST YABIURL
+    export DBSERVER DBPORT DBUSER DBNAME DBPASS DOCKER_ROUTE YABIURL
 }
 
 
@@ -92,40 +92,33 @@ function celery_defaults {
     : ${DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"}
     : ${PROJECT_DIRECTORY="${CELERYD_CHDIR}"}
 
-    echo "CELERY_CONFIG_MODULE is ${CELERY_CONFIG_MODULE}"
-    echo "CELERYD_CHDIR is ${CELERYD_CHDIR}"
-    echo "CELERY_BROKER is ${CELERY_BROKER}"
-    echo "CELERY_APP is ${CELERY_APP}"
-    echo "CELERY_LOGLEVEL is ${CELERY_LOGLEVEL}"
-    echo "CELERY_OPTIMIZATION is ${CELERY_OPTIMIZATION}"
-    echo "CELERY_AUTORELOAD is ${CELERY_AUTORELOAD}"
-    echo "CELERY_OPTS is ${CELERY_OPTS}"
-    echo "DJANGO_PROJECT_DIR is ${DJANGO_PROJECT_DIR}"
-    echo "PROJECT_DIRECTORY is ${PROJECT_DIRECTORY}"
-
     export CELERY_CONFIG_MODULE CELERYD_CHDIR CELERY_BROKER CELERY_APP CELERY_LOGLEVEL CELERY_OPTIMIZATION CELERY_AUTORELOAD CELERY_OPTS DJANGO_PROJECT_DIR PROJECT_DIRECTORY
 }
 
-
-function django_defaults {
-    echo "DEPLOYMENT is ${DEPLOYMENT}"
-    echo "PRODUCTION is ${PRODUCTION}"
-    echo "DEBUG is ${DEBUG}"
-    echo "MEMCACHE is ${MEMCACHE}"
-    echo "WRITABLE_DIRECTORY is ${WRITABLE_DIRECTORY}"
-    echo "STATIC_ROOT is ${STATIC_ROOT}"
-    echo "MEDIA_ROOT is ${MEDIA_ROOT}"
-    echo "LOG_DIRECTORY is ${LOG_DIRECTORY}"
-    echo "DJANGO_SETTINGS_MODULE is ${DJANGO_SETTINGS_MODULE}"
-}
-
-
-echo "HOME is ${HOME}"
-echo "WHOAMI is `whoami`"
-
+trap exit SIGHUP SIGINT SIGTERM
 defaults
-django_defaults
+env | grep -iv PASS | sort
 wait_for_services
+
+# prepare a tarball of build
+if [ "$1" = 'tarball' ]; then
+    echo "[Run] Preparing a tarball of build"
+
+    # install python deps
+    cd /app
+    set -x
+    # Note: Environment vars are used to control the bahviour of pip (use local devpi for instance)
+    pip install --upgrade -r yabi/runtime-requirements.txt
+    pip install -e yabi
+    pip install --upgrade -r yabish/requirements.txt
+    pip install -e yabish
+    set +x
+    
+    # create release tarball
+    DEPS="/env /app/uwsgi /app/docker-entrypoint.sh /app/yabi"
+    cd /data
+    exec tar -cpzf yabi-${GIT_TAG}.tar.gz ${DEPS}
+fi
 
 # celery entrypoint
 if [ "$1" = 'celery' ]; then
@@ -143,27 +136,33 @@ fi
 
 # uwsgi entrypoint
 if [ "$1" = 'uwsgi' ]; then
-    echo "[Run] Starting uwsgi"
 
     : ${UWSGI_OPTS="/app/uwsgi/docker.ini"}
     echo "UWSGI_OPTS is ${UWSGI_OPTS}"
 
+    echo "[Run] running collectstatic"
     django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-collectstatic.log
+    echo "[Run] running migrations"
     django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
+    
+    echo "[Run] Starting uwsgi"
     exec uwsgi --die-on-term --ini ${UWSGI_OPTS}
 fi
 
 # runserver entrypoint
 if [ "$1" = 'runserver' ]; then
-    echo "[Run] Starting runserver"
 
     celery_defaults
 
     : ${RUNSERVER_OPTS="runserver_plus 0.0.0.0:${RUNSERVERPORT} --settings=${DJANGO_SETTINGS_MODULE}"}
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
+    echo "[Run] running collectstatic"
     django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-collectstatic.log
+    echo "[Run] running migrations"
     django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-migrate.log
+    
+    echo "[Run] Starting runserver ${RUNSERVER_OPTS}"
     exec django-admin.py ${RUNSERVER_OPTS}
 fi
 
