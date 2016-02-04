@@ -29,6 +29,7 @@ RUN env --unset=DEBIAN_FRONTEND
 COPY .version /.version
 RUN cat /.version
 ADD https://raw.githubusercontent.com/muccg/yabi/${GIT_TAG}/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 VOLUME ["/data"]
 
