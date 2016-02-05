@@ -35,7 +35,6 @@ class PoolingTest(unittest.TestCase):
         self.connectorMock = mock.create_autospec(pooling.ConnectionManager)
         self.pool.connector = self.connectorMock
 
-
     def test_borrow(self):
         self.connectorMock.connect.return_value = "my fake connection"
 
@@ -51,9 +50,8 @@ class PoolingTest(unittest.TestCase):
         ssh = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
         ssh2 = self.pool.borrow(self.HOST, self.PORT, self.CREDENTIAL)
 
-
         self.assertEqual(self.connectorMock.connect.call_count, 2)
-        self.assertEqual(self.connectorMock.connect.call_args_list ,[
+        self.assertEqual(self.connectorMock.connect.call_args_list, [
             ((self.HOST, self.PORT, self.CREDENTIAL),),
             ((self.HOST, self.PORT, self.CREDENTIAL),)])
         self.assertEqual(ssh, "my fake connection")
@@ -80,7 +78,7 @@ class PoolingTest(unittest.TestCase):
         ssh2 = self.pool.borrow("other host", self.PORT, self.CREDENTIAL)
 
         self.assertEqual(self.connectorMock.connect.call_count, 2)
-        self.assertEqual(self.connectorMock.connect.call_args_list ,[
+        self.assertEqual(self.connectorMock.connect.call_args_list, [
             ((self.HOST, self.PORT, self.CREDENTIAL),),
             (("other host", self.PORT, self.CREDENTIAL),)])
         self.assertEqual(ssh, "my fake connection")
