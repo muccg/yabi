@@ -22,7 +22,7 @@ import steps
 
 @before.all
 def set_browser():
-    desired_capabilities = webdriver.DesiredCapabilities.FIREFOX
+    desired_capabilities = webdriver.DesiredCapabilities.CHROME
 
     world.browser = webdriver.Remote(
         desired_capabilities=desired_capabilities,
