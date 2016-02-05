@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+import mock
 
 import celery
-from mockito import *
 from model_mommy import mommy
 
 from yabi.backend import celerytasks
@@ -89,7 +89,7 @@ class RetryOnErrorTest(unittest.TestCase):
         # This should be a unit test so we don't want to make calls through Celery
         # On job finished is async called automatically when setting task statuses
         # to a terminating state
-        when(celerytasks.on_job_finished).apply_async().thenReturn(None)
+        celerytasks.on_job_finished.apply_async = mock.Mock(return_value=None)
 
         create_workflow_with_job_and_a_task(self)
 
@@ -195,7 +195,7 @@ class RetryOnErrorTest(unittest.TestCase):
         def wrapped_fn(task_id):
             return task_id
 
-        when(celerytasks).get_current_celery_task().thenReturn(self.celery_current_task)
+        celerytasks.get_current_celery_task = mock.Mock(return_value=self.celery_current_task)
 
         self.retrying_fn = retry_on_error(wrapped_fn)
 
@@ -205,7 +205,7 @@ class RetryOnErrorTest(unittest.TestCase):
         def wrapped_fn(task_id):
             raise self.my_exception
 
-        when(celerytasks).get_current_celery_task().thenReturn(self.celery_current_task)
+        celerytasks.get_current_celery_task = mock.Mock(return_value=self.celery_current_task)
 
         self.retrying_fn = retry_on_error(wrapped_fn)
 
