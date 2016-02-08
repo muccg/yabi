@@ -27,7 +27,7 @@ class KerberosLDAPBackend(LDAPBackend):
 
     def can_log_in(self, username, password):
         try:
-            return kerberos.checkPassword(username.lower(), password, settings.AUTH_KERBEROS_SERVICE, settings.AUTH_KERBEROS_REALM)
+            return kerberos.checkPassword(username.lower(), password, settings.AUTH_KERBEROS_SERVICE, settings.AUTH_KERBEROS_REALM, False)
         except:
             logger.exception("Failure during Kerberos authentication")
             return False
