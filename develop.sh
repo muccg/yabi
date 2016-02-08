@@ -145,9 +145,9 @@ _pip_proxy() {
 _ci_ssh_agent() {
     info 'ci ssh config'
 
-    # if no _ci_ssh_agent then bomb
-    if [ -z ${_ci_ssh_agent+x} ]; then
-        fail '_ci_ssh_agent not set'
+    # if no ${CI_SSH_KEY} then bomb
+    if [ -z ${CI_SSH_KEY+x} ]; then
+        fail 'CI_SSH_KEY not set'
         exit 1
     fi
 
