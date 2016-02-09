@@ -146,14 +146,14 @@ _ci_ssh_agent() {
     info 'ci ssh config'
 
     # if no ${CI_SSH_KEY} then bomb
-    if [ -z ${CI_SSH_KEY+x} ]; then
-        fail 'CI_SSH_KEY not set'
+    if [ -z ${bamboo_CI_SSH_KEY+x} ]; then
+        fail 'bamboo_CI_SSH_KEY not set'
         exit 1
     fi
 
     ssh-agent > /tmp/agent.env.sh
     . /tmp/agent.env.sh
-    ssh-add ${CI_SSH_KEY}
+    ssh-add ${bamboo_CI_SSH_KEY}
 
     success 'activated ssh agent'
 }
