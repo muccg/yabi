@@ -145,17 +145,17 @@ _pip_proxy() {
 _ci_ssh_agent() {
     info 'ci ssh config'
 
-    # if no ${CI_SSH_KEY} then bomb
-    if [ -z ${bamboo_CI_SSH_KEY+x} ]; then
-        fail 'bamboo_CI_SSH_KEY not set'
-        exit 1
-    fi
-
     ssh-agent > /tmp/agent.env.sh
     . /tmp/agent.env.sh
-    ssh-add ${bamboo_CI_SSH_KEY}
+    success "started ssh-agent"
 
-    success 'activated ssh agent'
+    if [ -z ${bamboo_CI_SSH_KEY+x} ]; then
+	info "loading default ssh keys"
+        ssh-add || true
+    else
+	info "loading bamboo_CI_SSH_KEY ssh keys"
+        ssh-add ${bamboo_CI_SSH_KEY} || true
+    fi
 }
 
 
