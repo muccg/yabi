@@ -386,6 +386,7 @@ run_unit_tests() {
 # publish rpms to testing repo
 rpm_publish() {
     info 'rpm publish'
+    pip install yaml
     time ccg publish_testing_rpm:data/rpmbuild/RPMS/x86_64/yabi*.rpm,release=6
     success 'rpm publish'
 }
