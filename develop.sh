@@ -166,6 +166,10 @@ _github_revision() {
     gittag=`git describe --abbrev=0 --tags 2> /dev/null`
     gitbranch=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
 
+    if [ $gitbranch = "HEAD" ]; then
+        fail 'git clone is in detached HEAD state'
+    fi
+
     # only use tags when on master (release) branch
     if [ $gitbranch != "master" ]; then
         info 'Ignoring tags, not on master branch'
