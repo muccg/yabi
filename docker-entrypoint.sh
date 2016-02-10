@@ -193,7 +193,7 @@ if [ "$1" = 'lettuce' ]; then
     exec django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml
 fi
 
-echo "[RUN]: Builtin command not provided [lettuce|runtests|runserver|celery|uwsgi]"
+echo "[RUN]: Builtin command not provided [tarball|lettuce|runtests|runserver|celery|uwsgi]"
 echo "[RUN]: $@"
 
 exec "$@"
