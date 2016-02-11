@@ -30,7 +30,7 @@ from yabi.responses import *
 from yabi.preview import html
 from yabi.crypto_utils import DecryptException
 from yabi.yabi.ws_frontend_views import ls, get
-from yabi.yabifeapp.utils import preview_key, logout, using_dev_settings  # NOQA
+from yabi.yabifeapp.utils import preview_key, using_dev_settings  # NOQA
 
 import logging
 logger = logging.getLogger(__name__)
