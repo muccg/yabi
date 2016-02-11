@@ -20,7 +20,7 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import login as django_login, logout as django_logout, authenticate
+from django.contrib.auth import login as django_login, logout, authenticate
 from django import forms
 from django.core.cache import cache
 from django.template import RequestContext
@@ -194,7 +194,7 @@ def wslogin(request):
 
 
 def wslogout(request):
-    django_logout(request)
+    logout(request)
     response = {
         "success": True,
     }
