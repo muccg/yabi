@@ -9,7 +9,6 @@ lettucehost:
   image: muccg/yabi-dev
   command: lettuce
   environment:
-    - DBUSER=yabiapp
     - WAIT_FOR_RUNSERVER=1
   volumes_from:
     - dataselenium
