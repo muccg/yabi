@@ -29,7 +29,7 @@ cacherelease:
     file: docker-compose-common.yml
     service: cache
 
-nginx:
+nginxrelease:
   extends:
     file: docker-compose-common.yml
     service: nginx
