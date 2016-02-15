@@ -35,6 +35,5 @@ django-nose==1.4.3
 django-secure==1.0.1
 pycrypto==2.6.1
 ccg-django-utils==0.4.1
-https://github.com/muccg/yaphc/archive/RELEASE_0_1_5.tar.gz
 https://bitbucket.org/ccgmurdoch/libcloud-drivers/downloads/ccg-libcloud-drivers-0.0.1.tar.gz
 https://github.com/muccg/djamboloader/archive/0.1.5.tar.gz#egg=djamboloader-0.1.5
