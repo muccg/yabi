@@ -18,7 +18,7 @@ import json
 import logging
 import six
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
@@ -101,7 +101,7 @@ def format_params(tool_parameters):
 def tool(request, tool_id):
     tool = get_object_or_404(ToolDesc, pk=tool_id)
 
-    return render_to_response('yabi/tool.html', {
+    return render(request, 'yabi/tool.html', {
         'tool': tool,
         'user': request.user,
         'title': 'Tool Details',
@@ -142,7 +142,7 @@ def user_tools(request, user_id):
     tooluser = get_object_or_404(User, pk=user_id)
     tools = get_user_tools(tooluser)
 
-    return render_to_response("yabi/user_tools.html", {
+    return render(request, "yabi/user_tools.html", {
         'user': request.user,
         'tooluser': tooluser,
         'title': 'Tool Listing',
@@ -157,7 +157,7 @@ def user_backends(request, user_id):
 
     becs = BackendCredential.objects.filter(credential__user=backenduser)
 
-    return render_to_response("yabi/user_backends.html", {
+    return render(request, "yabi/user_backends.html", {
         'user': request.user,
         'backenduser': backenduser,
         'title': 'Backend Listing',
@@ -190,7 +190,7 @@ def ldap_users(request):
     logger.debug('')
 
     if not settings.LDAP_IN_USE:
-        return render_to_response("yabi/ldap_not_in_use.html", {
+        return render(request, "yabi/ldap_not_in_use.html", {
             'user': request.user,
             'root_path': urlresolvers.reverse('admin:index'),
         })
@@ -208,7 +208,7 @@ def ldap_users(request):
     existing_ldap_users = [user for user in ldap_yabi_users if user_in_db(user)]
     unexisting_ldap_users = [user for user in ldap_yabi_users if not user_in_db(user)]
 
-    return render_to_response("yabi/ldap_users.html", {
+    return render(request, "yabi/ldap_users.html", {
         'user': request.user,
         'unexisting_ldap_users': unexisting_ldap_users,
         'existing_ldap_users': existing_ldap_users,
@@ -221,7 +221,7 @@ def backend(request, backend_id):
     logger.debug('')
     backend = get_object_or_404(Backend, pk=backend_id)
 
-    return render_to_response('yabi/backend.html', {
+    return render(request, 'yabi/backend.html', {
         'backend': backend,
         'user': request.user,
         'title': 'Backend Details',
@@ -255,13 +255,13 @@ def backend_cred_test(request, backend_cred_id):
 
         try:
             # successful listing
-            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
+            return render(request, 'yabi/backend_cred_test.html', dict_join(template_vars, {
                 'listing': data
             }))
 
         except ValueError:
             # value error report
-            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
+            return render(request, 'yabi/backend_cred_test.html', dict_join(template_vars, {
                 'error': "Value Error",
                 'error_help': "<pre>" + data + "</pre>"
             }))
@@ -270,14 +270,14 @@ def backend_cred_test(request, backend_cred_id):
         if "authentication failed" in str(e).lower():
             # auth failed
             cred_url = '%syabi/credential/%d' % (urlresolvers.reverse('admin:index'), bec.credential.id)  # TODO... construct this more 'correctly'
-            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
+            return render(request, 'yabi/backend_cred_test.html', dict_join(template_vars, {
                 'error': "Authentication Failed",
                 'error_help': "The authentication of the test has failed. The <a href='%s'>credential used</a> is most likely incorrect. Please ensure the <a href='%s'>credential</a> is correct." % (cred_url, cred_url)
             }))
 
         else:
             # overall exception
-            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars, {
+            return render(request, 'yabi/backend_cred_test.html', dict_join(template_vars, {
                 'error': "Backend Server Error",
                 'error_help': str(e).replace('\n', '\\n').replace('\\n', '<br/>')
             }))
@@ -290,26 +290,24 @@ def backend_cred_test(request, backend_cred_id):
 def add_tool(request):
 
     if request.method == 'GET':
-        return render_to_response('yabi/add.html',
-                                  {'form': AddToolForm(),
-                                   'user': request.user,
-                                   'title': 'Add Tool',
-                                   'root_path': urlresolvers.reverse('admin:index'),
-                                   'action_path': urlresolvers.reverse('add_tool_view'),
-                                   'breadcrumb': 'Add Tool'
-                                   })
+        return render(request, 'yabi/add.html', {
+            'form': AddToolForm(),
+            'user': request.user,
+            'title': 'Add Tool',
+            'root_path': urlresolvers.reverse('admin:index'),
+            'action_path': urlresolvers.reverse('add_tool_view'),
+            'breadcrumb': 'Add Tool'})
     else:
 
         f = AddToolForm(request.POST)
         if not f.is_valid():
-            return render_to_response('yabi/add.html',
-                                      {'form': f,
-                                       'user': request.user,
-                                       'title': 'Add Tool',
-                                       'root_path': urlresolvers.reverse('admin:index'),
-                                       'action_path': urlresolvers.reverse('add_tool_view'),
-                                       'breadcrumb': 'Add Tool'
-                                       })
+            return render(request, 'yabi/add.html', {
+                'form': f,
+                'user': request.user,
+                'title': 'Add Tool',
+                'root_path': urlresolvers.reverse('admin:index'),
+                'action_path': urlresolvers.reverse('add_tool_view'),
+                'breadcrumb': 'Add Tool'})
 
         else:
 
@@ -471,7 +469,7 @@ def render_cred_password_form(request):
                    'plural': 's',
                    }
 
-    return render_to_response('yabi/crypt_password.html', render_data)
+    return render(request, 'yabi/crypt_password.html', render_data)
 
 
 @login_required
@@ -557,4 +555,4 @@ def status(request):
         'settings': get_safe_settings(),
     }
 
-    return render_to_response('yabi/admin_status.html', render_data)
+    return render(request, 'yabi/admin_status.html', render_data)

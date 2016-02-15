@@ -36,6 +36,7 @@ The following users are in the LDAP YABI group, but <strong>NOT</strong> in the 
 </p>
 
 <form id="unregistered_users" action="" method="POST">
+{% csrf_token %}
 <input type="button" value="Select All" onclick="SetAllCheckBoxes('unregistered_users',true)" />
 <input type="button" value="Unselect All" onclick="SetAllCheckBoxes('unregistered_users',false)" />
 <input type="submit" value="Register users"/>
