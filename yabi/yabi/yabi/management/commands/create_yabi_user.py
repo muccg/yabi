@@ -16,6 +16,7 @@ class Command(BaseCommand):
         parser.add_argument('--last-name', help='The last name of the new user')
         parser.add_argument('--is-staff', default=None, action='store_true', help='Set if the new user should be a staff member')
         parser.add_argument('--is-superuser', default=None, action='store_true', help='Set if the new user should be a superuser')
+        parser.add_argument('--is-active', default=None, action='store_true', help='Set if the new user should be active. Defaults to true.')
         parser.add_argument('--replicate-user', help="The username of an existing user who's tools and backnd credentials this user should also have")
 
     @transaction.atomic
@@ -50,17 +51,24 @@ class Command(BaseCommand):
 
 def handle_is_staff_and_is_superuser(new_user, options, skeleton_user):
     is_staff = options['is_staff']
-    if is_staff is None and skeleton_user is not None:
-        is_staff = skeleton_user.user.is_staff
     is_superuser = options['is_superuser']
-    if is_superuser is None and skeleton_user is not None:
-        is_superuser = skeleton_user.user.is_superuser
+    is_active = options['is_active']
+
+    if skeleton_user is not None:
+        if is_staff is None:
+            is_staff = skeleton_user.user.is_staff
+        if is_superuser is None:
+            is_superuser = skeleton_user.user.is_superuser
+        if is_active is None:
+            is_active = skeleton_user.user.is_active
 
     if is_staff is not None:
         new_user.is_staff = is_staff
     if is_superuser is not None:
         new_user.is_superuser = is_superuser
-    if not (is_staff is None and is_superuser is None):
+    if is_active is not None:
+        new_user.is_active = is_active
+    if any((is_staff, is_superuser, is_active)):
         new_user.save()
 
 
