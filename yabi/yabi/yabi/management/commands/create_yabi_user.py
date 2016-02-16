@@ -49,7 +49,6 @@ class Command(BaseCommand):
 
 
 def handle_is_staff_and_is_superuser(new_user, options, skeleton_user):
-    print options
     is_staff = options['is_staff']
     if is_staff is None and skeleton_user is not None:
         is_staff = skeleton_user.user.is_staff
@@ -68,7 +67,8 @@ def handle_is_staff_and_is_superuser(new_user, options, skeleton_user):
 def replicate_other_user(source_user, user):
     """Replicates toolsets and backends of the source_user into user.
 
-    Passwords and keys of credentials aren't copied (they are encrypted anyways).
+    Passwords and keys of credentials are copied only if they are in the protected security
+    state (encrypted with the SECRET_CODE).
     Most string fields can use the ${username} Mako variable to customise their value."""
 
     for toolset in ToolSet.objects.filter(users=source_user):
@@ -85,6 +85,11 @@ def replicate_other_user(source_user, user):
             username=render(cred.username),
             user=user,
             expires_on=cred.expires_on)
+        if cred.security_state == Credential.PROTECTED:
+            new_user_cred.security_state = Credential.PROTECTED
+            new_user_cred.password = cred.password
+            new_user_cred.key = cred.key
+            new_user_cred.save()
         credentials[cred.pk] = new_user_cred
 
     for bc in BackendCredential.objects.filter(credential__user=source_user):
