@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-packages = ['yabi'] + ['yabi.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend', 'authbackends']] + ['yabi.yabi.migrations', 'yabi.yabi.migrationutils', 'yabi.yabiengine.migrations', 'yabi.yabi.templatetags', 'yabi.yabifeapp.management', 'yabi.yabifeapp.management.commands', 'yabi.backend.cloud']
+packages = ['yabi'] + ['yabi.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend', 'authbackends']] + ['yabi.yabi.migrations', 'yabi.yabi.migrationutils', 'yabi.yabiengine.migrations', 'yabi.yabi.templatetags', 'yabi.yabi.management', 'yabi.yabi.management.commands', 'yabi.yabifeapp.management', 'yabi.yabifeapp.management.commands', 'yabi.backend.cloud']
 
 package_data = {
     '': ["%s/%s" % (dirglob, fileglob)
