@@ -11,8 +11,9 @@
 <div id="content-main">
 
 <form enctype="multipart/form-data" method="post" action="{{action_path}}">
-{{ form.as_p }}
-<input type="submit" value="Submit" />
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Submit" />
 </form>
 
 </div>
