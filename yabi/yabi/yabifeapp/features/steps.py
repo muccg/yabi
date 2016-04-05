@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from lettuce import *
+from lettuce import step, world
 import lettuce_webdriver.webdriver
 
 

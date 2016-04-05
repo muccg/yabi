@@ -559,8 +559,8 @@ class Credential(Base):
         have_unencrypted_field = any_unencrypted(*crypto_values)
         # are any of the crypto_fields set to a non-empty, annotated-block value?
         have_annotated_field = any_annotated_block(*crypto_values)
-        assert(not (have_unencrypted_field and have_annotated_field),
-               'Internal YABI error - unencrypted and annotated data mixed in Credential object %s' % str(self))
+        assert not (have_unencrypted_field and have_annotated_field), \
+            'Internal YABI error - unencrypted and annotated data mixed in Credential object %s' % str(self)
         # we never allow plaintext credentials to make it into the database
         if have_unencrypted_field:
             def protect(v):

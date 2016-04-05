@@ -28,7 +28,7 @@ from yabi.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabi.yabiengine.engine_logging import create_workflow_logger, create_job_logger
 from yabi.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse
 from six.moves import filter
-from yabi.constants import *
+from yabi import constants as const
 import logging
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class EngineWorkflow(Workflow):
         return json.dumps(self.as_dict())
 
     def errored_during_create_jobs(self):
-        if self.status != STATUS_ERROR:
+        if self.status != const.STATUS_ERROR:
             return False
         # if the Workflow status is error and we have less jobs than we received in the JSON
         # it means we couldn't create jobs from the request -> we had an error during create_jobs()
@@ -117,12 +117,12 @@ class EngineWorkflow(Workflow):
                     job.add_job(job_dict)
                 wfl_logger.info("Created %d jobs for workflow %d", i, self.pk)
 
-                self.status = STATUS_READY
+                self.status = const.STATUS_READY
                 self.save()
         except Exception:
             wfl_logger.exception("Exception during creating jobs for workflow {0}".format(self.pk))
 
-            self.status = STATUS_ERROR
+            self.status = const.STATUS_ERROR
             self.save()
 
             raise
@@ -133,12 +133,12 @@ class EngineWorkflow(Workflow):
 
     def jobs_that_wait_for_dependencies(self):
         return self._filter_jobs(lambda j: j.total_tasks() == 0,
-                                 status=STATUS_PENDING)
+                                 status=const.STATUS_PENDING)
 
     def jobs_that_need_processing(self):
         def f(j):
             return j.total_tasks() == 0 and not j.has_incomplete_dependencies()
-        return self._filter_jobs(f, status=STATUS_PENDING)
+        return self._filter_jobs(f, status=const.STATUS_PENDING)
 
     def has_jobs_to_process(self):
         return len(self.jobs_that_need_processing()) > 0
@@ -229,7 +229,7 @@ class EngineJob(Job):
     def make_tasks_ready(self):
         for task in EngineTask.objects.filter(job=self):
             # status is a property not an individual model field
-            task.status = STATUS_READY
+            task.status = const.STATUS_READY
             task.save()
 
     def get_backend_uri(self, credential):
@@ -265,7 +265,7 @@ class EngineJob(Job):
         self.command_template = template.serialise()
         self.command = str(template)                    # text description of command
 
-        self.status = STATUS_PENDING
+        self.status = const.STATUS_PENDING
         self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s" % (self.order + 1, self.tool.get_display_name()))
         self.exec_backend = self.get_backend_uri(self.exec_credential)
         self.fs_backend = self.get_backend_uri(self.fs_credential)
@@ -284,7 +284,7 @@ class EngineJob(Job):
         logger.debug('----- creating tasks for Job %s -----' % self.pk)
         assert self.total_tasks() == 0, "Job already has tasks"
 
-        updated = Job.objects.filter(pk=self.pk, status=STATUS_PENDING).update(status=JOB_STATUS_PROCESSING)
+        updated = Job.objects.filter(pk=self.pk, status=const.STATUS_PENDING).update(status=const.JOB_STATUS_PROCESSING)
         if updated == 0:
             job_logger.info("Another process_jobs() must have picked up job %s already" % self.pk)
             return
@@ -300,7 +300,7 @@ class EngineJob(Job):
             raise Exception('No tasks for job: %s' % self.pk)
 
         # mark job as ready so it can be requested by a backend
-        self.status = STATUS_READY
+        self.status = const.STATUS_READY
         self.save()
         self.make_tasks_ready()
 
@@ -325,7 +325,7 @@ class EngineJob(Job):
         self.task_total = len(input_files)
 
         for task_num, input_file in enumerate(input_files, 1):
-            task = EngineTask(job=self, status=STATUS_PENDING,
+            task = EngineTask(job=self, status=const.STATUS_PENDING,
                               start_time=datetime.datetime.now(),
                               task_num=task_num)
 
@@ -348,10 +348,10 @@ class EngineJob(Job):
         return self.task_set.filter(status_requested__isnull=True, status_ready__isnull=False).order_by('id')
 
     def has_errored_tasks(self):
-        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == STATUS_ERROR] != []
+        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == const.STATUS_ERROR] != []
 
     def get_errored_tasks_messages(self):
-        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == STATUS_ERROR]
+        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == const.STATUS_ERROR]
 
     def as_dict(self):
         # TODO This will have to be able to generate the full JSON
@@ -370,7 +370,7 @@ class EngineJob(Job):
         job_dict['tasksComplete'] = float(self.progress_score())
         job_dict['tasksTotal'] = float(self.total_tasks())
 
-        if self.status == STATUS_ERROR:
+        if self.status == const.STATUS_ERROR:
             job_dict['errorMessage'] = str(self.get_errored_tasks_messages())
 
         if self.stageout:

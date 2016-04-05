@@ -16,7 +16,7 @@
 
 import json
 from django import forms
-from yabi.yabi.models import *
+from yabi.yabi.models import Backend, BackendCredential, Credential, DynamicBackendConfiguration, FileExtension, Tool, ToolParameter
 from yabi.crypto_utils import any_unencrypted, any_annotated_block
 from django.core.exceptions import ValidationError
 

@@ -24,7 +24,7 @@ from ccg_django_utils.webhelpers import url
 from yabi.yabiengine.urihelper import uriparse, url_join
 from datetime import datetime
 from six.moves import filter
-from yabi.constants import *
+from yabi import constants as const
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,12 +39,12 @@ STAGING_COPY_CHOICES = (
 
 class Status(object):
     COLOURS = {
-        STATUS_PENDING: 'grey',
-        STATUS_READY: 'orange',
-        STATUS_REQUESTED: 'orange',
-        STATUS_RUNNING: 'orange',
-        STATUS_COMPLETE: 'green',
-        STATUS_ERROR: 'red'
+        const.STATUS_PENDING: 'grey',
+        const.STATUS_READY: 'orange',
+        const.STATUS_REQUESTED: 'orange',
+        const.STATUS_RUNNING: 'orange',
+        const.STATUS_COMPLETE: 'green',
+        const.STATUS_ERROR: 'red'
     }
 
     def get_status_colour(self, status):
@@ -121,32 +121,32 @@ class Workflow(models.Model, Editable, Status):
         return self.job_set.get(order=order)
 
     def update_status(self):
-        FINISHED = (STATUS_COMPLETE, STATUS_ERROR, STATUS_ABORTED)
+        FINISHED = (const.STATUS_COMPLETE, const.STATUS_ERROR, const.STATUS_ABORTED)
 
         job_statuses = [x['status'] for x in Job.objects.filter(workflow=self).values('status')]
         jobs_finished = [status in FINISHED for status in job_statuses]
-        jobs_errored = [STATUS_ERROR == status for status in job_statuses]
+        jobs_errored = [const.STATUS_ERROR == status for status in job_statuses]
 
         if not all(jobs_finished):
             if any(jobs_errored):
-                self.status = STATUS_ERROR
+                self.status = const.STATUS_ERROR
                 self.save()
             # Handles transition from READY to RUNNING
             # TODO Could be clearer than this
-            elif self.status == STATUS_READY:
-                if any([status in (STATUS_RUNNING, STATUS_COMPLETE) for status in job_statuses]):
-                    self.status = STATUS_RUNNING
+            elif self.status == const.STATUS_READY:
+                if any([status in (const.STATUS_RUNNING, const.STATUS_COMPLETE) for status in job_statuses]):
+                    self.status = const.STATUS_RUNNING
                     self.save()
             return self.status
 
         # All jobs should be finished (either completed, errored or aborted) at this point
-        if STATUS_ABORTED in job_statuses:
-            status = STATUS_ABORTED
-        elif STATUS_ERROR in job_statuses:
-            status = STATUS_ERROR
+        if const.STATUS_ABORTED in job_statuses:
+            status = const.STATUS_ABORTED
+        elif const.STATUS_ERROR in job_statuses:
+            status = const.STATUS_ERROR
         else:
-            assert all([status == STATUS_COMPLETE for status in job_statuses]), "All jobs should be completed"
-            status = STATUS_COMPLETE
+            assert all([status == const.STATUS_COMPLETE for status in job_statuses]), "All jobs should be completed"
+            status = const.STATUS_COMPLETE
 
         self.status = status
         self.end_time = datetime.now()
@@ -159,8 +159,8 @@ class Workflow(models.Model, Editable, Status):
 
     @property
     def is_finished(self):
-        return (self.status in TERMINATED_STATUSES and
-                all([j.status in TERMINATED_STATUSES for j in self.job_set.all()]))
+        return (self.status in const.TERMINATED_STATUSES and
+                all([j.status in const.TERMINATED_STATUSES for j in self.job_set.all()]))
 
     @property
     def colour(self):
@@ -172,7 +172,7 @@ class Workflow(models.Model, Editable, Status):
 
     @property
     def is_aborted(self):
-        return (self.status == STATUS_ABORTED)
+        return (self.status == const.STATUS_ABORTED)
 
     @property
     def is_retrying(self):
@@ -232,13 +232,13 @@ class Job(models.Model, Editable, Status):
         return "%s - %s" % (self.workflow.name, self.order)
 
     def status_ready(self):
-        return self.status == STATUS_READY
+        return self.status == const.STATUS_READY
 
     def status_complete(self):
-        return self.status == STATUS_COMPLETE
+        return self.status == const.STATUS_COMPLETE
 
     def status_error(self):
-        return self.status == STATUS_ERROR
+        return self.status == const.STATUS_ERROR
 
     def get_status_colour(self):
         return Status.COLOURS.get(self.status, 'grey')
@@ -260,24 +260,24 @@ class Job(models.Model, Editable, Status):
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
         The order of the list being checked is therefore important.
         '''
-        for status in [STATUS_ERROR, STATUS_EXEC_ERROR, 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE, STATUS_ABORTED]:
+        for status in [const.STATUS_ERROR, const.STATUS_EXEC_ERROR, 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', const.STATUS_BLOCKED, const.STATUS_READY, const.STATUS_COMPLETE, const.STATUS_ABORTED]:
             if [T for T in Task.objects.filter(job=self) if T.status == status]:
                 # we need to map the task status values to valid job status values
-                if status == STATUS_EXEC_ERROR:
-                    self.status = STATUS_ERROR
+                if status == const.STATUS_EXEC_ERROR:
+                    self.status = const.STATUS_ERROR
                 elif status.startswith('exec') or status in ['stageout', 'cleaning', 'stagein', 'mkdir']:
-                    self.status = STATUS_RUNNING
+                    self.status = const.STATUS_RUNNING
                 else:
                     self.status = status
 
-                if status == STATUS_COMPLETE:
-                    if [T for T in Task.objects.filter(job=self) if T.status == STATUS_ABORTED]:
+                if status == const.STATUS_COMPLETE:
+                    if [T for T in Task.objects.filter(job=self) if T.status == const.STATUS_ABORTED]:
                         # at least one aborted the rest completed
-                        status = STATUS_ABORTED
+                        status = const.STATUS_ABORTED
                     else:
                         self.end_time = datetime.now()
 
-                assert(self.status in STATUS)
+                assert(self.status in const.STATUS)
                 self.save()
                 break
 
@@ -438,14 +438,14 @@ class Task(models.Model, Editable, Status):
         varname = self.status_attr(status)
         setattr(self, varname, datetime.now())
 
-        if status != STATUS_BLOCKED and status != STATUS_RESUME:
-            self.percent_complete = STATUS_PROGRESS_MAP[status]
+        if status != const.STATUS_BLOCKED and status != const.STATUS_RESUME:
+            self.percent_complete = const.STATUS_PROGRESS_MAP[status]
 
-        if status == STATUS_COMPLETE:
+        if status == const.STATUS_COMPLETE:
             self.end_time = datetime.now()
 
     def get_status(self):
-        for status in STATUSES_REVERSE_ORDER:
+        for status in const.STATUSES_REVERSE_ORDER:
             varname = self.status_attr(status)
             if getattr(self, varname):
                 return status
@@ -483,7 +483,7 @@ class Task(models.Model, Editable, Status):
 
     @property
     def is_finished(self):
-        return self.status in TERMINATED_STATUSES
+        return self.status in const.TERMINATED_STATUSES
 
     def mark_task_as_retrying(self, message="Some error occurred"):
         self.is_retrying = True

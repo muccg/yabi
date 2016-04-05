@@ -47,7 +47,7 @@ usage() {
     echo " ./develop.sh (dev|dev_rebuild|dev_full|runtests|lettuce)"
     echo " ./develop.sh (baseimage|buildimage|devimage|releasetarball|releaseimage)"
     echo " ./develop.sh (start_release|start_release_rebuild)"
-    echo " ./develop.sh (pythonlint|jslint)"
+    echo " ./develop.sh (pylint|jslint)"
     echo " ./develop.sh (ci_docker_staging|docker_staging_lettuce|ci_rpm_staging|docker_rpm_staging_lettuce)"
     echo " ./develop.sh (ci_dockerbuild)"
     echo " ./develop.sh (rpmbuild|rpm_publish)"
@@ -504,9 +504,9 @@ docker_rpm_staging_lettuce() {
 
 
 # lint using flake8
-python_lint() {
+py_lint() {
     info "python lint"
-    pip install 'flake8>=2.0,<2.1'
+    pip install 'flake8>=2.0,<2.1' --upgrade
     flake8 yabi/yabi yabish/yabishell --count
     success "python lint"
 }
@@ -550,8 +550,8 @@ make_virtualenv
 _docker_options
 
 case $ACTION in
-pythonlint)
-    python_lint
+pylint)
+    py_lint
     ;;
 jslint)
     js_lint

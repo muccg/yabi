@@ -17,9 +17,11 @@
 from django.contrib import admin, messages
 from django.core import urlresolvers
 
+from ccg_django_utils.webhelpers import url
+
 from yabi.yabi.models import User
-from yabi.yabiengine.models import *
-from yabi.yabiengine.enginemodels import *
+from yabi.yabiengine.models import DynamicBackendInstance, Job, StageIn, SavedWorkflow, Syslog, Task
+from yabi.yabiengine.enginemodels import EngineWorkflow
 from yabi.backend.celerytasks import request_workflow_abort
 
 

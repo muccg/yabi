@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-from django.conf.urls import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import render_to_response
@@ -26,7 +25,7 @@ from django.core.cache import cache
 from django.template import RequestContext
 from ccg_django_utils import webhelpers
 from yabi.yabi.models import Credential, ModelBackendUserProfile, LDAPBackendUserProfile
-from yabi.responses import *
+from yabi.responses import JsonMessageResponse, JsonMessageResponseBadRequest, JsonMessageResponseNotAllowed, JsonMessageResponseNotFound, JsonMessageResponseServerError
 from yabi.preview import html
 from yabi.crypto_utils import DecryptException
 from yabi.yabi.ws_frontend_views import ls, get

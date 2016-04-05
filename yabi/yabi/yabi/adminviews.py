@@ -21,17 +21,19 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User as DjangoUser
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
-from yabi.yabi.models import *
-from yabi import ldaputils
-from yabi.crypto_utils import DecryptException
-from ccg_django_utils import webhelpers
 from django import forms
 from django.views.debug import get_safe_settings
 from django.contrib import messages
 from django.conf import settings
 
+from ccg_django_utils import webhelpers
+
+from yabi import ldaputils
+from yabi.crypto_utils import DecryptException
+from yabi.yabi.models import Backend, BackendCredential, Credential, FileExtension, ParameterSwitchUse, Tool, ToolDesc, ToolOutputExtension, ToolParameter, User
 logger = logging.getLogger(__name__)
 
 

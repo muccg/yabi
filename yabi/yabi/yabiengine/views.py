@@ -22,7 +22,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from yabi.yabiengine.models import Task
 from yabi.yabiengine.enginemodels import EngineWorkflow
-from yabi.constants import *
 import logging
 logger = logging.getLogger(__name__)
 

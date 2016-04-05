@@ -21,15 +21,15 @@ from django.core.urlresolvers import reverse
 
 from ccg_django_utils import webhelpers
 
-from yabi.yabi.models import *
-from yabi.yabi.forms import *
+from yabi.yabi import models as m
+from yabi.yabi import forms as f
 
 
 class AdminBase(admin.ModelAdmin):
     save_as = True
 
     def save_model(self, request, obj, form, change):
-        if not isinstance(obj, Base):
+        if not isinstance(obj, m.Base):
             return form.save()
 
         instance = form.save(commit=False)
@@ -41,7 +41,7 @@ class AdminBase(admin.ModelAdmin):
         return instance
 
     def save_formset(self, request, form, formset, change):
-        if not issubclass(formset.model, Base):
+        if not issubclass(formset.model, m.Base):
             return formset.save()
 
         def set_user(instance):
@@ -58,13 +58,13 @@ class AdminBase(admin.ModelAdmin):
 
 
 class ToolGroupingInline(admin.TabularInline):
-    model = ToolGrouping
+    model = m.ToolGrouping
     extra = 1
 
 
 class ToolOutputExtensionInline(admin.TabularInline):
-    model = ToolOutputExtension
-    form = ToolOutputExtensionForm
+    model = m.ToolOutputExtension
+    form = f.ToolOutputExtensionForm
     extra = 1
     fields = ['file_extension']
 
@@ -79,8 +79,8 @@ class ToolParameterFormset(BaseInlineFormSet):
 
 
 class ToolParameterInline(admin.StackedInline):
-    form = ToolParameterForm
-    model = ToolParameter
+    form = f.ToolParameterForm
+    model = m.ToolParameter
     formset = ToolParameterFormset
     extra = 3
     filter_horizontal = ['accepted_filetypes']
@@ -118,7 +118,7 @@ class ToolDescAdmin(AdminBase):
 
 
 class ToolAdmin(AdminBase):
-    form = ToolForm
+    form = f.ToolForm
     list_display = ['desc', 'path', 'display_name', 'view_json', 'tool_groups_str', 'backend', 'fs_backend', 'enabled']
     search_fields = ['desc__name', 'display_name', 'path']
     save_as = False
@@ -160,7 +160,7 @@ class FileExtensionAdmin(AdminBase):
 
 
 class CredentialAdmin(AdminBase):
-    form = CredentialForm
+    form = f.CredentialForm
     list_display = ['description', 'user', 'username']
     list_filter = ['user']
     actions = ['duplicate_credential', 'cache_credential', 'decache_credential']
@@ -207,12 +207,12 @@ class CredentialAdmin(AdminBase):
 
 
 class DynamicBackendConfigurationAdmin(AdminBase):
-    form = DynamicBackendConfigurationForm
+    form = f.DynamicBackendConfigurationForm
     list_display = ['name']
 
 
 class BackendAdmin(AdminBase):
-    form = BackendForm
+    form = f.BackendForm
     list_display = ['name', 'description', 'scheme', 'hostname',
                     'port', 'path', 'uri', 'backend_summary_link']
     fieldsets = (
@@ -246,7 +246,7 @@ class UserAdmin(AdminBase):
 
 
 class BackendCredentialAdmin(AdminBase):
-    form = BackendCredentialForm
+    form = f.BackendCredentialForm
     list_display = ['backend', 'credential', 'homedir', 'visible', 'default_stageout']
     list_filter = ['credential__user']
     raw_id_fields = ['credential']
@@ -265,16 +265,16 @@ class HostKeyAdmin(AdminBase):
 
 
 def register(site):
-    site.register(FileExtension, FileExtensionAdmin)
-    site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
-    site.register(FileType, FileTypeAdmin)
-    site.register(ToolDesc, ToolDescAdmin)
-    site.register(Tool, ToolAdmin)
-    site.register(ToolGroup, ToolGroupAdmin)
-    site.register(ToolSet, ToolSetAdmin)
-    site.register(User, UserAdmin)
-    site.register(Credential, CredentialAdmin)
-    site.register(BackendCredential, BackendCredentialAdmin)
-    site.register(Backend, BackendAdmin)
-    site.register(DynamicBackendConfiguration, DynamicBackendConfigurationAdmin)
-    site.register(HostKey, HostKeyAdmin)
+    site.register(m.FileExtension, FileExtensionAdmin)
+    site.register(m.ParameterSwitchUse, ParameterSwitchUseAdmin)
+    site.register(m.FileType, FileTypeAdmin)
+    site.register(m.ToolDesc, ToolDescAdmin)
+    site.register(m.Tool, ToolAdmin)
+    site.register(m.ToolGroup, ToolGroupAdmin)
+    site.register(m.ToolSet, ToolSetAdmin)
+    site.register(m.User, UserAdmin)
+    site.register(m.Credential, CredentialAdmin)
+    site.register(m.BackendCredential, BackendCredentialAdmin)
+    site.register(m.Backend, BackendAdmin)
+    site.register(m.DynamicBackendConfiguration, DynamicBackendConfigurationAdmin)
+    site.register(m.HostKey, HostKeyAdmin)
