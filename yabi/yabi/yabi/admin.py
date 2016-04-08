@@ -30,19 +30,16 @@ class AdminBase(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not isinstance(obj, m.Base):
-            return form.save()
+            obj.save()
 
-        instance = form.save(commit=False)
         if not change:
-            instance.created_by = request.user
-        instance.last_modified_by = request.user
-        instance.save()
-        form.save_m2m()
-        return instance
+            obj.created_by = request.user
+        obj.last_modified_by = request.user
+        obj.save()
 
     def save_formset(self, request, form, formset, change):
         if not issubclass(formset.model, m.Base):
-            return formset.save()
+            formset.save()
 
         def set_user(instance):
             if instance.pk is None:
@@ -51,10 +48,11 @@ class AdminBase(admin.ModelAdmin):
             instance.save()
 
         instances = formset.save(commit=False)
+        for obj in formset.deleted_objects:
+            obj.delete()
         for inst in instances:
             set_user(inst)
         formset.save_m2m()
-        return instances
 
 
 class ToolGroupingInline(admin.TabularInline):
