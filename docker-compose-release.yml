@@ -1,6 +1,6 @@
 # data only container pattern
 datarelease:
-  image: muccg/debian8-base:latest
+  image: debian:jessie
   volumes:
     - ./data/release:/data
 
