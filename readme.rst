@@ -18,11 +18,7 @@ More docs at Read the Docs (https://yabi.readthedocs.org/).
 Contact
 -------
 
-Hosted on Bitbucket: 
-
-https://bitbucket.org/ccgmurdoch/yabi/
-
-Or if you prefer, GitHub:
+Hosted on Github: 
 
 https://github.com/muccg/yabi/
 
