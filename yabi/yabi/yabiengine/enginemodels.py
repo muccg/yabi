@@ -249,7 +249,7 @@ class EngineJob(Job):
         self.job_dict = job_dict
         if "toolId" not in job_dict:
             raise InvalidRequestError("Submitted job %s lacks toolId" % job_dict["toolName"])
-        self.tool = Tool.objects.get(id=job_dict["toolId"], desc__name=job_dict["toolName"])
+        self.tool = Tool.objects.get(id=job_dict["toolId"])
         if not self.tool.enabled:
             raise InvalidRequestError("Can't process workflow with disabled tool '%s'" % self.tool.name)
         if not self.tool.does_user_have_access_to(self.user):
