@@ -33,5 +33,5 @@ VOLUME ["/data"]
 ENV HOME /data
 WORKDIR /data
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint-build.sh"]
 CMD ["releasetarball"]
