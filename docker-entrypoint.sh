@@ -53,26 +53,27 @@ function defaults {
     : ${DBSERVER:="db"}
     : ${DBPORT:="5432"}
     : ${DOCKER_ROUTE:=$(/sbin/ip route|awk '/default/ { print $3 }')}
-    : ${RUNSERVER="web"}
-    : ${RUNSERVERPORT="8000"}
-    : ${CACHESERVER="cache"}
-    : ${CACHEPORT="11211"}
-    : ${MEMCACHE="${CACHESERVER}:${CACHEPORT}"}
-    : ${SSHSERVER="ssh"}
-    : ${SSHPORT="22"}
-    : ${S3SERVER="s3"}
-    : ${S3PORT="4569"}
-    : ${KERBEROSSERVER="krb5"}
-    : ${KERBEROSPORT="88"}
-    : ${LDAPSERVER="ldap"}
-    : ${LDAPPORT="389"}
-    : ${YABIURL="http://$DOCKER_ROUTE:$RUNSERVERPORT/"}
+    : ${RUNSERVER:="web"}
+    : ${RUNSERVERPORT:="8000"}
+    : ${CACHESERVER:="cache"}
+    : ${CACHEPORT:="11211"}
+    : ${MEMCACHE:="${CACHESERVER}:${CACHEPORT}"}
+    : ${SSHSERVER:="ssh"}
+    : ${SSHPORT:="22"}
+    : ${S3SERVER:="s3"}
+    : ${S3PORT:="4569"}
+    : ${KERBEROSSERVER:="krb5"}
+    : ${KERBEROSPORT:="88"}
+    : ${LDAPSERVER:="ldap"}
+    : ${LDAPPORT:="389"}
+    : ${YABIURL:="http://$DOCKER_ROUTE:$RUNSERVERPORT/"}
 
-    : ${DBUSER="webapp"}
-    : ${DBNAME="${DBUSER}"}
-    : ${DBPASS="${DBUSER}"}
+    : ${DBUSER:="webapp"}
+    : ${DBNAME:="${DBUSER}"}
+    : ${DBPASS:="${DBUSER}"}
 
-    export DBSERVER DBPORT DBUSER DBNAME DBPASS DOCKER_ROUTE YABIURL
+    export DBSERVER DBPORT DBUSER DBNAME DBPASS MEMCACHE DOCKER_ROUTE 
+    export YABIURL
 }
 
 
@@ -95,34 +96,29 @@ function celery_defaults {
     export CELERY_CONFIG_MODULE CELERYD_CHDIR CELERY_BROKER CELERY_APP CELERY_LOGLEVEL CELERY_OPTIMIZATION CELERY_AUTORELOAD CELERY_OPTS DJANGO_PROJECT_DIR PROJECT_DIRECTORY
 }
 
+
+function _django_check_deploy {
+    echo "running check --deploy"
+    django-admin.py check --deploy --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-check.log
+}
+
+
+function _django_migrate {
+    echo "running migrate"
+    django-admin.py migrate --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
+}
+
+
+function _django_collectstatic {
+    echo "running collectstatic"
+    django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-collectstatic.log
+}
+
+
 trap exit SIGHUP SIGINT SIGTERM
 defaults
 env | grep -iv PASS | sort
 wait_for_services
-
-# prepare a tarball of build
-if [ "$1" = 'tarball' ]; then
-    echo "[Run] Preparing a tarball of build"
-
-    cd /app
-    rm -rf /app/*
-    echo $GIT_TAG
-    set -x
-    git clone --depth=1 --branch=$GIT_TAG https://github.com/muccg/yabi.git .
-
-    # install python deps
-    # Note: Environment vars are used to control the bahviour of pip (use local devpi for instance)
-    pip install ${PIP_OPTS} --upgrade -r yabi/runtime-requirements.txt
-    pip install -e yabi
-    pip install ${PIP_OPTS} --upgrade -r yabish/requirements.txt
-    pip install -e yabish
-    set +x
-    
-    # create release tarball
-    DEPS="/env /app/uwsgi /app/docker-entrypoint.sh /app/yabi"
-    cd /data
-    exec tar -cpzf yabi-${GIT_TAG}.tar.gz ${DEPS}
-fi
 
 # celery entrypoint
 if [ "$1" = 'celery' ]; then
@@ -140,33 +136,31 @@ fi
 
 # uwsgi entrypoint
 if [ "$1" = 'uwsgi' ]; then
+    echo "[Run] Starting uwsgi"
 
     : ${UWSGI_OPTS="/app/uwsgi/docker.ini"}
     echo "UWSGI_OPTS is ${UWSGI_OPTS}"
 
-    echo "[Run] running collectstatic"
-    django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-collectstatic.log
-    echo "[Run] running migrations"
-    django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-migrate.log
-    
-    echo "[Run] Starting uwsgi"
+    _django_collectstatic
+    _django_migrate
+    _django_check_deploy
+
     exec uwsgi --die-on-term --ini ${UWSGI_OPTS}
 fi
 
 # runserver entrypoint
 if [ "$1" = 'runserver' ]; then
+    echo "[Run] Starting runserver"
 
     celery_defaults
 
     : ${RUNSERVER_OPTS="runserver_plus 0.0.0.0:${RUNSERVERPORT} --settings=${DJANGO_SETTINGS_MODULE}"}
     echo "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
 
-    echo "[Run] running collectstatic"
-    django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/uwsgi-collectstatic.log
-    echo "[Run] running migrations"
-    django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 2>&1 | tee /data/runserver-migrate.log
+    _django_collectstatic
+    _django_migrate
     
-    echo "[Run] Starting runserver ${RUNSERVER_OPTS}"
+    echo "running runserver ${RUNSERVER_OPTS}"
     exec django-admin.py ${RUNSERVER_OPTS}
 fi
 
@@ -190,10 +184,10 @@ if [ "$1" = 'lettuce' ]; then
     echo "[Run] Starting lettuce"
 
     echo "YABIURL is ${YABIURL}"
-    exec django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml
+    exec django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml $@
 fi
 
-echo "[RUN]: Builtin command not provided [tarball|lettuce|runtests|runserver|celery|uwsgi]"
+echo "[RUN]: Builtin command not provided [lettuce|runtests|runserver|celery|uwsgi]"
 echo "[RUN]: $@"
 
 exec "$@"

@@ -8,11 +8,10 @@ ARG ARG_PIP_OPTS="--no-cache-dir"
 ARG ARG_PIP_INDEX_URL="https://pypi.python.org/simple"
 ARG ARG_PIP_TRUSTED_HOST="127.0.0.1"
 
-# Runtime args, don't re-use build time args
+# Runtime args
 ENV DEPLOYMENT dev
 ENV PRODUCTION 0
 ENV DEBUG 1
-ENV PIP_OPTS="--no-cache-dir"
 ENV PIP_INDEX_URL="https://pypi.python.org/simple"
 ENV PIP_TRUSTED_HOST="127.0.0.1"
 
@@ -23,6 +22,8 @@ RUN rm -rf /app && mkdir -p /app
 # For dev we use root so we can shell in and do evil things
 USER root
 WORKDIR /app
+
+RUN env | sort
 
 COPY krb5.conf /etc/krb5.conf
 

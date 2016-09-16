@@ -1,42 +1,42 @@
 # data only container pattern
-datarelease:
+dataprod:
   image: debian:jessie
   volumes:
-    - ./data/release:/data
+    - ./data/prod:/data
 
-s3release:
+s3prod:
   extends:
     file: docker-compose-common.yml
     service: s3
 
-sshrelease:
+sshprod:
   extends:
     file: docker-compose-common.yml
     service: ssh
 
-mqrelease:
+mqprod:
   extends:
     file: docker-compose-common.yml
     service: mq
 
-dbrelease:
+dbprod:
   extends:
     file: docker-compose-common.yml
     service: db
 
-cacherelease:
+cacheprod:
   extends:
     file: docker-compose-common.yml
     service: cache
 
-nginxrelease:
+nginxprod:
   extends:
     file: docker-compose-common.yml
     service: nginx
   links:
-    - uwsgirelease:uwsgi
+    - uwsgiprod:uwsgi
 
-uwsgirelease:
+uwsgiprod:
   image: muccg/yabi:${GIT_TAG}
   command: uwsgi
   environment:
@@ -46,17 +46,17 @@ uwsgirelease:
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
   volumes_from:
-    - datarelease
+    - dataprod
   links:
-    - dbrelease:db
-    - mqrelease:mq
-    - cacherelease:cache
-    - sshrelease:ssh
-    - s3release:s3
+    - dbprod:db
+    - mqprod:mq
+    - cacheprod:cache
+    - sshprod:ssh
+    - s3prod:s3
 
-celeryrelease:
+celeryprod:
   image: muccg/yabi:${GIT_TAG}
-  hostname: celeryrelease
+  hostname: celeryprod
   command: celery
   environment:
     - CELERY_APP=yabi.backend.celerytasks
@@ -66,10 +66,10 @@ celeryrelease:
     - WAIT_FOR_SSH=1
     - WAIT_FOR_S3=1
   volumes_from:
-    - datarelease
+    - dataprod
   links:
-    - dbrelease:db
-    - mqrelease:mq
-    - cacherelease:cache
-    - sshrelease:ssh
-    - s3release:s3
+    - dbprod:db
+    - mqprod:mq
+    - cacheprod:cache
+    - sshprod:ssh
+    - s3prod:s3
