@@ -19,7 +19,7 @@ boto3==1.2.3
 python-swiftclient==2.7.0
 python-keystoneclient==0.10.1
 # python-keystoneclient has a dep on pip with no version, lock it here
-pip==7.1.2
+pip==8.1.2
 netaddr!=0.7.13
 python-dateutil==2.4.2
 six==1.8
@@ -35,5 +35,5 @@ django-nose==1.4.3
 django-secure==1.0.1
 pycrypto==2.6.1
 ccg-django-utils==0.4.1
-https://bitbucket.org/ccgmurdoch/libcloud-drivers/downloads/ccg-libcloud-drivers-0.0.1.tar.gz
+https://github.com/muccg/libcloud-drivers/archive/0.0.1.tar.gz#egg=ccg-libcloud-drivers-0.0.1
 https://github.com/muccg/djamboloader/archive/0.1.5.tar.gz#egg=djamboloader-0.1.5
