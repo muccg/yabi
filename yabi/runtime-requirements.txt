@@ -25,7 +25,7 @@ python-dateutil==2.4.2
 six==1.8
 flower>=0.7.0
 apache-libcloud==0.20.0
-uwsgi==2.0.12
+uwsgi==2.0.13.1
 uwsgitop
 pyinotify==0.9.6
 psycopg2==2.6.1
