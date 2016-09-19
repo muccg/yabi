@@ -14,7 +14,7 @@ django-extensions==1.6.1
 beautifulsoup4==4.4.1
 cssutils==1.0.1
 httplib2==0.9.2
-paramiko==1.16.0
+paramiko==1.16.3
 boto3==1.2.3
 python-swiftclient==2.7.0
 python-keystoneclient==0.10.1
