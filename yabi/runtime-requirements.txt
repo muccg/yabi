@@ -8,7 +8,7 @@ kombu==3.0.33
 billiard==3.3.0.22
 django-templatetag-sugar==1.0
 ordereddict==1.1
-python-memcached==1.57
+python-memcached==1.58
 Mako==1.0.3
 django-extensions==1.6.1
 beautifulsoup4==4.4.1
