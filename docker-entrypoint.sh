@@ -78,22 +78,31 @@ function defaults {
 
 
 function celery_defaults {
-    : ${CELERY_CONFIG_MODULE="settings"}
-    : ${CELERYD_CHDIR=`pwd`}
-    : ${CELERY_BROKER="amqp://guest:guest@${QUEUESERVER}:${QUEUEPORT}//"}
-    : ${CELERY_APP="app.celerytasks"}
-    : ${CELERY_LOGLEVEL="DEBUG"}
-    : ${CELERY_OPTIMIZATION="fair"}
+    : ${CELERY_CHDIR:=`pwd`}
+    # Nodes:  yabi-node yabi-node-fsops yabi-node-provisioning"}
+    # Queues: celery    file_operations provisioning"}
+    : ${CELERY_NODE:="yabi-node"}
+    : ${CELERY_QUEUES:="celery,file_operations,provisioning"}
+
+    : ${CELERY_CONFIG_MODULE:="settings"}
+    : ${CELERY_BROKER:="amqp://guest:guest@${QUEUESERVER}:${QUEUEPORT}//"}
+    : ${CELERY_APP:="yabi.backend.celerytasks"}
+    : ${CELERY_LOG_FILE:="${CELERY_CHDIR}/${CELERY_NODE}.log"}
+    : ${CELERY_LOGLEVEL:="DEBUG"}
+    : ${CELERY_OPTIMIZATION:="fair"}
+    : ${CELERY_CONCURRENCY:="4"}
     if [[ -z "$CELERY_AUTORELOAD" ]] ; then
         CELERY_AUTORELOAD=""
     else
         CELERY_AUTORELOAD="--autoreload"
     fi
-    : ${CELERY_OPTS="-A ${CELERY_APP} -E --loglevel=${CELERY_LOGLEVEL} -O${CELERY_OPTIMIZATION} -b ${CELERY_BROKER} ${CELERY_AUTORELOAD}"}
-    : ${DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"}
-    : ${PROJECT_DIRECTORY="${CELERYD_CHDIR}"}
+    : ${DJANGO_PROJECT_DIR:="${CELERY_CHDIR}"}
+    : ${PROJECT_DIRECTORY:="${CELERY_CHDIR}"}
 
-    export CELERY_CONFIG_MODULE CELERYD_CHDIR CELERY_BROKER CELERY_APP CELERY_LOGLEVEL CELERY_OPTIMIZATION CELERY_AUTORELOAD CELERY_OPTS DJANGO_PROJECT_DIR PROJECT_DIRECTORY
+    export CELERY_CHDIR CELERY_NODE CELERY_QUEUES CELERY_CONFIG_MODULE CELERY_BROKER CELERY_APP
+    export CELERY_LOGLEVEL CELERY_LOG_FILE
+    export CELERY_OPTIMIZATION CELERY_CONCURRENCY CELERY_AUTORELOAD
+    export DJANGO_PROJECT_DIR PROJECT_DIRECTORY
 }
 
 
@@ -131,7 +140,19 @@ if [ "$1" = 'celery' ]; then
         exit $?
     fi
 
-    exec celery worker ${CELERY_OPTS}
+    exec celery worker \
+         --app=${CELERY_APP} \
+         --broker ${CELERY_BROKER} \
+         --events \
+         --concurrency=${CELERY_CONCURRENCY} \
+         --executable=celery \
+         --hostname ${CELERY_NODE}@${HOSTNAME} \
+         --loglevel=${CELERY_LOGLEVEL} \
+         --workdir=${CELERY_CHDIR} \
+         ${CELERY_AUTORELOAD} \
+         --logfile=/dev/stdout \
+         -O${CELERY_OPTIMIZATION} \
+         --queues ${CELERY_QUEUES} 2>&1 | tee ${CELERY_LOG_FILE}
 fi
 
 # uwsgi entrypoint

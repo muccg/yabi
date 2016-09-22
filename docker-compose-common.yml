@@ -104,7 +104,6 @@ celery:
   command: celery
   hostname: celery
   environment:
-    - CELERY_APP=yabi.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1
