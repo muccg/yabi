@@ -171,7 +171,7 @@ virtualenv-%{pybasever} %{shbuildinstalldir}
 
 # Use specific version of pip -- avoids surprises with deprecated
 # options, etc.
-pip install --force-reinstall --upgrade 'pip>=7.0,<8.0'
+pip install --force-reinstall --upgrade 'pip==8.1.2'
 
 # Install package into the prefix
 pip install -r requirements.txt
