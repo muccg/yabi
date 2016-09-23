@@ -78,7 +78,7 @@ The Yabi Backend server is responsible for the communication with individual dat
 Source code
 -----------
 
-The Yabi source code is available on Bitbucket: `https://bitbucket.org/ccgmurdoch/yabi <https://bitbucket.org/ccgmurdoch/yabi>`_.
+The Yabi source code is available on GitHub: `https://github.com/muccg/yabi <https://github.com/muccg/yabi>`_.
 
 Licence
 -------

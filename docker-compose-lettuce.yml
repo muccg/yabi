@@ -4,14 +4,35 @@ dataselenium:
     file: docker-compose-common.yml
     service: dataselenium
 
-# run lettuce tests via selenium hub on test stack (see external_links)
-lettucehost:
+devlettuce:
   image: muccg/yabi-dev
   command: lettuce
   environment:
+    - DBUSER=yabiapp
     - WAIT_FOR_RUNSERVER=1
+    - WAIT_FOR_DB=1
+    - DEBUG=0
   volumes_from:
     - dataselenium
   external_links:
     - yabi_runservertest_1:web
     - yabi_seleniumhub_1:hub
+    - yabi_dbtest_1:db
+
+prodlettuce:
+  image: muccg/yabi-dev
+  command: lettuce
+  environment:
+    - DBUSER=yabiapp
+    - WAIT_FOR_UWSGI=1
+    - WAIT_FOR_DB=1
+    - TEST_APP_PORT=8443
+    - TEST_APP_SCHEME=https
+    - TEST_APP_PATH=/app/
+    - DEBUG=0
+  volumes_from:
+    - dataselenium
+  external_links:
+    - yabi_uwsgiprod_1:uwsgi
+    - yabi_seleniumhub_1:hub
+    - yabi_dbprod_1:db

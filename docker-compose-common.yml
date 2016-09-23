@@ -1,18 +1,18 @@
 # data only container pattern
 datadev:
-  image: muccg/debian8-base:latest
+  image: debian:jessie
   volumes:
     - .:/app
     - ./data/dev:/data
 
 datatest:
-  image: muccg/debian8-base
+  image: debian:jessie
   volumes:
     - .:/app
     - ./data/tests:/data
 
 dataselenium:
-  image: muccg/debian8-base:latest
+  image: debian:jessie
   volumes:
     - .:/app
     - ./data/selenium:/data
@@ -104,7 +104,6 @@ celery:
   command: celery
   hostname: celery
   environment:
-    - CELERY_APP=yabi.backend.celerytasks
     - CELERY_AUTORELOAD=1
     - DBUSER=yabiapp
     - WAIT_FOR_QUEUE=1

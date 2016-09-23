@@ -18,17 +18,13 @@ More docs at Read the Docs (https://yabi.readthedocs.org/).
 Contact
 -------
 
-Hosted on Github: 
+Hosted on GitHub:
 
 https://github.com/muccg/yabi/
 
 Documentation on Read the Docs: 
 
 https://yabi.readthedocs.org/
-
-Project Managed on JIRA: 
-
-https://ccgmurdoch.atlassian.net/projects/YABI/
 
 Twitter:
 

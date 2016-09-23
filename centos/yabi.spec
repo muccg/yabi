@@ -4,8 +4,8 @@
 %define pyver 27
 %define pybasever 2.7
 
-%define version 9.9.2
-%define unmangled_version 9.9.2
+%define version 9.9.3
+%define unmangled_version 9.9.3
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabi
@@ -171,7 +171,7 @@ virtualenv-%{pybasever} %{shbuildinstalldir}
 
 # Use specific version of pip -- avoids surprises with deprecated
 # options, etc.
-pip install --force-reinstall --upgrade 'pip>=7.0,<8.0'
+pip install --force-reinstall --upgrade 'pip==8.1.2'
 
 # Install package into the prefix
 pip install -r requirements.txt

@@ -2,6 +2,8 @@
 FROM muccg/python-base:debian8-2.7
 MAINTAINER https://github.com/muccg/yabi/
 
+ENV PROJECT_NAME yabi
+ENV PROJECT_SOURCE https://github.com/muccg/yabi.git
 ENV DEPLOYMENT prod
 ENV PRODUCTION 1
 ENV DEBUG 0

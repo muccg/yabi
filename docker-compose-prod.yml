@@ -1,0 +1,118 @@
+# data only container pattern
+dataprod:
+  image: debian:jessie
+  volumes:
+    - ./data/prod:/data
+
+s3prod:
+  extends:
+    file: docker-compose-common.yml
+    service: s3
+
+sshprod:
+  extends:
+    file: docker-compose-common.yml
+    service: ssh
+
+mqprod:
+  extends:
+    file: docker-compose-common.yml
+    service: mq
+
+dbprod:
+  extends:
+    file: docker-compose-common.yml
+    service: db
+
+cacheprod:
+  extends:
+    file: docker-compose-common.yml
+    service: cache
+
+nginxprod:
+  extends:
+    file: docker-compose-common.yml
+    service: nginx
+  links:
+    - uwsgiprod:uwsgi
+
+uwsgiprod:
+  image: muccg/yabi:${GIT_TAG}
+  command: uwsgi
+  environment:
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_CACHE=1
+    - WAIT_FOR_SSH=1
+  volumes_from:
+    - dataprod
+  links:
+    - dbprod:db
+    - mqprod:mq
+    - cacheprod:cache
+    - sshprod:ssh
+    - s3prod:s3
+
+celeryprod:
+  image: muccg/yabi:${GIT_TAG}
+  hostname: celeryprod
+  command: celery
+  environment:
+    - CELERY_NODE=yabi-node
+    - CELERY_QUEUES=celery
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - dataprod
+  links:
+    - dbprod:db
+    - mqprod:mq
+    - cacheprod:cache
+    - sshprod:ssh
+    - s3prod:s3
+
+celeryfileprod:
+  image: muccg/yabi:${GIT_TAG}
+  hostname: celeryfileprod
+  command: celery
+  environment:
+    - CELERY_NODE=yabi-node-fsops
+    - CELERY_QUEUES=file_operations
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - dataprod
+  links:
+    - dbprod:db
+    - mqprod:mq
+    - cacheprod:cache
+    - sshprod:ssh
+    - s3prod:s3
+
+celeryprovprod:
+  image: muccg/yabi:${GIT_TAG}
+  hostname: celeryprovprod
+  command: celery
+  environment:
+    - CELERY_NODE=yabi-node-provisioning
+    - CELERY_QUEUES=provisioning
+    - DBUSER=yabiapp
+    - WAIT_FOR_QUEUE=1
+    - WAIT_FOR_DB=1
+    - WAIT_FOR_SSH=1
+    - WAIT_FOR_S3=1
+  volumes_from:
+    - dataprod
+  links:
+    - dbprod:db
+    - mqprod:mq
+    - cacheprod:cache
+    - sshprod:ssh
+    - s3prod:s3
