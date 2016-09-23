@@ -1,14 +1,32 @@
 # Change Log
 
-## [Unreleased](https://github.com/muccg/yabi/tree/HEAD)
+## [9.9.3](https://github.com/muccg/yabi/tree/9.9.3) (2016-09-23)
+[Full Changelog](https://github.com/muccg/yabi/compare/9.9.2...9.9.3)
 
-[Full Changelog](https://github.com/muccg/yabi/compare/9.9.2...HEAD)
+**Implemented enhancements:**
+
+- \[YABI-147\] Make the admin unit tests part of the test suite ran from yabictl.sh [\#520](https://github.com/muccg/yabi/issues/520)
+- \[YABI-173\] remove source parameter from yabi config defaults [\#519](https://github.com/muccg/yabi/issues/519)
+- python-ldap==2.4.27 [\#209](https://github.com/muccg/yabi/issues/209)
+- pykerberos==1.1.13 [\#208](https://github.com/muccg/yabi/issues/208)
+- ccg-django-utils==0.4.2 [\#207](https://github.com/muccg/yabi/issues/207)
+- paramiko==1.16.3 [\#206](https://github.com/muccg/yabi/issues/206)
+- celery==3.1.23 [\#205](https://github.com/muccg/yabi/issues/205)
+- psycopg2==2.6.2 [\#204](https://github.com/muccg/yabi/issues/204)
+- python-memcached==1.58 [\#203](https://github.com/muccg/yabi/issues/203)
+- uwsgi 2.0.13.1 [\#202](https://github.com/muccg/yabi/issues/202)
+- Remove reference to JIRA [\#133](https://github.com/muccg/yabi/issues/133)
+- Django 1.8.14 [\#95](https://github.com/muccg/yabi/issues/95)
+- Remove references to the Bitbucket repository [\#4](https://github.com/muccg/yabi/issues/4)
+
+**Fixed bugs:**
+
+- correct uwsgi static map [\#523](https://github.com/muccg/yabi/issues/523)
+- Workflow reuse fails if a tool is renamed [\#3](https://github.com/muccg/yabi/issues/3)
 
 **Closed issues:**
 
 - \[YABI-3\] Yabi-be gsi-ssh [\#521](https://github.com/muccg/yabi/issues/521)
-- \[YABI-147\] Make the admin unit tests part of the test suite ran from yabictl.sh [\#520](https://github.com/muccg/yabi/issues/520)
-- \[YABI-173\] remove source parameter from yabi config defaults [\#519](https://github.com/muccg/yabi/issues/519)
 - \[YABI-186\] deprecate paramiko-1.7.7.1-fifopatch2 and upgrade to paramiko==1.10.1 [\#518](https://github.com/muccg/yabi/issues/518)
 - \[YABI-190\] add ssh+torque section to config [\#517](https://github.com/muccg/yabi/issues/517)
 - \[YABI-209\] RPM does not create certificates directory for backend [\#516](https://github.com/muccg/yabi/issues/516)
@@ -25,9 +43,6 @@
 - \[YABI-267\] Support zip encoding for directory downloads [\#497](https://github.com/muccg/yabi/issues/497)
 - \[YABI-241\] Enable the option to use an existing copy of an input file instead of creating a new copy using "Select file" [\#495](https://github.com/muccg/yabi/issues/495)
 - \[YABI-242\] Cannot make tool where number of cpus and/or walltime is user configurable [\#494](https://github.com/muccg/yabi/issues/494)
-- \[YABI-200\] Yabife - file browser panel update incorrect [\#493](https://github.com/muccg/yabi/issues/493)
-- \[YABI-64\] Mutually exclusive mandatory options [\#492](https://github.com/muccg/yabi/issues/492)
-- \[YABI-525\] Storage space issues with the lucien Backend [\#490](https://github.com/muccg/yabi/issues/490)
 - \[YABI-74\] Optional parameters with limited values [\#489](https://github.com/muccg/yabi/issues/489)
 - \[YABI-66\] Take parameter value from defaults or custom [\#488](https://github.com/muccg/yabi/issues/488)
 - \[YABI-178\] Separation of qsub permanent and qsub temporary errors [\#484](https://github.com/muccg/yabi/issues/484)
@@ -195,8 +210,6 @@
 - \[YABI-156\] Acknowledge code from twisted [\#18](https://github.com/muccg/yabi/issues/18)
 - \[YABI-529\] Fix Michael Blacks EPIC yabi credentials [\#13](https://github.com/muccg/yabi/issues/13)
 - \[YABI-539\] Jobs do not load, old workflows not available [\#12](https://github.com/muccg/yabi/issues/12)
-- \[YABI-568\] File I/O in Magnus creates unwated 'output' folder [\#11](https://github.com/muccg/yabi/issues/11)
-- \[YABI-569\] CCGAPPS YABI - Jobs do not progress [\#10](https://github.com/muccg/yabi/issues/10)
 - \[YABI-129\] Change the code in SSH+PBSPro to work with the new code [\#9](https://github.com/muccg/yabi/issues/9)
 - \[YABI-212\] SSH+SGE regression - incorrect remote temporary directory [\#8](https://github.com/muccg/yabi/issues/8)
 - \[YABI-464\] ccgapps.com.au yabi adding user is not functioning properly [\#7](https://github.com/muccg/yabi/issues/7)
@@ -298,6 +311,8 @@
 
 - \[YABI-571\] Recursive local copy on SFTP doesn't behave like cp source\_dir/\* dest\_dir [\#57](https://github.com/muccg/yabi/issues/57)
 - \[YABI-570\] Delete QueuedWorkflow model from db [\#56](https://github.com/muccg/yabi/issues/56)
+- \[YABI-568\] File I/O in Magnus creates unwated 'output' folder [\#11](https://github.com/muccg/yabi/issues/11)
+- \[YABI-569\] CCGAPPS YABI - Jobs do not progress [\#10](https://github.com/muccg/yabi/issues/10)
 
 ## [9.5.0](https://github.com/muccg/yabi/tree/9.5.0) (2015-06-26)
 [Full Changelog](https://github.com/muccg/yabi/compare/9.4.0...9.5.0)
