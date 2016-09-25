@@ -33,14 +33,13 @@ TESTING = env.get("testing", False)
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.get("debug", not PRODUCTION)
 
-# django-secure
+# https://docs.djangoproject.com/en/1.8/ref/middleware/#django.middleware.security.SecurityMiddleware
 SECURE_SSL_REDIRECT = env.get("secure_ssl_redirect", PRODUCTION)
-# We do clickjacking support using Django's middleware. See MIDDLEWARE_CLASSES
-SECURE_FRAME_DENY = False
+SECURE_SSL_HOST = env.get("secure_ssl_host", False)
 SECURE_CONTENT_TYPE_NOSNIFF = env.get("secure_content_type_nosniff", PRODUCTION)
 SECURE_BROWSER_XSS_FILTER = env.get("secure_browser_xss_filter", PRODUCTION)
-SECURE_HSTS_SECONDS = env.get("secure_hsts_seconds", 10)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env.get("secure_hsts_include_subdomains", PRODUCTION)
+SECURE_REDIRECT_EXEMPT = env.getlist("secure_redirect_exempt", [])
+X_FRAME_OPTIONS = env.get("x_frame_options", 'DENY')
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -49,14 +48,15 @@ ATOMIC_REQUESTS = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
-    'djangosecure.middleware.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware'
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 # We don't want to deal with CSRF during testing
@@ -81,7 +81,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'djamboloader',
     'django.contrib.admin',
-    'djangosecure',
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -102,6 +101,7 @@ CSRF_COOKIE_NAME = env.get("csrf_cookie_name", "csrf_{0}".format(SESSION_COOKIE_
 CSRF_COOKIE_DOMAIN = env.get("csrf_cookie_domain", "") or SESSION_COOKIE_DOMAIN
 CSRF_COOKIE_PATH = env.get("csrf_cookie_path", SESSION_COOKIE_PATH)
 CSRF_COOKIE_SECURE = env.get("csrf_cookie_secure", PRODUCTION)
+CSRF_COOKIE_HTTPONLY = env.get("csrf_cookie_httponly", True)
 
 # Locale
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
