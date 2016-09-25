@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'djamboloader',
     'django.contrib.admin',
     'djangosecure',
+    'anymail',
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -214,44 +215,35 @@ S3_MULTIPART_UPLOAD_MAX_RETRIES = env.get("s3_multipart_upload_max_retries", 10)
 OPENSTACK_USER = env.get("openstack_user", "")
 OPENSTACK_PASSWORD = env.get("openstack_password", "")
 
-# email settings so yabi can send email error alerts etc
+# email settings
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host
-EMAIL_HOST = env.get("email_host", "")
+EMAIL_HOST = env.get("email_host", "smtp")
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-port
 EMAIL_PORT = env.get("email_port", 25)
-
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host-user
-EMAIL_HOST_USER = env.get("email_host_user", "")
+EMAIL_HOST_USER = env.get("email_host_user", "webmaster@localhost")
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-host-password
 EMAIL_HOST_PASSWORD = env.get("email_host_password", "")
-
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-use-tls
 EMAIL_USE_TLS = env.get("email_use_tls", False)
-
 # see: https://docs.djangoproject.com/en/1.6/ref/settings/#email-subject-prefix
-EMAIL_APP_NAME = "Yabi Admin "
-EMAIL_SUBJECT_PREFIX = env.get("email_subject_prefix", "DEV ")
-
-# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-backend
-if EMAIL_HOST:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-elif DEBUG:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-    EMAIL_FILE_PATH = os.path.join(WRITABLE_DIRECTORY, "mail")
-    if not os.path.exists(EMAIL_FILE_PATH):
-        os.mkdir(EMAIL_FILE_PATH)
+EMAIL_APP_NAME = env.get("email_app_name", "Yabi {0}".format(SCRIPT_NAME))
+EMAIL_SUBJECT_PREFIX = env.get("email_subject_prefix", "DEV {0}".format(SCRIPT_NAME))
 
 # See: https://docs.djangoproject.com/en/1.6/ref/settings/#server-email
-SERVER_EMAIL = env.get("server_email", "noreply@ccg_yabi_prod")
+SERVER_EMAIL = env.get("server_email", "no-reply@localhost")
+# See: https://docs.djangoproject.com/en/1.6/ref/settings/#email-backend
+EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
+ANYMAIL = {
+    'MAILGUN_API_KEY': env.get('DJANGO_MAILGUN_API_KEY', ''),
+}
+
 
 # admins to email error reports to
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
     ('alert', env.get("alert_email", "root@localhost"))
 ]
-
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
@@ -595,25 +587,26 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console', 'file'],
-            'level': 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': True
         },
         'django': {
-            'handlers': ['console', 'django_file'],
+            'handlers': ['django_file', 'mail_admins'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['console', 'django_file'],
+            'handlers': ['django_file', 'mail_admins'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.db.backends': {
-            'handlers': ['console', 'db_logfile'],
+            'handlers': ['db_logfile', 'mail_admins'],
             'level': 'WARNING',
             'propagate': False,
         },
         'yabi': {
-            'handlers': ['console', 'file', 'yabi_db_handler'],
+            'handlers': ['yabi_db_handler', 'mail_admins'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
