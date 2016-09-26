@@ -1,5 +1,17 @@
 # Change Log
 
+## [9.9.4](https://github.com/muccg/yabi/tree/9.9.4) (2016-09-26)
+[Full Changelog](https://github.com/muccg/yabi/compare/9.9.3...9.9.4)
+
+**Implemented enhancements:**
+
+- django-anymail for email [\#527](https://github.com/muccg/yabi/issues/527)
+- deprecate django secure [\#525](https://github.com/muccg/yabi/issues/525)
+
+**Fixed bugs:**
+
+- mime types for docker installation [\#524](https://github.com/muccg/yabi/issues/524)
+
 ## [9.9.3](https://github.com/muccg/yabi/tree/9.9.3) (2016-09-23)
 [Full Changelog](https://github.com/muccg/yabi/compare/9.9.2...9.9.3)
 
