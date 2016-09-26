@@ -586,27 +586,27 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'mail_admins'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': True
         },
         'django': {
-            'handlers': ['django_file', 'mail_admins'],
+            'handlers': ['django_file'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['django_file', 'mail_admins'],
+            'handlers': ['django_file'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.db.backends': {
-            'handlers': ['db_logfile', 'mail_admins'],
+            'handlers': ['db_logfile'],
             'level': 'WARNING',
             'propagate': False,
         },
         'yabi': {
-            'handlers': ['yabi_db_handler', 'mail_admins'],
+            'handlers': ['yabi_db_handler'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
