@@ -35,7 +35,7 @@ DEBUG = env.get("debug", not PRODUCTION)
 
 # https://docs.djangoproject.com/en/1.8/ref/middleware/#django.middleware.security.SecurityMiddleware
 SECURE_SSL_REDIRECT = env.get("secure_ssl_redirect", PRODUCTION)
-SECURE_SSL_HOST = env.get("secure_ssl_host", None)
+SECURE_SSL_HOST = env.get("secure_ssl_host", "") or None
 SECURE_CONTENT_TYPE_NOSNIFF = env.get("secure_content_type_nosniff", PRODUCTION)
 SECURE_BROWSER_XSS_FILTER = env.get("secure_browser_xss_filter", PRODUCTION)
 SECURE_REDIRECT_EXEMPT = env.getlist("secure_redirect_exempt", [])
