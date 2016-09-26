@@ -51,7 +51,11 @@ Please run it without any arguments for help on its usage.
 
 Some typical usages are:
 
-- ./develop.sh start
+- ./develop.sh dev_rebuild
+        You will need to run this the first time after you clone our repo to build the docker containers.
+        You will also need to re-run it if you would like to rebuld the docker containers, for example when your python dependencies change.
+
+- ./develop.sh dev
         To start up all the docker containers needed for dev. 
         You can access the Django Yabi application on http://localhost:8000
         (replace localhost with ``$ boot2docker ip`` if using boot2docker) after this.
@@ -60,7 +64,7 @@ Some typical usages are:
 - ./develop.sh runtests
         Starts up all the docker containers and runs all our tests against them.
 
-- ./develop.sh pythonlint
+- ./develop.sh pylint
         Lint your python code.
 
 - ./develop.sh jslint
