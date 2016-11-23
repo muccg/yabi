@@ -1,4 +1,4 @@
-Django==1.8.14
+Django==1.8.16
 django-anymail==0.4.2
 pytz>=2013b
 anyjson==0.3.3
