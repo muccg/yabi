@@ -37,6 +37,7 @@ runservertest:
     service: runserver
   environment:
     - TESTING=1
+    - ALLOWED_HOSTS=web
   volumes_from:
     - datatest
   links:

@@ -16,6 +16,7 @@ testhost:
     - WAIT_FOR_CACHE=1
     - WAIT_FOR_SSH=1
     - WAIT_FOR_S3=1
+    - ALLOWED_HOSTS=testserver
   volumes_from:
     - datatest
   external_links:
