@@ -66,6 +66,7 @@ function defaults {
     : ${KERBEROSPORT:="88"}
     : ${LDAPSERVER:="ldap"}
     : ${LDAPPORT:="389"}
+    : ${UWSGI_OPTS:="--die-on-term --ini /app/uwsgi/docker.ini"}
     : ${YABIURL:="http://$DOCKER_ROUTE:$RUNSERVERPORT/"}
 
     : ${DBUSER:="webapp"}
@@ -159,14 +160,13 @@ fi
 if [ "$1" = 'uwsgi' ]; then
     echo "[Run] Starting uwsgi"
 
-    : ${UWSGI_OPTS="/app/uwsgi/docker.ini"}
     echo "UWSGI_OPTS is ${UWSGI_OPTS}"
 
     _django_collectstatic
     _django_migrate
     _django_check_deploy
 
-    exec uwsgi --die-on-term --ini ${UWSGI_OPTS}
+    exec uwsgi ${UWSGI_OPTS}
 fi
 
 # runserver entrypoint
