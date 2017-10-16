@@ -25,11 +25,10 @@ node {
         sh('./develop.sh unittests teststack')
     }
 
-    artifacts = ['**/data/selenium/dev/scratch/*.png',
-                 '**/data/selenium/dev/log/*.log',
+    artifacts = ['**/data/selenium/dev/log/*.log',
                  'lettuce-teststack.log',
                  'lettuce-selenium.log']
-    testResults = ['**/data/selenium/dev/scratch/*.xml']
+    testResults = ['**/data/selenium/dev/*.xml']
     dockerStage('Dev lettuce tests', artifacts, testResults) {
         sh('''
             ./develop.sh lettuce teststack
@@ -45,11 +44,10 @@ node {
             ''')
         }
 
-        artifacts = ['**/data/selenium/prod/scratch/*.png',
-                     '**/data/selenium/prod/log/*.log',
+        artifacts = ['**/data/selenium/prod/log/*.log',
                      'lettuce-prod.log',
                      'lettuce-selenium.log']
-        testResults = ['**/data/selenium/prod/scratch/*.xml']
+        testResults = ['**/data/selenium/prod/*.xml']
         dockerStage('Prod lettuce tests', artifacts, testResults) {
             sh('''
                 ./develop.sh lettuce prod
