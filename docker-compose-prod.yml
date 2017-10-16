@@ -61,7 +61,6 @@ services:
     image: muccg/yabi:${BUILD_VERSION}
     command: uwsgi
     environment:
-      - DBUSER=yabiapp
       - WAIT_FOR_QUEUE=1
       - WAIT_FOR_DB=1
       - WAIT_FOR_CACHE=1
@@ -94,7 +93,6 @@ services:
     environment:
       - CELERY_NODE=yabi-node
       - CELERY_QUEUES=celery
-      - DBUSER=yabiapp
       - WAIT_FOR_QUEUE=1
       - WAIT_FOR_DB=1
       - WAIT_FOR_SSH=1
@@ -126,7 +124,6 @@ services:
     environment:
       - CELERY_NODE=yabi-node-fsops
       - CELERY_QUEUES=file_operations
-      - DBUSER=yabiapp
       - WAIT_FOR_QUEUE=1
       - WAIT_FOR_DB=1
       - WAIT_FOR_SSH=1
@@ -158,7 +155,6 @@ services:
     environment:
       - CELERY_NODE=yabi-node-provisioning
       - CELERY_QUEUES=provisioning
-      - DBUSER=yabiapp
       - WAIT_FOR_QUEUE=1
       - WAIT_FOR_DB=1
       - WAIT_FOR_SSH=1
