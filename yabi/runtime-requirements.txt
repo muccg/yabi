@@ -1,4 +1,4 @@
-Django==1.8.16
+Django==1.8.18
 django-anymail==0.4.2
 pytz>=2013b
 anyjson==0.3.3
@@ -20,7 +20,7 @@ boto3==1.2.3
 python-swiftclient==2.7.0
 python-keystoneclient==0.10.1
 # python-keystoneclient has a dep on pip with no version, lock it here
-pip==8.1.2
+pip==9.0.1
 netaddr!=0.7.13
 python-dateutil==2.4.2
 six==1.8
