@@ -48,4 +48,4 @@ def get_site_url(app_name, default_url):
     """
     :return: http://example.com:8081
     """
-    return os.environ.get('YABIURL', default_url)
+    return os.environ.get('TEST_APP_URL', default_url)

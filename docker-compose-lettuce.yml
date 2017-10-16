@@ -1,38 +1,62 @@
-#
-dataselenium:
-  extends:
-    file: docker-compose-common.yml
-    service: dataselenium
+version: '2'
+services:
 
-devlettuce:
-  image: muccg/yabi-dev
-  command: lettuce
-  environment:
-    - DBUSER=yabiapp
-    - WAIT_FOR_RUNSERVER=1
-    - WAIT_FOR_DB=1
-    - DEBUG=0
-  volumes_from:
-    - dataselenium
-  external_links:
-    - yabi_runservertest_1:web
-    - yabi_seleniumhub_1:hub
-    - yabi_dbtest_1:db
+  #
+  datadevselenium:
+    extends:
+      file: docker-compose-common.yml
+      service: datadevselenium
+     
+  #
+  dataprodselenium:
+    extends:
+      file: docker-compose-common.yml
+      service: dataprodselenium
 
-prodlettuce:
-  image: muccg/yabi-dev
-  command: lettuce
-  environment:
-    - DBUSER=yabiapp
-    - WAIT_FOR_UWSGI=1
-    - WAIT_FOR_DB=1
-    - TEST_APP_PORT=8443
-    - TEST_APP_SCHEME=https
-    - TEST_APP_PATH=/app/
-    - DEBUG=0
-  volumes_from:
-    - dataselenium
-  external_links:
-    - yabi_uwsgiprod_1:uwsgi
-    - yabi_seleniumhub_1:hub
-    - yabi_dbprod_1:db
+  # runs the lettuce tests against docker-compose-teststack.yml
+  teststack:
+    image: muccg/yabi-dev
+    command: lettuce
+    environment:
+       - WAIT_FOR_RUNSERVER=1
+       - WAIT_FOR_QUEUE=1
+       - WAIT_FOR_DB=1
+       - WAIT_FOR_CACHE=1
+       - WAIT_FOR_SSH=1
+       - WAIT_FOR_S3=1
+       - ALLOWED_HOSTS=*
+       - RUNSERVER=runservertest
+       - CELERYSERVER=celerytest
+       - CACHESERVER=cachetest
+       - DBSERVER=dbtest
+       - SSHSERVER=sshtest
+       - QUEUESERVER=mqtest
+       - S3SERVER=s3test
+    volumes_from:
+      - datadevselenium
+
+  # runs the lettuce tests against docker-compose-prod.yml
+  prod:
+    image: muccg/rdrf-dev
+    command: lettuce
+    environment:
+       - WAIT_FOR_RUNSERVER=1
+       - WAIT_FOR_QUEUE=1
+       - WAIT_FOR_DB=1
+       - WAIT_FOR_CACHE=1
+       - WAIT_FOR_SSH=1
+       - WAIT_FOR_S3=1
+       - ALLOWED_HOSTS=*
+       - TEST_APP_HOST=nginxtest
+       - TEST_APP_PORT=443
+       - TEST_APP_SCHEME=https
+       - TEST_APP_PATH=/app/
+       - RUNSERVER=runservertest
+       - CELERYSERVER=celerytest
+       - CACHESERVER=cachetest
+       - DBSERVER=dbtest
+       - SSHSERVER=sshtest
+       - QUEUESERVER=mqtest
+       - S3SERVER=s3test
+    volumes_from:
+      - dataprodselenium

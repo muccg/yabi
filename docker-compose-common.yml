@@ -14,11 +14,17 @@ services:
       - .:/app
       - ./data/tests:/data
 
-  dataselenium:
+  datadevselenium:
     image: debian:jessie
     volumes:
       - .:/app
       - ./data/selenium/dev:/data
+
+  dataprodselenium:
+    image: debian:jessie
+    volumes:
+      - .:/app
+      - ./data/selenium/prod:/data
 
   s3:
     image: muccg/fake-s3:latest

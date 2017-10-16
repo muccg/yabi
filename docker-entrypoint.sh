@@ -67,14 +67,20 @@ function defaults {
     : ${LDAPSERVER:="ldap"}
     : ${LDAPPORT:="389"}
     : ${UWSGI_OPTS:="--die-on-term --ini /app/uwsgi/docker.ini"}
-    : ${YABIURL:="http://$DOCKER_ROUTE:$RUNSERVERPORT/"}
+
+    # variables to control where tests will look for the app (aloe via selenium hub)
+    : "${TEST_APP_SCHEME:=http}"
+    : "${TEST_APP_HOST:=runservertest}"
+    : "${TEST_APP_PORT:=8000}"
+    : "${TEST_APP_PATH:=/}"
+    : "${TEST_APP_URL:=${TEST_APP_SCHEME}://${TEST_APP_HOST}:${TEST_APP_PORT}${TEST_APP_PATH}}"
 
     : ${DBUSER:="webapp"}
     : ${DBNAME:="${DBUSER}"}
     : ${DBPASS:="${DBUSER}"}
 
     export DBSERVER DBPORT DBUSER DBNAME DBPASS MEMCACHE DOCKER_ROUTE 
-    export YABIURL
+    export TEST_APP_URL TEST_APP_SCHEME TEST_APP_HOST TEST_APP_PORT TEST_APP_PATH
 }
 
 
@@ -204,7 +210,7 @@ fi
 if [ "$1" = 'lettuce' ]; then
     echo "[Run] Starting lettuce"
 
-    echo "YABIURL is ${YABIURL}"
+    echo "TEST_APP_URL is ${TEST_APP_URL}"
     exec django-admin.py run_lettuce --with-xunit --xunit-file=/data/tests.xml $@
 fi
 
