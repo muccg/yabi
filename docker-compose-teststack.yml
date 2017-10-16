@@ -1,61 +1,75 @@
-# teststack used by unit tests
-datatest:
-  extends:
-    file: docker-compose-common.yml
-    service: datatest
+version: '2'
+services:
+    
+  # teststack used by unit tests
+  datatest:
+    extends:
+      file: docker-compose-common.yml
+      service: datatest
 
-s3test:
-  extends:
-    file: docker-compose-common.yml
-    service: s3
+  s3test:
+    extends:
+      file: docker-compose-common.yml
+      service: s3
 
-sshtest:
-  extends:
-    file: docker-compose-common.yml
-    service: ssh
-  volumes_from:
-    - datatest
+  sshtest:
+    extends:
+      file: docker-compose-common.yml
+      service: ssh
+    volumes_from:
+      - datatest
 
-mqtest:
-  extends:
-    file: docker-compose-common.yml
-    service: mq
+  mqtest:
+    extends:
+      file: docker-compose-common.yml
+      service: mq
 
-dbtest:
-  extends:
-    file: docker-compose-common.yml
-    service: db
+  dbtest:
+    extends:
+      file: docker-compose-common.yml
+      service: db
 
-cachetest:
-  extends:
-    file: docker-compose-common.yml
-    service: cache
+  cachetest:
+    extends:
+      file: docker-compose-common.yml
+      service: cache
 
-runservertest:
-  extends:
-    file: docker-compose-common.yml
-    service: runserver
-  environment:
-    - TESTING=1
-    - ALLOWED_HOSTS=web
-  volumes_from:
-    - datatest
-  links:
-    - dbtest:db
-    - mqtest:mq
-    - cachetest:cache
-    - sshtest:ssh
-    - s3test:s3
+  runservertest:
+    extends:
+      file: docker-compose-common.yml
+      service: runserver
+    environment:
+      - TESTING=1
+      - ALLOWED_HOSTS=*
+      - CACHESERVER=cachetest
+      - DBSERVER=dbtest
+      - SSHSERVER=sshtest
+      - QUEUESERVER=mqtest
+      - S3SERVER=s3test
+    volumes_from:
+      - datatest
+    depends_on:
+      - dbtest
+      - mqtest
+      - cachetest
+      - sshtest
+      - s3test
 
-celerytest:
-  extends:
-    file: docker-compose-common.yml
-    service: celery
-  volumes_from:
-    - datatest
-  links:
-    - dbtest:db
-    - mqtest:mq
-    - cachetest:cache
-    - sshtest:ssh
-    - s3test:s3
+  celerytest:
+    extends:
+      file: docker-compose-common.yml
+      service: celery
+    volumes_from:
+      - datatest
+    environment:
+      - CACHESERVER=cachetest
+      - DBSERVER=dbtest
+      - SSHSERVER=sshtest
+      - QUEUESERVER=mqtest
+      - S3SERVER=s3test
+    depends_on:
+      - dbtest
+      - mqtest
+      - cachetest
+      - sshtest
+      - s3test

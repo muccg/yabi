@@ -1,121 +1,121 @@
-# data only container pattern
-datadev:
-  image: debian:jessie
-  volumes:
-    - .:/app
-    - ./data/dev:/data
+version: '2'
+services:
+    
+  # data only container pattern
+  datadev:
+    image: debian:jessie
+    volumes:
+      - .:/app
+      - ./data/dev:/data
 
-datatest:
-  image: debian:jessie
-  volumes:
-    - .:/app
-    - ./data/tests:/data
+  datatest:
+    image: debian:jessie
+    volumes:
+      - .:/app
+      - ./data/tests:/data
 
-dataselenium:
-  image: debian:jessie
-  volumes:
-    - .:/app
-    - ./data/selenium:/data
+  dataselenium:
+    image: debian:jessie
+    volumes:
+      - .:/app
+      - ./data/selenium/dev:/data
 
-s3:
-  image: muccg/fake-s3:latest
+  s3:
+    image: muccg/fake-s3:latest
 
-ssh:
-  image: muccg/ssh
-  hostname: ssh
+  ssh:
+    image: muccg/ssh
+    hostname: ssh
 
-db:
-  image: postgres:9.4
-  environment:
-    - POSTGRES_USER=yabiapp
-    - POSTGRES_PASSWORD=yabiapp
-  ports:
-    - "5432"
+  db:
+    image: postgres:9.4
+    environment:
+      - POSTGRES_USER=webapp
+      - POSTGRES_PASSWORD=webapp
+    ports:
+      - "5432"
 
-mq:
-  image: rabbitmq:management
-  ports:
-    - "5672"
-    - "15672"
+  mq:
+    image: rabbitmq:management
+    ports:
+      - "5672"
+      - "15672"
 
-cache:
-  image: memcached:1.4
+  cache:
+    image: memcached:1.4
 
-krb5:
-  image: muccg/kerberos
-  hostname: kerberos
-  domainname: dockerdomain
-  command: supervisord
-  ports:
-    - "9001"
-    - "88"
-    - "749"
-    - "464"
+  krb5:
+    image: muccg/kerberos
+    hostname: kerberos
+    domainname: dockerdomain
+    command: supervisord
+    ports:
+      - "9001"
+      - "88"
+      - "749"
+      - "464"
 
-ldap:
-  image: muccg/ds389
-  hostname: ldap
-  domainname: dockerdomain
-  command: supervisord
-  ports:
-    - "9001"
-    - "389"
-    - "9830"
+  ldap:
+    image: muccg/ds389
+    hostname: ldap
+    domainname: dockerdomain
+    command: supervisord
+    ports:
+      - "9001"
+      - "389"
+      - "9830"
 
-nginx:
-  image: muccg/nginx-uwsgi:1.9
-  ports:
-    - "8443:443"
-    - "8080:80"
-  volumes:
-    - ./data/nginx:/data
+  nginx:
+    image: muccg/nginx-uwsgi:1.10
+    ports:
+      - "8443:443"
+      - "8080:80"
+    volumes:
+      - ./data/nginx:/data
 
-runserver:
-  image: muccg/yabi-dev
-  command: runserver
-  environment:
-    - DBUSER=yabiapp
-    - WAIT_FOR_QUEUE=1
-    - WAIT_FOR_DB=1
-    - WAIT_FOR_CACHE=1
-    - WAIT_FOR_SSH=1
-    - DJANGO_MAILGUN_API_KEY=${DJANGO_MAILGUN_API_KEY}
-    - SERVER_EMAIL=no-reply@mg.ccgapps.com.au
-    - ALERT_EMAIL=${ALERT_EMAIL}
-  ports:
-    - "8000:8000"
+  runserver:
+    image: muccg/yabi-dev
+    command: runserver
+    environment:
+      - WAIT_FOR_QUEUE=1
+      - WAIT_FOR_DB=1
+      - WAIT_FOR_CACHE=1
+      - WAIT_FOR_SSH=1
+      - DJANGO_MAILGUN_API_KEY=${DJANGO_MAILGUN_API_KEY}
+      - SERVER_EMAIL=no-reply@mg.ccgapps.com.au
+      - ALERT_EMAIL=${ALERT_EMAIL}
+    ports:
+      - "8000:8000"
 
-uwsgi:
-  image: muccg/yabi-dev
-  command: uwsgi
-  environment:
-    - DBUSER=yabiapp
-    - WAIT_FOR_QUEUE=1
-    - WAIT_FOR_DB=1
-    - WAIT_FOR_CACHE=1
-    - WAIT_FOR_SSH=1
-    # note: important to wait for runserver in dev as both will attempt to syncdb etc
-    - WAIT_FOR_RUNSERVER=1
-    - DJANGO_MAILGUN_API_KEY=${DJANGO_MAILGUN_API_KEY}
-    - SERVER_EMAIL=no-reply@mg.ccgapps.com.au
-    - ALERT_EMAIL=${ALERT_EMAIL}
-  ports:
-    - "9000:9000"
-    - "9001:9001"
-    - "9100:9100"
-    - "9101:9101"
+  uwsgi:
+    image: muccg/yabi-dev
+    command: uwsgi
+    environment:
+      - WAIT_FOR_QUEUE=1
+      - WAIT_FOR_DB=1
+      - WAIT_FOR_CACHE=1
+      - WAIT_FOR_SSH=1
+      # note: important to wait for runserver in dev as both will attempt to syncdb etc
+      - WAIT_FOR_RUNSERVER=1
+      - DJANGO_MAILGUN_API_KEY=${DJANGO_MAILGUN_API_KEY}
+      - SERVER_EMAIL=no-reply@mg.ccgapps.com.au
+      - ALERT_EMAIL=${ALERT_EMAIL}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+      - "9100:9100"
+      - "9101:9101"
 
-celery:
-  image: muccg/yabi-dev
-  command: celery
-  hostname: celery
-  environment:
-    - CELERY_AUTORELOAD=1
-    - DBUSER=yabiapp
-    - WAIT_FOR_QUEUE=1
-    - WAIT_FOR_DB=1
-    - WAIT_FOR_CACHE=1
-    - WAIT_FOR_SSH=1
-    - DJANGO_MAILGUN_API_KEY=${DJANGO_MAILGUN_API_KEY}
-    - SERVER_EMAIL=no-reply@mg.ccgapps.com.au
-    - ALERT_EMAIL=${ALERT_EMAIL}
+  celery:
+    image: muccg/yabi-dev
+    command: celery
+    hostname: celery
+    environment:
+      - CELERY_AUTORELOAD=1
+      - WAIT_FOR_QUEUE=1
+      - WAIT_FOR_DB=1
+      - WAIT_FOR_CACHE=1
+      - WAIT_FOR_SSH=1
+      - DJANGO_MAILGUN_API_KEY=${DJANGO_MAILGUN_API_KEY}
+      - SERVER_EMAIL=no-reply@mg.ccgapps.com.au
+      - ALERT_EMAIL=${ALERT_EMAIL}

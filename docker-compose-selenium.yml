@@ -1,18 +1,37 @@
-seleniumhub:
-  image: selenium/hub
-  ports:
-    - "4444"
+version: '2'
+services:
 
-chrome:
-  image: selenium/node-chrome
-  volumes:
-    - /dev/shm:/dev/shm
-  links:
-  - seleniumhub:hub
+  hub:
+    image: selenium/hub:3.2
+    environment:
+      - GRID_TIMEOUT=120000
+    ports:
+      - "4444"
 
-firefox:
-  image: selenium/node-firefox
-  volumes:
-    - /dev/shm:/dev/shm
-  links:
-  - seleniumhub:hub
+  chrome:
+    image: selenium/node-chrome-debug:3.2
+    shm_size: 256M
+    environment:
+      - SCREEN_WIDTH=1366
+      - SCREEN_HEIGHT=768
+      - SCREEN_DEPTH=16
+      - HUB_PORT_4444_TCP_ADDR=hub
+      - HUB_PORT_4444_TCP_PORT=4444
+    ports:
+      - 5901:5900
+    depends_on:
+      - hub
+
+  firefox:
+    image: selenium/node-firefox-debug:3.2
+    shm_size: 256M
+    environment:
+      - SCREEN_WIDTH=1366
+      - SCREEN_HEIGHT=768
+      - SCREEN_DEPTH=16
+      - HUB_PORT_4444_TCP_ADDR=hub
+      - HUB_PORT_4444_TCP_PORT=4444
+    ports:
+      - 5900:5900
+    depends_on:
+      - hub
