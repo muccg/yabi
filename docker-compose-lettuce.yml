@@ -37,10 +37,10 @@ services:
 
   # runs the lettuce tests against docker-compose-prod.yml
   prod:
-    image: muccg/rdrf-dev
+    image: muccg/yabi-dev
     command: lettuce
     environment:
-       - WAIT_FOR_RUNSERVER=1
+       - WAIT_FOR_UWSGI=1
        - WAIT_FOR_QUEUE=1
        - WAIT_FOR_DB=1
        - WAIT_FOR_CACHE=1

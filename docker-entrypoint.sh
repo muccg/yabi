@@ -44,6 +44,9 @@ function wait_for_services {
     if [[ "$WAIT_FOR_LDAP" ]] ; then
         dockerwait $LDAPSERVER $LDAPPORT
     fi
+    if [[ "$WAIT_FOR_UWSGI" ]] ; then
+        dockerwait "$UWSGISERVER" "$UWSGIPORT"
+    fi
 }
 
 
@@ -66,6 +69,8 @@ function defaults {
     : ${KERBEROSPORT:="88"}
     : ${LDAPSERVER:="ldap"}
     : ${LDAPPORT:="389"}
+    : "${UWSGISERVER:=uwsgi}"
+    : "${UWSGIPORT:=9000}"
     : ${UWSGI_OPTS:="--die-on-term --ini /app/uwsgi/docker.ini"}
 
     # variables to control where tests will look for the app (aloe via selenium hub)
