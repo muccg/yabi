@@ -1,6 +1,6 @@
 # 
-FROM muccg/python-base:debian8-2.7
-MAINTAINER https://github.com/muccg/yabi/
+FROM muccg/python-base:2.7-debian-8
+LABEL maintainer "https://github.com/muccg/"
 
 ENV PROJECT_NAME yabi
 ENV PROJECT_SOURCE https://github.com/muccg/yabi.git

@@ -5,5 +5,5 @@ sniffer==0.3.5
 model_mommy==1.2.6
 lettuce
 lettuce_webdriver
-selenium
+selenium==2.53.6
 file:.../../tests/SetupDjango-0.1.tar.gz#egg=SetupDjango

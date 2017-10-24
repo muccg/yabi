@@ -1,54 +1,57 @@
-# data only container pattern
-datadev:
-  extends:
-    file: docker-compose-common.yml
-    service: datadev
+version: '2'
+services:
+    
+  # data only container pattern
+  datadev:
+    extends:
+      file: docker-compose-common.yml
+      service: datadev
 
-s3:
-  extends:
-    file: docker-compose-common.yml
-    service: s3
+  s3:
+    extends:
+      file: docker-compose-common.yml
+      service: s3
 
-ssh:
-  extends:
-    file: docker-compose-common.yml
-    service: ssh
+  ssh:
+    extends:
+      file: docker-compose-common.yml
+      service: ssh
 
-mq:
-  extends:
-    file: docker-compose-common.yml
-    service: mq
+  mq:
+    extends:
+      file: docker-compose-common.yml
+      service: mq
 
-db:
-  extends:
-    file: docker-compose-common.yml
-    service: db
+  db:
+    extends:
+      file: docker-compose-common.yml
+      service: db
 
-cache:
-  extends:
-    file: docker-compose-common.yml
-    service: cache
+  cache:
+    extends:
+      file: docker-compose-common.yml
+      service: cache
 
-runserver:
-  extends:
-    file: docker-compose-common.yml
-    service: runserver
-  volumes_from:
-    - datadev
-  links:
-    - db
-    - mq
-    - cache
-    - ssh
+  runserver:
+    extends:
+      file: docker-compose-common.yml
+      service: runserver
+    volumes_from:
+      - datadev
+    links:
+      - db
+      - mq
+      - cache
+      - ssh
 
-celery:
-  extends:
-    file: docker-compose-common.yml
-    service: celery
-  volumes_from:
-    - datadev
-  links:
-    - db
-    - mq
-    - cache
-    - ssh
+  celery:
+    extends:
+      file: docker-compose-common.yml
+      service: celery
+    volumes_from:
+      - datadev
+    links:
+      - db
+      - mq
+      - cache
+      - ssh

@@ -1,29 +1,30 @@
-# data only container pattern
-datatest:
-  extends:
-    file: docker-compose-common.yml
-    service: datatest
+version: '2'
+services:
+    
+  # data only container pattern
+  datatest:
+    extends:
+      file: docker-compose-common.yml
+      service: datatest
 
-# runs the tests against docker-compose-teststack.yml (See external links)
-testhost:
-  image: muccg/yabi-dev
-  command: runtests
-  environment:
-    - DBUSER=yabiapp
-    - WAIT_FOR_RUNSERVER=1
-    - WAIT_FOR_QUEUE=1
-    - WAIT_FOR_DB=1
-    - WAIT_FOR_CACHE=1
-    - WAIT_FOR_SSH=1
-    - WAIT_FOR_S3=1
-    - ALLOWED_HOSTS=testserver
-  volumes_from:
-    - datatest
-  external_links:
-    - yabi_dbtest_1:db
-    - yabi_runservertest_1:web
-    - yabi_celerytest_1:celery
-    - yabi_mqtest_1:mq
-    - yabi_sshtest_1:ssh
-    - yabi_s3test_1:s3
-    - yabi_cachetest_1:cache
+  # runs the tests against docker-compose-teststack.yml
+  teststack:
+    image: muccg/yabi-dev
+    command: runtests
+    environment:
+      - WAIT_FOR_RUNSERVER=1
+      - WAIT_FOR_QUEUE=1
+      - WAIT_FOR_DB=1
+      - WAIT_FOR_CACHE=1
+      - WAIT_FOR_SSH=1
+      - WAIT_FOR_S3=1
+      - ALLOWED_HOSTS=*
+      - RUNSERVER=runservertest
+      - CELERYSERVER=celerytest
+      - CACHESERVER=cachetest
+      - DBSERVER=dbtest
+      - SSHSERVER=sshtest
+      - QUEUESERVER=mqtest
+      - S3SERVER=s3test
+    volumes_from:
+      - datatest
